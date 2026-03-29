@@ -8,7 +8,9 @@ using Oravey2.Core.Framework.State;
 using Oravey2.Core.Input;
 using Oravey2.Core.Player;
 using Oravey2.Core.World;
+using Oravey2.Windows;
 using Stride.CommunityToolkit.Engine;
+using Stride.CommunityToolkit.Rendering.Compositing;
 using Stride.CommunityToolkit.Skyboxes;
 using Stride.Core.Mathematics;
 using Stride.Engine;
@@ -54,8 +56,9 @@ void Start(Scene rootScene)
 
     logger.LogInformation("Services registered");
 
-    // --- Setup base scene (lighting, skybox) ---
-    game.SetupBase3D();
+    // --- Setup base scene ---
+    game.AddGraphicsCompositor().AddCleanUIStage();
+    game.AddDirectionalLight();
     game.AddSkybox();
 
     // --- Input update entity ---
@@ -80,7 +83,6 @@ void Start(Scene rootScene)
     var playerMovement = new PlayerMovementScript
     {
         MoveSpeed = 5f,
-        CameraYaw = 45f
     };
     playerEntity.Add(playerMovement);
     rootScene.Entities.Add(playerEntity);
@@ -93,27 +95,38 @@ void Start(Scene rootScene)
     rootScene.Entities.Add(tileMapEntity);
 
     // --- Isometric Camera ---
-    var cameraEntity = new Entity("IsometricCamera");
-    cameraEntity.Add(new CameraComponent());
+    var cameraEntity = game.Add3DCamera(
+        cameraName: "IsometricCamera",
+        initialPosition: new Vector3(20, 10, 20),
+        initialRotation: new Vector3(45, -30, 0),
+        projectionMode: CameraProjectionMode.Orthographic);
     var cameraScript = new IsometricCameraScript
     {
         Target = playerEntity,
         Pitch = 30f,
         Yaw = 45f,
-        Distance = 20f,
-        CurrentZoom = 20f,
-        ZoomMin = 10f,
-        ZoomMax = 40f
+        Distance = 50f,
+        CurrentFov = 25f,
+        FovMin = 10f,
+        FovMax = 50f,
+        RotationSpeed = 120f,
+        ZoomSpeed = 15f
     };
     cameraEntity.Add(cameraScript);
-    rootScene.Entities.Add(cameraEntity);
+
+    // Wire camera script to player movement for yaw-relative direction
+    playerMovement.CameraScript = cameraScript;
 
     // --- Automation server (for Brinell.Stride UI tests) ---
     if (StrideAutomationExtensions.IsAutomationEnabled())
     {
         logger.LogInformation("Automation mode enabled");
-        game.UseAutomation(
-            uiRootProvider: () => null,  // No Stride UI yet
+        var strideHandler = new StrideUIHandler(
+            rootProvider: () => null,  // No Stride UI yet
+            isReadyProvider: () => true,
+            isBusyProvider: () => false);
+        var oraveyHandler = new OraveyAutomationHandler(strideHandler, rootScene, game);
+        game.UseAutomation(oraveyHandler,
             options: new AutomationServerOptions { VerboseLogging = true });
     }
 

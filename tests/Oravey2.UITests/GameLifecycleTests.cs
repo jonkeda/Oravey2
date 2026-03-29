@@ -6,8 +6,7 @@ namespace Oravey2.UITests;
 
 /// <summary>
 /// Tests that verify the game launches, connects to automation,
-/// and responds to basic commands. These are integration tests
-/// that require the built game executable.
+/// and responds to basic commands.
 /// </summary>
 public class GameLifecycleTests : IAsyncLifetime
 {
@@ -19,7 +18,6 @@ public class GameLifecycleTests : IAsyncLifetime
     [Fact]
     public void Game_StartsAndConnects()
     {
-        // If InitializeAsync succeeded, the game is running and connected.
         Assert.True(_fixture.Context.IsGameReady);
     }
 
@@ -30,22 +28,30 @@ public class GameLifecycleTests : IAsyncLifetime
     }
 
     [Fact]
-    public void Game_CanTakeScreenshot()
+    public void Game_IsInExploringState()
     {
-        var screenshotBytes = _fixture.Context.TakeScreenshot();
+        var response = _fixture.Context.SendCommand(
+            AutomationCommand.GameQuery("GetGameState"));
 
-        // Screenshot may be empty if the game doesn't support it yet,
-        // but the command should not throw.
-        Assert.NotNull(screenshotBytes);
+        Assert.True(response.Success);
+        Assert.Equal("Exploring", response.Result?.ToString());
     }
 
     [Fact]
-    public void Game_RespondsToRawCommand()
+    public void Game_PlayerEntityExists()
     {
-        // Send a game query to verify the pipe is alive.
         var response = _fixture.Context.SendCommand(
-            AutomationCommand.GameQuery("IsReady"));
+            AutomationCommand.GameQuery("GetPlayerPosition"));
 
-        Assert.True(response.Success);
+        Assert.True(response.Success, $"GetPlayerPosition failed: {response.Error}");
+    }
+
+    [Fact]
+    public void Game_CameraEntityExists()
+    {
+        var response = _fixture.Context.SendCommand(
+            AutomationCommand.GameQuery("GetCameraState"));
+
+        Assert.True(response.Success, $"GetCameraState failed: {response.Error}");
     }
 }

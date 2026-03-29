@@ -6,6 +6,8 @@ namespace Oravey2.Core.Input;
 public sealed class KeyboardMouseInputProvider : IInputProvider
 {
     public Vector2 MovementAxis { get; private set; }
+    public float RotationAxis { get; private set; }
+    public float ZoomAxis { get; private set; }
     public Vector2 PointerScreenPosition { get; private set; }
     public float ScrollDelta { get; private set; }
 
@@ -15,21 +17,29 @@ public sealed class KeyboardMouseInputProvider : IInputProvider
         { GameAction.MoveDown, [Keys.S, Keys.Down] },
         { GameAction.MoveLeft, [Keys.A, Keys.Left] },
         { GameAction.MoveRight, [Keys.D, Keys.Right] },
-        { GameAction.Interact, [Keys.E] },
+        { GameAction.Interact, [Keys.F] },
         { GameAction.Attack, [Keys.Space] },
         { GameAction.Pause, [Keys.Escape] },
         { GameAction.Inventory, [Keys.I] },
-        { GameAction.RotateCameraLeft, [Keys.Q] },
-        { GameAction.RotateCameraRight, [Keys.R] },
+        { GameAction.ToggleFullscreen, [Keys.F11] },
     };
 
     private InputManager? _input;
+    private readonly HashSet<GameAction> _pressedThisFrame = [];
 
     public void Update(InputManager input)
     {
         _input = input;
 
-        // Movement axis from WASD/arrows
+        // Snapshot per-frame pressed actions (IsKeyPressed is transient)
+        _pressedThisFrame.Clear();
+        foreach (var (action, keys) in _keyBindings)
+        {
+            if (keys.Any(k => input.IsKeyPressed(k)))
+                _pressedThisFrame.Add(action);
+        }
+
+        // Movement axis from WASD/arrows (held state)
         var movement = Vector2.Zero;
         if (IsKeyHeld(Keys.W) || IsKeyHeld(Keys.Up)) movement.Y += 1f;
         if (IsKeyHeld(Keys.S) || IsKeyHeld(Keys.Down)) movement.Y -= 1f;
@@ -41,24 +51,30 @@ public sealed class KeyboardMouseInputProvider : IInputProvider
 
         MovementAxis = movement;
 
+        // Rotation axis from Q/E (held state)
+        float rot = 0f;
+        if (IsKeyHeld(Keys.Q)) rot -= 1f;
+        if (IsKeyHeld(Keys.E)) rot += 1f;
+        RotationAxis = rot;
+
+        // Zoom axis from keyboard (held) + scroll
+        float zoom = 0f;
+        if (IsKeyHeld(Keys.OemPlus) || IsKeyHeld(Keys.PageUp)) zoom -= 1f;
+        if (IsKeyHeld(Keys.OemMinus) || IsKeyHeld(Keys.PageDown)) zoom += 1f;
+        if (input.MouseWheelDelta != 0) zoom -= input.MouseWheelDelta;
+        ZoomAxis = zoom;
+
         // Mouse position
         PointerScreenPosition = input.MousePosition;
 
-        // Scroll wheel
+        // Scroll wheel (raw)
         ScrollDelta = input.MouseWheelDelta;
     }
 
     public bool IsActionPressed(GameAction action)
     {
         if (_input == null) return false;
-
-        if (action == GameAction.ZoomIn) return _input.MouseWheelDelta > 0;
-        if (action == GameAction.ZoomOut) return _input.MouseWheelDelta < 0;
-
-        if (_keyBindings.TryGetValue(action, out var keys))
-            return keys.Any(k => _input.IsKeyPressed(k));
-
-        return false;
+        return _pressedThisFrame.Contains(action);
     }
 
     public bool IsActionHeld(GameAction action)

@@ -27,7 +27,7 @@ public class IsometricCameraScript : SyncScript
     /// <summary>
     /// Distance from the camera to the target.
     /// </summary>
-    public float Distance { get; set; } = 20f;
+    public float Distance { get; set; } = 50f;
 
     /// <summary>
     /// Smooth follow speed (higher = faster tracking).
@@ -40,29 +40,29 @@ public class IsometricCameraScript : SyncScript
     public float Deadzone { get; set; } = 0.5f;
 
     /// <summary>
-    /// Minimum orthographic size (closest zoom).
+    /// Minimum vertical FOV in degrees (most zoomed in).
     /// </summary>
-    public float ZoomMin { get; set; } = 10f;
+    public float FovMin { get; set; } = 10f;
 
     /// <summary>
-    /// Maximum orthographic size (farthest zoom).
+    /// Maximum vertical FOV in degrees (most zoomed out).
     /// </summary>
-    public float ZoomMax { get; set; } = 40f;
+    public float FovMax { get; set; } = 50f;
 
     /// <summary>
-    /// Current orthographic zoom size.
+    /// Current vertical field of view in degrees.
     /// </summary>
-    public float CurrentZoom { get; set; } = 20f;
+    public float CurrentFov { get; set; } = 25f;
 
     /// <summary>
-    /// Zoom speed per scroll tick.
+    /// Zoom speed in degrees per second while zoom key held.
     /// </summary>
-    public float ZoomSpeed { get; set; } = 2f;
+    public float ZoomSpeed { get; set; } = 15f;
 
     /// <summary>
-    /// Rotation snap increment in degrees.
+    /// Rotation speed in degrees per second while Q/E is held.
     /// </summary>
-    public float RotationSnap { get; set; } = 90f;
+    public float RotationSpeed { get; set; } = 120f;
 
     private Vector3 _lastFollowTarget;
     private IEventBus? _eventBus;
@@ -85,55 +85,56 @@ public class IsometricCameraScript : SyncScript
 
     public override void Update()
     {
-        HandleZoomInput();
-        HandleRotationInput();
-        UpdateCameraTransform(false);
+        var rotChanged = HandleRotationInput();
+        var zoomChanged = HandleZoomInput();
+        UpdateCameraTransform(false, rotChanged || zoomChanged);
     }
 
-    private void HandleZoomInput()
+    private bool HandleZoomInput()
     {
-        if (_inputProvider == null) return;
+        if (_inputProvider == null) return false;
 
-        if (_inputProvider.ScrollDelta != 0)
+        var zoomAxis = _inputProvider.ZoomAxis;
+        if (zoomAxis == 0f) return false;
+
+        var oldFov = CurrentFov;
+        var dt = (float)Game.UpdateTime.Elapsed.TotalSeconds;
+        CurrentFov += zoomAxis * ZoomSpeed * dt;
+        CurrentFov = MathUtil.Clamp(CurrentFov, FovMin, FovMax);
+
+        if (Math.Abs(oldFov - CurrentFov) > 0.01f)
         {
-            var oldZoom = CurrentZoom;
-            CurrentZoom -= _inputProvider.ScrollDelta * ZoomSpeed;
-            CurrentZoom = MathUtil.Clamp(CurrentZoom, ZoomMin, ZoomMax);
-
-            if (Math.Abs(oldZoom - CurrentZoom) > 0.01f)
-                _eventBus?.Publish(new CameraZoomChangedEvent(oldZoom, CurrentZoom));
+            _eventBus?.Publish(new CameraZoomChangedEvent(oldFov, CurrentFov));
+            return true;
         }
+        return false;
     }
 
-    private void HandleRotationInput()
+    private bool HandleRotationInput()
     {
-        if (_inputProvider == null) return;
+        if (_inputProvider == null) return false;
 
-        if (_inputProvider.IsActionPressed(GameAction.RotateCameraLeft))
-        {
-            var oldYaw = Yaw;
-            Yaw = (Yaw - RotationSnap) % 360f;
-            if (Yaw < 0) Yaw += 360f;
-            _eventBus?.Publish(new CameraRotatedEvent(oldYaw, Yaw));
-        }
+        var rotAxis = _inputProvider.RotationAxis;
+        if (rotAxis == 0f) return false;
 
-        if (_inputProvider.IsActionPressed(GameAction.RotateCameraRight))
-        {
-            var oldYaw = Yaw;
-            Yaw = (Yaw + RotationSnap) % 360f;
-            _eventBus?.Publish(new CameraRotatedEvent(oldYaw, Yaw));
-        }
+        var oldYaw = Yaw;
+        var dt = (float)Game.UpdateTime.Elapsed.TotalSeconds;
+        Yaw = (Yaw + rotAxis * RotationSpeed * dt) % 360f;
+        if (Yaw < 0) Yaw += 360f;
+
+        _eventBus?.Publish(new CameraRotatedEvent(oldYaw, Yaw));
+        return true;
     }
 
-    private void UpdateCameraTransform(bool immediate)
+    private void UpdateCameraTransform(bool immediate, bool forceUpdate = false)
     {
         if (Target == null) return;
 
         var targetPos = Target.Transform.Position;
 
-        // Deadzone check
+        // Deadzone check — skip only if player hasn't moved AND no rotation/zoom change
         var delta = targetPos - _lastFollowTarget;
-        if (delta.Length() < Deadzone && !immediate)
+        if (delta.Length() < Deadzone && !immediate && !forceUpdate)
             return;
 
         // Smooth follow
@@ -155,20 +156,29 @@ public class IsometricCameraScript : SyncScript
 
         Entity.Transform.Position = followTarget + offset;
 
-        // Look at target
-        var direction = followTarget - Entity.Transform.Position;
-        if (direction.LengthSquared() > 0.0001f)
-        {
-            direction.Normalize();
-            Entity.Transform.Rotation = Quaternion.LookRotation(direction, Vector3.UnitY);
-        }
+        // Build camera rotation by looking at the target.
+        // Compute forward/right/up vectors and build rotation matrix directly
+        // to avoid Euler angle sign ambiguity.
+        var forward = Vector3.Normalize(followTarget - Entity.Transform.Position);
+        var right = Vector3.Normalize(Vector3.Cross(Vector3.UnitY, forward));
+        var up = Vector3.Cross(forward, right);
 
-        // Set orthographic size on camera component
+        // Stride cameras look along +Z in local space, so forward = +Z column
+        var rotMatrix = new Matrix(
+            right.X, right.Y, right.Z, 0,
+            up.X, up.Y, up.Z, 0,
+            forward.X, forward.Y, forward.Z, 0,
+            0, 0, 0, 1
+        );
+        Quaternion.RotationMatrix(ref rotMatrix, out var rotation);
+        Entity.Transform.Rotation = rotation;
+
+        // Set perspective projection with narrow FOV for near-isometric look
         var cameraComponent = Entity.Get<CameraComponent>();
         if (cameraComponent != null)
         {
-            cameraComponent.Projection = CameraProjectionMode.Orthographic;
-            cameraComponent.OrthographicSize = CurrentZoom;
+            cameraComponent.Projection = CameraProjectionMode.Perspective;
+            cameraComponent.VerticalFieldOfView = CurrentFov;
         }
     }
 }

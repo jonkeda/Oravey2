@@ -10,8 +10,5 @@ public enum GameAction
     Attack,
     Pause,
     Inventory,
-    RotateCameraLeft,
-    RotateCameraRight,
-    ZoomIn,
-    ZoomOut
+    ToggleFullscreen
 }

@@ -21,5 +21,15 @@ public class InputUpdateScript : SyncScript
     public override void Update()
     {
         _inputProvider?.Update(Input);
+
+        // Fullscreen toggle (F11)
+        if (_inputProvider?.IsActionPressed(GameAction.ToggleFullscreen) == true)
+        {
+            var window = Game.Window;
+            if (window != null)
+            {
+                window.IsFullscreen = !window.IsFullscreen;
+            }
+        }
     }
 }
