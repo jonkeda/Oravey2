@@ -1,0 +1,3 @@
+[submodule "Brinell"]
+	path = Brinell
+	url = https://github.com/jonkeda/Brinell.git

@@ -1,3 +1,4 @@
+using Brinell.Automation;
 using Microsoft.Extensions.Logging;
 using Oravey2.Core.Camera;
 using Oravey2.Core.Framework.Events;
@@ -107,6 +108,16 @@ void Start(Scene rootScene)
     cameraEntity.Add(cameraScript);
     rootScene.Entities.Add(cameraEntity);
 
+    // --- Automation server (for Brinell.Stride UI tests) ---
+    if (StrideAutomationExtensions.IsAutomationEnabled())
+    {
+        logger.LogInformation("Automation mode enabled");
+        game.UseAutomation(
+            uiRootProvider: () => null,  // No Stride UI yet
+            options: new AutomationServerOptions { VerboseLogging = true });
+    }
+
     // --- Transition to Exploring state ---
     gameStateManager.TransitionTo(GameState.Exploring);
+    logger.LogInformation("Game ready");
 }

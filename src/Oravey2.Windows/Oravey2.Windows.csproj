@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Oravey2.Core\Oravey2.Core.csproj" />
+    <ProjectReference Include="..\..\Brinell\srcnew\Brinell.Automation\Brinell.Automation.csproj" />
   </ItemGroup>
 
 </Project>
