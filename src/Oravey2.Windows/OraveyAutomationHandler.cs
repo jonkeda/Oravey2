@@ -10,6 +10,7 @@ using Oravey2.Core.Inventory.Core;
 using Oravey2.Core.Inventory.Equipment;
 using Oravey2.Core.Inventory.Items;
 using Oravey2.Core.Loot;
+using Oravey2.Core.UI;
 using Oravey2.Core.UI.Stride;
 using Oravey2.Core.World;
 using Stride.CommunityToolkit.Engine;
@@ -40,6 +41,10 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
     private LevelComponent? _playerLevel;
     private GameStateManager? _gameStateManager;
 
+    // Phase C references
+    private NotificationService? _notificationService;
+    private GameOverOverlayScript? _gameOverOverlay;
+
     public OraveyAutomationHandler(IAutomationHandler inner, Scene rootScene, Game game)
     {
         _inner = inner;
@@ -64,6 +69,17 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
         _playerCombat = playerCombat;
         _playerLevel = playerLevel;
         _gameStateManager = gameStateManager;
+    }
+
+    /// <summary>
+    /// Wires Phase C component references for notification/game-over automation queries.
+    /// </summary>
+    public void SetPhaseC(
+        NotificationService notificationService,
+        GameOverOverlayScript gameOverOverlay)
+    {
+        _notificationService = notificationService;
+        _gameOverOverlay = gameOverOverlay;
     }
 
     public async Task<AutomationResponse> HandleCommandAsync(AutomationCommand command, CancellationToken cancellationToken = default)
@@ -103,6 +119,10 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
             "GetHudState" => GetHudState(),
             "GetLootEntities" => GetLootEntities(),
             "GetInventoryOverlayVisible" => GetInventoryOverlayVisible(),
+            "GetNotificationFeed" => GetNotificationFeed(),
+            "GetGameOverState" => GetGameOverState(),
+            "GetEnemyHpBars" => GetEnemyHpBars(),
+            "DamagePlayer" => DamagePlayer(command),
             _ => null // Let inner handler deal with it
         };
     }
@@ -607,5 +627,81 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
 
         var visible = script.IsVisible;
         return AutomationResponse.Ok(JsonSerializer.SerializeToElement(new { visible }));
+    }
+
+    // ---- Phase C queries ----
+
+    private AutomationResponse GetNotificationFeed()
+    {
+        if (_notificationService == null)
+            return AutomationResponse.Fail("NotificationService not initialized");
+
+        var active = _notificationService.GetActive();
+        var messages = active.Select(n => new
+        {
+            text = n.Message,
+            timeRemaining = n.TimeRemaining,
+        });
+
+        return AutomationResponse.Ok(JsonSerializer.SerializeToElement(new
+        {
+            count = active.Count,
+            messages,
+        }));
+    }
+
+    private AutomationResponse GetGameOverState()
+    {
+        if (_gameOverOverlay == null)
+            return AutomationResponse.Fail("GameOverOverlay not initialized");
+
+        return AutomationResponse.Ok(JsonSerializer.SerializeToElement(new
+        {
+            visible = _gameOverOverlay.IsVisible,
+            title = _gameOverOverlay.CurrentTitle ?? "",
+        }));
+    }
+
+    private AutomationResponse GetEnemyHpBars()
+    {
+        var combatManager = FindEntity("CombatManager");
+        var script = combatManager?.Get<CombatSyncScript>();
+        if (script == null)
+            return AutomationResponse.Fail("CombatSyncScript not found");
+
+        var inCombat = script.CombatState?.InCombat ?? false;
+        var bars = script.Enemies
+            .Where(e => e.Health.IsAlive)
+            .Select(e => new
+            {
+                enemyId = e.Id,
+                hp = e.Health.CurrentHP,
+                maxHp = e.Health.MaxHP,
+            });
+
+        return AutomationResponse.Ok(JsonSerializer.SerializeToElement(new
+        {
+            visible = inCombat,
+            bars,
+        }));
+    }
+
+    private AutomationResponse DamagePlayer(AutomationCommand command)
+    {
+        if (_playerHealth == null)
+            return AutomationResponse.Fail("Player health not initialized");
+
+        if (command.Args == null || command.Args.Length < 1)
+            return AutomationResponse.Fail("DamagePlayer requires amount argument");
+
+        int amount = Convert.ToInt32(command.Args[0]?.ToString());
+        _playerHealth.TakeDamage(amount);
+
+        return AutomationResponse.Ok(JsonSerializer.SerializeToElement(new
+        {
+            newHp = _playerHealth.CurrentHP,
+            maxHp = _playerHealth.MaxHP,
+            isAlive = _playerHealth.IsAlive,
+        }));
     }
 }

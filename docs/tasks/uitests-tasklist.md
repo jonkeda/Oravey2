@@ -109,3 +109,44 @@ Tracking pass/fail status for all UI tests in `tests/Oravey2.UITests/`.
 
 ---
 **Total: 75 tests (74 active + 1 skipped)**
+
+## HudBarTests (5 tests) ✅
+- [x] HudState_FullHealth_AtStart
+- [x] HudState_ReducedHp_AfterDamage
+- [x] HudState_FullAp_AtStart
+- [x] HudState_LevelOne_AtStart
+- [x] HudState_ShowsExploring_AtStart
+
+## EnemyHpBarTests (5 tests) ✅
+- [x] EnemyBars_NotVisible_WhenExploring
+- [x] EnemyBars_Visible_WhenInCombat
+- [x] EnemyBars_ShowAllLivingEnemies
+- [x] EnemyBars_MatchCombatState_Hp
+- [x] EnemyBars_RemoveDeadEnemy
+
+## NotificationFeedTests (4 tests) ✅
+- [x] NoNotifications_AtStart
+- [x] LootPickup_ShowsNotification
+- [x] Notifications_HavePositiveTimeRemaining
+- [x] MaxFiveNotifications_Visible
+
+## GameOverTests (5 tests) ✅
+- [x] GameOverOverlay_NotVisible_AtStart
+- [x] PlayerDeath_TransitionsToGameOver
+- [x] PlayerDeath_ShowsGameOverOverlay
+- [x] DamagePlayer_ReducesHp
+- [x] DamagePlayer_ToZero_NotAlive
+
+## InputFreezeTests (3 tests) ✅
+- [x] Movement_Blocked_DuringGameOver
+- [x] InventoryToggle_Blocked_DuringGameOver
+- [x] GameState_StaysGameOver_AfterInput
+
+## VictoryTests (4 tests) ✅
+- [x] KillAllEnemies_TransitionsToExploring
+- [x] KillAllEnemies_ShowsVictoryOverlay
+- [x] VictoryOverlay_AutoDismisses
+- [x] VictoryOverlay_EnemyBarsHide
+
+---
+**Total: 101 tests (100 active + 1 skipped)**

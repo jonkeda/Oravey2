@@ -403,4 +403,90 @@ public static class GameQueryHelpers
         var je = (JsonElement)response.Result!;
         return je.GetProperty("visible").GetBoolean();
     }
+
+    // --- Phase C: Notification / Game Over / Enemy Bars helpers ---
+
+    public record NotificationMessage(string Text, double TimeRemaining);
+
+    public record NotificationFeedState(int Count, List<NotificationMessage> Messages);
+
+    public record GameOverState(bool Visible, string Title);
+
+    public record EnemyHpBarInfo(string EnemyId, int Hp, int MaxHp);
+
+    public record EnemyHpBarsState(bool Visible, List<EnemyHpBarInfo> Bars);
+
+    public record DamageResult(int NewHp, int MaxHp, bool IsAlive);
+
+    public static NotificationFeedState GetNotificationFeed(IStrideTestContext context)
+    {
+        var response = context.SendCommand(AutomationCommand.GameQuery("GetNotificationFeed"));
+        if (!response.Success)
+            throw new InvalidOperationException($"GetNotificationFeed failed: {response.Error}");
+
+        var je = (JsonElement)response.Result!;
+        var messages = new List<NotificationMessage>();
+        if (je.TryGetProperty("messages", out var arr))
+        {
+            foreach (var m in arr.EnumerateArray())
+            {
+                messages.Add(new NotificationMessage(
+                    m.GetProperty("text").GetString() ?? "",
+                    m.GetProperty("timeRemaining").GetDouble()));
+            }
+        }
+
+        return new NotificationFeedState(
+            je.GetProperty("count").GetInt32(),
+            messages);
+    }
+
+    public static GameOverState GetGameOverState(IStrideTestContext context)
+    {
+        var response = context.SendCommand(AutomationCommand.GameQuery("GetGameOverState"));
+        if (!response.Success)
+            throw new InvalidOperationException($"GetGameOverState failed: {response.Error}");
+
+        var je = (JsonElement)response.Result!;
+        return new GameOverState(
+            je.GetProperty("visible").GetBoolean(),
+            je.GetProperty("title").GetString() ?? "");
+    }
+
+    public static EnemyHpBarsState GetEnemyHpBars(IStrideTestContext context)
+    {
+        var response = context.SendCommand(AutomationCommand.GameQuery("GetEnemyHpBars"));
+        if (!response.Success)
+            throw new InvalidOperationException($"GetEnemyHpBars failed: {response.Error}");
+
+        var je = (JsonElement)response.Result!;
+        var bars = new List<EnemyHpBarInfo>();
+        if (je.TryGetProperty("bars", out var arr))
+        {
+            foreach (var b in arr.EnumerateArray())
+            {
+                bars.Add(new EnemyHpBarInfo(
+                    b.GetProperty("enemyId").GetString() ?? "",
+                    b.GetProperty("hp").GetInt32(),
+                    b.GetProperty("maxHp").GetInt32()));
+            }
+        }
+
+        return new EnemyHpBarsState(
+            je.GetProperty("visible").GetBoolean(),
+            bars);
+    }
+
+    public static DamageResult DamagePlayer(IStrideTestContext context, int amount)
+    {
+        var response = context.SendCommand(AutomationCommand.GameQuery("DamagePlayer", amount));
+        if (!response.Success)
+            throw new InvalidOperationException($"DamagePlayer failed: {response.Error}");
+
+        var je = (JsonElement)response.Result!;
+        return new DamageResult(
+            je.GetProperty("newHp").GetInt32(),
+            je.GetProperty("maxHp").GetInt32(),
+            je.GetProperty("isAlive").GetBoolean());
+    }
 }

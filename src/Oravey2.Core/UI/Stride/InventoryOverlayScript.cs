@@ -3,6 +3,7 @@ using global::Stride.Input;
 using global::Stride.UI;
 using global::Stride.UI.Controls;
 using global::Stride.UI.Panels;
+using Oravey2.Core.Framework.State;
 using Oravey2.Core.Inventory.Core;
 using Oravey2.Core.Inventory.Items;
 using Oravey2.Core.UI.ViewModels;
@@ -16,6 +17,7 @@ namespace Oravey2.Core.UI.Stride;
 public class InventoryOverlayScript : SyncScript
 {
     public InventoryComponent? Inventory { get; set; }
+    public GameStateManager? StateManager { get; set; }
 
     private UIComponent? _uiComponent;
     private StackPanel? _itemList;
@@ -35,6 +37,8 @@ public class InventoryOverlayScript : SyncScript
 
     public override void Update()
     {
+        if (StateManager?.CurrentState == GameState.GameOver) return;
+
         if (Input.IsKeyPressed(Keys.Tab))
         {
             _visible = !_visible;

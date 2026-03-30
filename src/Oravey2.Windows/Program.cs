@@ -15,6 +15,7 @@ using Oravey2.Core.Inventory.Equipment;
 using Oravey2.Core.Inventory.Items;
 using Oravey2.Core.Loot;
 using Oravey2.Core.Player;
+using Oravey2.Core.UI;
 using Oravey2.Core.UI.Stride;
 using Oravey2.Core.World;
 using Oravey2.Windows;
@@ -266,9 +267,56 @@ void Start(Scene rootScene)
     var inventoryOverlay = new InventoryOverlayScript
     {
         Inventory = playerInventory,
+        StateManager = gameStateManager,
     };
     inventoryOverlayEntity.Add(inventoryOverlay);
     rootScene.Entities.Add(inventoryOverlayEntity);
+
+    // --- Notification feed (Phase C) ---
+    var notificationService = new NotificationService();
+    eventBus.Subscribe<NotificationEvent>(e => notificationService.Add(e.Message, e.DurationSeconds));
+
+    var notificationEntity = new Entity("NotificationFeed");
+    var notificationFeed = new NotificationFeedScript
+    {
+        Notifications = notificationService,
+    };
+    notificationEntity.Add(notificationFeed);
+    rootScene.Entities.Add(notificationEntity);
+
+    // --- Enemy HP bars (Phase C) ---
+    var enemyHpEntity = new Entity("EnemyHpBars");
+    var enemyHpBars = new EnemyHpBarScript
+    {
+        StateManager = gameStateManager,
+        CameraEntity = cameraEntity,
+    };
+    enemyHpBars.Enemies = enemies;
+    enemyHpEntity.Add(enemyHpBars);
+    rootScene.Entities.Add(enemyHpEntity);
+
+    // --- Game over / victory overlay (Phase C) ---
+    var gameOverEntity = new Entity("GameOverOverlay");
+    var gameOverOverlay = new GameOverOverlayScript
+    {
+        StateManager = gameStateManager,
+    };
+    gameOverEntity.Add(gameOverOverlay);
+    rootScene.Entities.Add(gameOverEntity);
+
+    // --- Floating damage (Phase C) ---
+    var floatingDamageEntity = new Entity("FloatingDamage");
+    var floatingDamage = new FloatingDamageScript
+    {
+        CameraEntity = cameraEntity,
+        EventBus = eventBus,
+        CombatScript = combatScript,
+    };
+    floatingDamageEntity.Add(floatingDamage);
+    rootScene.Entities.Add(floatingDamageEntity);
+
+    // --- Wire player movement freeze on GameOver (Phase C) ---
+    playerMovement.StateManager = gameStateManager;
 
     // --- Automation server (for Brinell.Stride UI tests) ---
     if (StrideAutomationExtensions.IsAutomationEnabled())
@@ -282,6 +330,7 @@ void Start(Scene rootScene)
         oraveyHandler.SetPhaseB(
             playerInventory, playerEquipment, playerHealth,
             playerCombat, playerLevel, gameStateManager);
+        oraveyHandler.SetPhaseC(notificationService, gameOverOverlay);
         game.UseAutomation(oraveyHandler,
             options: new AutomationServerOptions { VerboseLogging = true });
     }

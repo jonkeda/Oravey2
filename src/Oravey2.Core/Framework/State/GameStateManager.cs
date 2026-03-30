@@ -53,6 +53,7 @@ public sealed class GameStateManager
             (GameState.InMenu, GameState.Exploring) => true,
             (GameState.Paused, GameState.Exploring) => true,
             (GameState.Paused, GameState.InCombat) => true,
+            (GameState.InCombat, GameState.GameOver) => true,
             _ => false
         };
     }

@@ -7,5 +7,6 @@ public enum GameState
     InCombat,
     InDialogue,
     InMenu,
-    Paused
+    Paused,
+    GameOver
 }

@@ -1,6 +1,7 @@
 using Oravey2.Core.Camera;
 using Oravey2.Core.Framework.Events;
 using Oravey2.Core.Framework.Services;
+using Oravey2.Core.Framework.State;
 using Oravey2.Core.Input;
 using Oravey2.Core.World;
 using Stride.Core.Mathematics;
@@ -27,6 +28,11 @@ public class PlayerMovementScript : SyncScript
     /// </summary>
     public float TileSize { get; set; } = 1f;
 
+    /// <summary>
+    /// Game state manager for input freeze during GameOver.
+    /// </summary>
+    public GameStateManager? StateManager { get; set; }
+
     private float CameraYaw => CameraScript?.Yaw ?? 45f;
 
     private IInputProvider? _inputProvider;
@@ -44,6 +50,7 @@ public class PlayerMovementScript : SyncScript
     public override void Update()
     {
         if (_inputProvider == null) return;
+        if (StateManager?.CurrentState == GameState.GameOver) return;
 
         var movement = _inputProvider.MovementAxis;
         if (movement.LengthSquared() < 0.001f)

@@ -40,6 +40,12 @@ public class CombatSyncScript : SyncScript
     public GameStateManager? StateManager { get; set; }
     public LootDropScript? LootDrop { get; set; }
 
+    /// <summary>
+    /// Set during ProcessNextAction() for FloatingDamageScript to read.
+    /// Reset to null at the start of each frame.
+    /// </summary>
+    public Entity? LastHitTarget { get; internal set; }
+
     // --- M0 weapon constants ---
     private const float WeaponAccuracy = 0.75f;
     private const int WeaponDamage = 12;
@@ -64,6 +70,7 @@ public class CombatSyncScript : SyncScript
     public override void Update()
     {
         var dt = (float)Game.UpdateTime.Elapsed.TotalSeconds;
+        LastHitTarget = null;
 
         // Always tick flash timers (even outside combat for lingering flashes)
         UpdateHitFlash(dt);
@@ -90,6 +97,13 @@ public class CombatSyncScript : SyncScript
 
         // 5. Check for dead enemies and remove them
         CleanupDead();
+
+        // 6. Check for player death
+        if (PlayerHealth != null && !PlayerHealth.IsAlive)
+        {
+            StateManager?.TransitionTo(GameState.GameOver);
+            return;
+        }
     }
 
     // ---- A4: Player Attack Input ----
@@ -207,7 +221,10 @@ public class CombatSyncScript : SyncScript
 
         // A5: flash target on hit
         if (result is { Hit: true })
+        {
+            LastHitTarget = targetEntity;
             StartHitFlash(targetEntity);
+        }
     }
 
     // ---- A5: Hit Feedback ----
