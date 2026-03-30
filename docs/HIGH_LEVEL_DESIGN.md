@@ -1,4 +1,4 @@
-# Oravey2 — Post-Apocalyptic Isometric RPG
+# Oravey2 — Post-Apocalyptic Tactical RPG
 
 ## High-Level Design Document
 
@@ -8,13 +8,13 @@
 
 **Title:** Oravey2 (working title)
 **Genre:** Post-Apocalyptic RPG
-**Perspective:** Top-down isometric
+**Perspective:** Tactical RPG camera (perspective projection, fully rotatable and zoomable)
 **Engine:** Stride 3D (formerly Xenko)
 **Language:** C#
 **Target Platforms:** Windows, iOS, Android
 
 **Elevator Pitch:**
-A top-down isometric RPG set in a shattered world after civilisation's collapse. Players explore ruined cities, irradiated wastelands, and makeshift settlements — scavenging resources, forging alliances, and making choices that reshape what's left of humanity.
+A tactical RPG set in a shattered world after civilisation's collapse. Players explore ruined cities, irradiated wastelands, and makeshift settlements — scavenging resources, forging alliances, and making choices that reshape what's left of humanity.
 
 ---
 
@@ -87,15 +87,16 @@ Stride's built-in ECS is the backbone. All game objects are **entities** compose
 
 ---
 
-## 4. Isometric Camera & Rendering
+## 4. Camera & Rendering
 
 ### 4.1 Camera
 
-- Fixed-angle isometric camera: **~30° pitch, 45° yaw rotation**.
-- Orthographic or near-orthographic projection for a clean isometric look.
+- **Tactical RPG camera** with perspective projection (Divinity: Original Sin 2 / Baldur's Gate 3 style).
+- Fully rotatable (free yaw, Q/E snap or drag on mobile) and zoomable.
+- Default angle: **~45° pitch**, adjustable by player.
 - Smooth follow on the player entity with configurable deadzone.
-- Zoom levels (close / medium / far) — clamped for mobile performance.
-- Optional camera rotation in 90° snaps (Q/E keys, two-finger rotate on mobile).
+- Zoom range (close / medium / far) — clamped for mobile performance.
+- Two-finger rotate/pinch on mobile for rotation and zoom.
 
 ### 4.2 Rendering Pipeline
 
@@ -285,7 +286,7 @@ public interface IInputProvider
 ### Optimisation Strategies
 
 - Hybrid LOD: mesh LOD + billboard imposters at distance.
-- Aggressive culling: frustum + occlusion (isometric camera helps).
+- Aggressive culling: frustum + occlusion.
 - Texture atlasing for tiles and common objects.
 - Object pooling for projectiles, VFX, and spawned entities.
 - Chunked world streaming — only 3×3 grid of chunks loaded around player.
@@ -306,7 +307,7 @@ public interface IInputProvider
 
 | Milestone | Deliverables |
 |-----------|-------------|
-| **M0 — Prototype** | Isometric camera, player movement, tile-based map loading, basic combat loop (Windows only) |
+| **M0 — Prototype** | Tactical RPG camera, player movement, tile-based map loading, basic combat loop (Windows only) |
 | **M1 — Vertical Slice** | One complete zone with exploration, combat, dialogue, and a short quest chain. Basic UI. Windows + Android. |
 | **M2 — Core Loop** | Character progression, inventory, crafting, 3+ factions, day/night cycle, save/load. All platforms. |
 | **M3 — Content Alpha** | Main storyline first act, 5+ zones, full AI, full UI/UX, audio pass. |
@@ -319,7 +320,7 @@ public interface IInputProvider
 
 | Risk | Impact | Mitigation |
 |------|--------|------------|
-| Stride mobile maturity | Mobile build pipeline may need patches | Evaluate early in M0; maintain fallback to MonoGame renderer if needed |
+| Stride mobile maturity | Mobile build pipeline may need patches | Evaluate early in M0; maintain fallback renderer if needed |
 | Performance on low-end Android | Frame drops, heat | Aggressive LOD, quality presets, chunk streaming from M0 |
 | Scope creep | Endless feature additions | Data-driven design; content is data, not code. Feature-freeze at M3. |
 | Cross-platform input feel | Touch controls feel clunky | Dedicated UX pass per platform; external playtesting at M1 |

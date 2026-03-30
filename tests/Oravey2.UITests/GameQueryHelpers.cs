@@ -201,4 +201,76 @@ public static class GameQueryHelpers
             je.GetProperty("y").GetDouble(),
             je.GetProperty("z").GetDouble());
     }
+
+    // --- Combat helpers ---
+
+    public record EnemyState(
+        string Id, int Hp, int MaxHp, int Ap, int MaxAp,
+        bool IsAlive, double X, double Y, double Z);
+
+    public record CombatState(
+        bool InCombat, int EnemyCount,
+        List<EnemyState> Enemies,
+        int PlayerHp, int PlayerMaxHp,
+        int PlayerAp, int PlayerMaxAp);
+
+    public static CombatState GetCombatState(IStrideTestContext context)
+    {
+        var response = context.SendCommand(AutomationCommand.GameQuery("GetCombatState"));
+        if (!response.Success)
+            throw new InvalidOperationException($"GetCombatState failed: {response.Error}");
+
+        var je = (JsonElement)response.Result!;
+
+        var enemies = new List<EnemyState>();
+        if (je.TryGetProperty("enemies", out var arr))
+        {
+            foreach (var item in arr.EnumerateArray())
+            {
+                enemies.Add(new EnemyState(
+                    item.GetProperty("id").GetString() ?? "",
+                    item.GetProperty("hp").GetInt32(),
+                    item.GetProperty("maxHp").GetInt32(),
+                    item.GetProperty("ap").GetInt32(),
+                    item.GetProperty("maxAp").GetInt32(),
+                    item.GetProperty("isAlive").GetBoolean(),
+                    item.GetProperty("x").GetDouble(),
+                    item.GetProperty("y").GetDouble(),
+                    item.GetProperty("z").GetDouble()));
+            }
+        }
+
+        return new CombatState(
+            je.GetProperty("inCombat").GetBoolean(),
+            je.GetProperty("enemyCount").GetInt32(),
+            enemies,
+            je.GetProperty("playerHp").GetInt32(),
+            je.GetProperty("playerMaxHp").GetInt32(),
+            je.GetProperty("playerAp").GetInt32(),
+            je.GetProperty("playerMaxAp").GetInt32());
+    }
+
+    public static Position TeleportPlayer(IStrideTestContext context, double x, double y, double z)
+    {
+        var response = context.SendCommand(AutomationCommand.GameQuery("TeleportPlayer", x, y, z));
+        if (!response.Success)
+            throw new InvalidOperationException($"TeleportPlayer failed: {response.Error}");
+
+        var je = (JsonElement)response.Result!;
+        return new Position(
+            je.GetProperty("x").GetDouble(),
+            je.GetProperty("y").GetDouble(),
+            je.GetProperty("z").GetDouble());
+    }
+
+    public static (bool Killed, int RemainingAlive) KillEnemy(IStrideTestContext context, string enemyId)
+    {
+        var response = context.SendCommand(AutomationCommand.GameQuery("KillEnemy", enemyId));
+        if (!response.Success)
+            throw new InvalidOperationException($"KillEnemy({enemyId}) failed: {response.Error}");
+
+        var je = (JsonElement)response.Result!;
+        return (je.GetProperty("killed").GetBoolean(),
+                je.GetProperty("remainingAlive").GetInt32());
+    }
 }

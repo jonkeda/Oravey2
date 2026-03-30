@@ -2,6 +2,7 @@ using Oravey2.Core.Camera;
 using Oravey2.Core.Framework.Events;
 using Oravey2.Core.Framework.Services;
 using Oravey2.Core.Input;
+using Oravey2.Core.World;
 using Stride.Core.Mathematics;
 using Stride.Engine;
 
@@ -15,6 +16,16 @@ public class PlayerMovementScript : SyncScript
     /// Reference to the camera script to read current yaw for movement direction.
     /// </summary>
     public IsometricCameraScript? CameraScript { get; set; }
+
+    /// <summary>
+    /// Tile map used for walkability checks. If null, no collision is enforced.
+    /// </summary>
+    public TileMapData? MapData { get; set; }
+
+    /// <summary>
+    /// Tile size matching the renderer. Defaults to 1.0.
+    /// </summary>
+    public float TileSize { get; set; } = 1f;
 
     private float CameraYaw => CameraScript?.Yaw ?? 45f;
 
@@ -52,7 +63,20 @@ public class PlayerMovementScript : SyncScript
             worldDir.Normalize();
 
         var oldPosition = Entity.Transform.Position;
-        Entity.Transform.Position += worldDir * MoveSpeed * dt;
+        var delta = worldDir * MoveSpeed * dt;
+        var newPos = oldPosition + delta;
+
+        // Axis-separated tile collision: check X and Z independently for wall sliding
+        if (MapData != null)
+        {
+            if (!MapData.IsWalkableAtWorld(newPos.X, oldPosition.Z, TileSize))
+                newPos.X = oldPosition.X;
+
+            if (!MapData.IsWalkableAtWorld(newPos.X, newPos.Z, TileSize))
+                newPos.Z = oldPosition.Z;
+        }
+
+        Entity.Transform.Position = newPos;
 
         _eventBus?.Publish(new PlayerMovedEvent(oldPosition, Entity.Transform.Position));
     }

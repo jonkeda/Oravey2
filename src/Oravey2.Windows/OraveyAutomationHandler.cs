@@ -1,6 +1,7 @@
 using Brinell.Automation;
 using Brinell.Automation.Communication;
 using Oravey2.Core.Camera;
+using Oravey2.Core.Combat;
 using Oravey2.Core.Framework.Services;
 using Oravey2.Core.Framework.State;
 using Oravey2.Core.World;
@@ -60,6 +61,9 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
             "WorldToScreen" => WorldToScreen(command),
             "GetTileAtWorldPos" => GetTileAtWorldPos(command),
             "GetPlayerScreenPosition" => GetPlayerScreenPosition(),
+            "GetCombatState" => GetCombatState(),
+            "TeleportPlayer" => TeleportPlayer(command),
+            "KillEnemy" => KillEnemy(command),
             _ => null // Let inner handler deal with it
         };
     }
@@ -358,18 +362,9 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
 
             camPos = targetPos + offset;
 
-            // Build rotation by looking at target (matches IsometricCameraScript)
-            var forward = Vector3.Normalize(targetPos - camPos);
-            var right = Vector3.Normalize(Vector3.Cross(Vector3.UnitY, forward));
-            var up = Vector3.Cross(forward, right);
-
-            var rotMat = new Matrix(
-                right.X, right.Y, right.Z, 0,
-                up.X, up.Y, up.Z, 0,
-                forward.X, forward.Y, forward.Z, 0,
-                0, 0, 0, 1
-            );
-            Quaternion.RotationMatrix(ref rotMat, out camRot);
+            // Use RotationYawPitchRoll matching IsometricCameraScript (see RCA-004)
+            camRot = Quaternion.RotationYawPitchRoll(
+                yawRad, MathUtil.DegreesToRadians(-camScript.Pitch), 0f);
 
             // Update camera component to match live script properties
             cc.Projection = CameraProjectionMode.Perspective;
@@ -403,5 +398,81 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
                 return entity;
         }
         return null;
+    }
+
+    private AutomationResponse GetCombatState()
+    {
+        var combatManager = FindEntity("CombatManager");
+        if (combatManager == null)
+            return AutomationResponse.Fail("CombatManager entity not found");
+
+        var script = combatManager.Get<CombatSyncScript>();
+        if (script == null)
+            return AutomationResponse.Fail("CombatSyncScript not found");
+
+        var enemies = script.Enemies.Select(e => new
+        {
+            id = e.Id,
+            hp = e.Health.CurrentHP,
+            maxHp = e.Health.MaxHP,
+            ap = (int)e.Combat.CurrentAP,
+            maxAp = e.Combat.MaxAP,
+            isAlive = e.Health.IsAlive,
+            x = e.Entity.Transform.Position.X,
+            y = e.Entity.Transform.Position.Y,
+            z = e.Entity.Transform.Position.Z,
+        });
+
+        var result = new
+        {
+            inCombat = script.CombatState?.InCombat ?? false,
+            enemyCount = script.Enemies.Count,
+            enemies,
+            playerHp = script.PlayerHealth?.CurrentHP ?? 0,
+            playerMaxHp = script.PlayerHealth?.MaxHP ?? 0,
+            playerAp = (int)(script.PlayerCombat?.CurrentAP ?? 0),
+            playerMaxAp = script.PlayerCombat?.MaxAP ?? 0,
+        };
+        return AutomationResponse.Ok(JsonSerializer.SerializeToElement(result));
+    }
+
+    private AutomationResponse TeleportPlayer(AutomationCommand command)
+    {
+        if (command.Args == null || command.Args.Length < 3)
+            return AutomationResponse.Fail("TeleportPlayer requires x, y, z arguments");
+
+        float x = Convert.ToSingle(command.Args[0]?.ToString());
+        float y = Convert.ToSingle(command.Args[1]?.ToString());
+        float z = Convert.ToSingle(command.Args[2]?.ToString());
+
+        var player = FindEntity("Player");
+        if (player == null)
+            return AutomationResponse.Fail("Player entity not found");
+
+        player.Transform.Position = new Vector3(x, y, z);
+        return AutomationResponse.Ok(JsonSerializer.SerializeToElement(
+            new { x, y, z }));
+    }
+
+    private AutomationResponse KillEnemy(AutomationCommand command)
+    {
+        var enemyId = command.Args?.FirstOrDefault()?.ToString();
+        if (string.IsNullOrEmpty(enemyId))
+            return AutomationResponse.Fail("Enemy ID required as first argument");
+
+        var combatManager = FindEntity("CombatManager");
+        var script = combatManager?.Get<CombatSyncScript>();
+        if (script == null)
+            return AutomationResponse.Fail("CombatSyncScript not found");
+
+        var enemy = script.Enemies.FirstOrDefault(e => e.Id == enemyId);
+        if (enemy == null)
+            return AutomationResponse.Fail($"Enemy '{enemyId}' not found");
+
+        enemy.Health.TakeDamage(enemy.Health.CurrentHP);
+        var remaining = script.Enemies.Count(e => e.Health.IsAlive);
+
+        return AutomationResponse.Ok(JsonSerializer.SerializeToElement(
+            new { killed = true, remainingAlive = remaining }));
     }
 }

@@ -1,6 +1,10 @@
 using Brinell.Automation;
 using Microsoft.Extensions.Logging;
 using Oravey2.Core.Camera;
+using Oravey2.Core.Character.Health;
+using Oravey2.Core.Character.Level;
+using Oravey2.Core.Character.Stats;
+using Oravey2.Core.Combat;
 using Oravey2.Core.Framework.Events;
 using Oravey2.Core.Framework.Logging;
 using Oravey2.Core.Framework.Services;
@@ -87,12 +91,100 @@ void Start(Scene rootScene)
     playerEntity.Add(playerMovement);
     rootScene.Entities.Add(playerEntity);
 
+    // --- Player combat data ---
+    var playerStats = new StatsComponent();
+    var playerLevel = new LevelComponent(playerStats);
+    var playerHealth = new HealthComponent(playerStats, playerLevel, eventBus);
+    var playerCombat = new CombatComponent { InCombat = false };
+
     // --- Tile Map ---
-    var mapData = TileMapData.CreateDefault(16, 16);
+    var mapData = TileMapData.CreateDefault(32, 32);
     var tileMapEntity = new Entity("TileMap");
     var tileMapRenderer = new TileMapRendererScript { MapData = mapData };
     tileMapEntity.Add(tileMapRenderer);
     rootScene.Entities.Add(tileMapEntity);
+
+    // Wire tile map to player for collision
+    playerMovement.MapData = mapData;
+    playerMovement.TileSize = tileMapRenderer.TileSize;
+
+    // --- Enemy entities ---
+    var enemyPositions = new (string id, Vector3 pos)[]
+    {
+        ("enemy_1", new Vector3(8f, 0.5f, 8f)),
+        ("enemy_2", new Vector3(-6f, 0.5f, 10f)),
+        ("enemy_3", new Vector3(10f, 0.5f, -6f)),
+    };
+
+    var enemyMaterial = game.CreateMaterial(new Color(0.8f, 0.15f, 0.15f));
+    var enemies = new List<EnemyInfo>();
+
+    foreach (var (id, pos) in enemyPositions)
+    {
+        var enemyEntity = new Entity(id);
+        enemyEntity.Transform.Position = pos;
+
+        var enemyVisual = new Entity($"{id}_Visual");
+        var enemyMesh = GeometricPrimitive.Capsule.New(game.GraphicsDevice, 0.3f, 0.8f).ToMeshDraw();
+        var enemyModel = new Model();
+        enemyModel.Meshes.Add(new Mesh { Draw = enemyMesh });
+        enemyModel.Materials.Add(enemyMaterial);
+        enemyVisual.Add(new ModelComponent(enemyModel));
+        enemyEntity.AddChild(enemyVisual);
+
+        rootScene.Entities.Add(enemyEntity);
+
+        var enemyStats = new StatsComponent(new Dictionary<Stat, int>
+        {
+            { Stat.Strength, 5 }, { Stat.Perception, 4 }, { Stat.Endurance, 4 },
+            { Stat.Charisma, 3 }, { Stat.Intelligence, 3 }, { Stat.Agility, 5 },
+            { Stat.Luck, 4 }
+        });
+        var enemyLevel = new LevelComponent(enemyStats);
+        var enemyHealth = new HealthComponent(enemyStats, enemyLevel, eventBus);
+        var enemyCombat = new CombatComponent { InCombat = false };
+
+        enemies.Add(new EnemyInfo
+        {
+            Entity = enemyEntity,
+            Id = id,
+            Health = enemyHealth,
+            Combat = enemyCombat,
+        });
+    }
+
+    // --- Combat Manager ---
+    var damageResolver = new DamageResolver();
+    var combatEngine = new CombatEngine(damageResolver, eventBus);
+    var actionQueue = new ActionQueue();
+    var combatStateManager = new CombatStateManager(eventBus, gameStateManager);
+
+    var combatManagerEntity = new Entity("CombatManager");
+
+    var combatScript = new CombatSyncScript
+    {
+        Player = playerEntity,
+        PlayerHealth = playerHealth,
+        PlayerCombat = playerCombat,
+        Engine = combatEngine,
+        Queue = actionQueue,
+        CombatState = combatStateManager,
+        StateManager = gameStateManager,
+    };
+    combatScript.Enemies = enemies;
+
+    var encounterTrigger = new EncounterTriggerScript
+    {
+        Player = playerEntity,
+        StateManager = gameStateManager,
+        CombatState = combatStateManager,
+        TriggerRadius = 5f,
+    };
+    encounterTrigger.Enemies = enemies;
+
+    combatManagerEntity.Add(combatScript);
+    combatManagerEntity.Add(encounterTrigger);
+    rootScene.Entities.Add(combatManagerEntity);
 
     // --- Isometric Camera ---
     var cameraEntity = game.Add3DCamera(

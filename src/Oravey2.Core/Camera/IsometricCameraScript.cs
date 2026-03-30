@@ -156,22 +156,11 @@ public class IsometricCameraScript : SyncScript
 
         Entity.Transform.Position = followTarget + offset;
 
-        // Build camera rotation by looking at the target.
-        // Compute forward/right/up vectors and build rotation matrix directly
-        // to avoid Euler angle sign ambiguity.
-        var forward = Vector3.Normalize(followTarget - Entity.Transform.Position);
-        var right = Vector3.Normalize(Vector3.Cross(Vector3.UnitY, forward));
-        var up = Vector3.Cross(forward, right);
-
-        // Stride cameras look along +Z in local space, so forward = +Z column
-        var rotMatrix = new Matrix(
-            right.X, right.Y, right.Z, 0,
-            up.X, up.Y, up.Z, 0,
-            forward.X, forward.Y, forward.Z, 0,
-            0, 0, 0, 1
-        );
-        Quaternion.RotationMatrix(ref rotMatrix, out var rotation);
-        Entity.Transform.Rotation = rotation;
+        // Use RotationYawPitchRoll for camera orientation.
+        // Negative pitch = looking DOWN (Stride convention).
+        // Do NOT use look-at matrices or LookRotation — see RCA-002 / RCA-004.
+        Entity.Transform.Rotation = Quaternion.RotationYawPitchRoll(
+            yawRad, MathUtil.DegreesToRadians(-Pitch), 0f);
 
         // Set perspective projection with narrow FOV for near-isometric look
         var cameraComponent = Entity.Get<CameraComponent>();

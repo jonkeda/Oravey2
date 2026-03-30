@@ -27,6 +27,47 @@ public sealed class TileMapData
     }
 
     /// <summary>
+    /// Returns true if the tile at (x, y) can be walked on.
+    /// Out-of-bounds, Empty, Wall, and Water are not walkable.
+    /// </summary>
+    public bool IsWalkable(int x, int y)
+    {
+        var tile = GetTile(x, y);
+        return tile is TileType.Ground or TileType.Road or TileType.Rubble;
+    }
+
+    /// <summary>
+    /// Converts a world-space X/Z position to a tile index, given the tile size.
+    /// Uses the same centering formula as TileMapRendererScript.
+    /// </summary>
+    public (int X, int Y) WorldToTile(float worldX, float worldZ, float tileSize = 1f)
+    {
+        // Inverse of: centerX = (x - Width/2f + 0.5f) * tileSize
+        var tx = (int)MathF.Floor(worldX / tileSize + Width / 2f);
+        var ty = (int)MathF.Floor(worldZ / tileSize + Height / 2f);
+        return (tx, ty);
+    }
+
+    /// <summary>
+    /// Converts a tile index to a world-space X/Z position (tile centre).
+    /// </summary>
+    public (float WorldX, float WorldZ) TileToWorld(int x, int y, float tileSize = 1f)
+    {
+        var wx = (x - Width / 2f + 0.5f) * tileSize;
+        var wz = (y - Height / 2f + 0.5f) * tileSize;
+        return (wx, wz);
+    }
+
+    /// <summary>
+    /// Returns true if the world position is on a walkable tile.
+    /// </summary>
+    public bool IsWalkableAtWorld(float worldX, float worldZ, float tileSize = 1f)
+    {
+        var (tx, ty) = WorldToTile(worldX, worldZ, tileSize);
+        return IsWalkable(tx, ty);
+    }
+
+    /// <summary>
     /// Creates a default test map with ground, roads, rubble, and some walls.
     /// </summary>
     public static TileMapData CreateDefault(int width = 16, int height = 16)

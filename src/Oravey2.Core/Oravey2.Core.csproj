@@ -8,6 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Oravey2.Tests" />
+    <InternalsVisibleTo Include="Oravey2.Windows" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.*" />
     <PackageReference Include="Stride.Core" Version="4.3.0.2507" PrivateAssets="contentfiles;analyzers" />
     <PackageReference Include="Stride.Engine" Version="4.3.0.2507" PrivateAssets="contentfiles;analyzers" />
