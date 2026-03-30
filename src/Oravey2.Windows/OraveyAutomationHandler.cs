@@ -1,9 +1,16 @@
 using Brinell.Automation;
 using Brinell.Automation.Communication;
 using Oravey2.Core.Camera;
+using Oravey2.Core.Character.Health;
+using Oravey2.Core.Character.Level;
 using Oravey2.Core.Combat;
 using Oravey2.Core.Framework.Services;
 using Oravey2.Core.Framework.State;
+using Oravey2.Core.Inventory.Core;
+using Oravey2.Core.Inventory.Equipment;
+using Oravey2.Core.Inventory.Items;
+using Oravey2.Core.Loot;
+using Oravey2.Core.UI.Stride;
 using Oravey2.Core.World;
 using Stride.CommunityToolkit.Engine;
 using Stride.Core.Mathematics;
@@ -25,11 +32,38 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
     private readonly Scene _rootScene;
     private readonly Game _game;
 
+    // Phase B references
+    private InventoryComponent? _playerInventory;
+    private EquipmentComponent? _playerEquipment;
+    private HealthComponent? _playerHealth;
+    private CombatComponent? _playerCombat;
+    private LevelComponent? _playerLevel;
+    private GameStateManager? _gameStateManager;
+
     public OraveyAutomationHandler(IAutomationHandler inner, Scene rootScene, Game game)
     {
         _inner = inner;
         _rootScene = rootScene;
         _game = game;
+    }
+
+    /// <summary>
+    /// Wires Phase B component references for inventory/HUD automation queries.
+    /// </summary>
+    public void SetPhaseB(
+        InventoryComponent playerInventory,
+        EquipmentComponent playerEquipment,
+        HealthComponent playerHealth,
+        CombatComponent playerCombat,
+        LevelComponent playerLevel,
+        GameStateManager gameStateManager)
+    {
+        _playerInventory = playerInventory;
+        _playerEquipment = playerEquipment;
+        _playerHealth = playerHealth;
+        _playerCombat = playerCombat;
+        _playerLevel = playerLevel;
+        _gameStateManager = gameStateManager;
     }
 
     public async Task<AutomationResponse> HandleCommandAsync(AutomationCommand command, CancellationToken cancellationToken = default)
@@ -64,6 +98,11 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
             "GetCombatState" => GetCombatState(),
             "TeleportPlayer" => TeleportPlayer(command),
             "KillEnemy" => KillEnemy(command),
+            "GetInventoryState" => GetInventoryState(),
+            "GetEquipmentState" => GetEquipmentState(),
+            "GetHudState" => GetHudState(),
+            "GetLootEntities" => GetLootEntities(),
+            "GetInventoryOverlayVisible" => GetInventoryOverlayVisible(),
             _ => null // Let inner handler deal with it
         };
     }
@@ -474,5 +513,99 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
 
         return AutomationResponse.Ok(JsonSerializer.SerializeToElement(
             new { killed = true, remainingAlive = remaining }));
+    }
+
+    // ---- Phase B queries ----
+
+    private AutomationResponse GetInventoryState()
+    {
+        if (_playerInventory == null)
+            return AutomationResponse.Fail("Player inventory not initialized");
+
+        var items = _playerInventory.Items.Select(i => new
+        {
+            id = i.Definition.Id,
+            name = i.Definition.Name,
+            category = i.Definition.Category.ToString(),
+            count = i.StackCount,
+            weight = i.TotalWeight,
+        });
+
+        var result = new
+        {
+            itemCount = _playerInventory.Items.Count,
+            currentWeight = _playerInventory.CurrentWeight,
+            maxWeight = _playerInventory.MaxCarryWeight,
+            isOverweight = _playerInventory.IsOverweight,
+            items,
+        };
+        return AutomationResponse.Ok(JsonSerializer.SerializeToElement(result));
+    }
+
+    private AutomationResponse GetEquipmentState()
+    {
+        if (_playerEquipment == null)
+            return AutomationResponse.Fail("Player equipment not initialized");
+
+        var slots = new Dictionary<string, object?>();
+        foreach (var slot in Enum.GetValues<EquipmentSlot>())
+        {
+            var item = _playerEquipment.GetEquipped(slot);
+            slots[slot.ToString()] = item != null
+                ? new { id = item.Definition.Id, name = item.Definition.Name }
+                : null;
+        }
+
+        return AutomationResponse.Ok(JsonSerializer.SerializeToElement(new { slots }));
+    }
+
+    private AutomationResponse GetHudState()
+    {
+        var result = new
+        {
+            hp = _playerHealth?.CurrentHP ?? 0,
+            maxHp = _playerHealth?.MaxHP ?? 0,
+            ap = (int)(_playerCombat?.CurrentAP ?? 0),
+            maxAp = _playerCombat?.MaxAP ?? 0,
+            level = _playerLevel?.Level ?? 0,
+            gameState = _gameStateManager?.CurrentState.ToString() ?? "Unknown",
+        };
+        return AutomationResponse.Ok(JsonSerializer.SerializeToElement(result));
+    }
+
+    private AutomationResponse GetLootEntities()
+    {
+        var lootEntities = _rootScene.Entities
+            .Where(e => LootDropScript.HasLoot(e))
+            .Select(e =>
+            {
+                LootDropScript.TryGetLootItems(e, out var items);
+                return new
+                {
+                    name = e.Name,
+                    x = e.Transform.Position.X,
+                    y = e.Transform.Position.Y,
+                    z = e.Transform.Position.Z,
+                    itemCount = items?.Count ?? 0,
+                };
+            })
+            .ToList();
+
+        return AutomationResponse.Ok(JsonSerializer.SerializeToElement(new
+        {
+            count = lootEntities.Count,
+            entities = lootEntities,
+        }));
+    }
+
+    private AutomationResponse GetInventoryOverlayVisible()
+    {
+        var overlayEntity = FindEntity("InventoryOverlay");
+        var script = overlayEntity?.Get<InventoryOverlayScript>();
+        if (script == null)
+            return AutomationResponse.Fail("InventoryOverlay entity not found");
+
+        var visible = script.IsVisible;
+        return AutomationResponse.Ok(JsonSerializer.SerializeToElement(new { visible }));
     }
 }

@@ -5,19 +5,36 @@ description: "Guidelines for writing and maintaining Oravey2 UI tests using Brin
 
 # Oravey2 UI Test Guidelines
 
-## Run only affected tests when debugging
+## Always create a task list before running tests
 
-UI tests are slow (~6s each including game startup/teardown). When fixing a bug, **only run the specific test class or test method that covers the bug** — never the full suite. Use `--filter` to target:
+Before running any UI tests, create (or update) a task list document at `docs/tasks/uitests-tasklist.md`. The task list must:
+
+1. **List every test class** with its test count
+2. **List every test method** as a checkbox under its class
+3. **Track pass/fail status** — mark tests `[x]` when passing, leave `[ ]` when failing or not yet run
+4. **Add a ✅ next to the class name** once all tests in that class pass
+5. **Note flaky tests** with an italic annotation (e.g., `*(flaky — passed 2/3 runs)*`)
+6. **Show totals** at the bottom (active, skipped, total)
+
+## Run and fix tests one class at a time
+
+UI tests are slow (~6s each including game startup/teardown). **Never run the full suite as the first step.** Instead:
+
+1. Run one test class at a time using `--filter`
+2. If any test in the class fails, **fix it before moving to the next class**
+3. After fixing, rerun only that class to confirm the fix
+4. Update the task list after each class completes
+5. Only run the full suite as a final confirmation after all classes pass individually
 
 ```bash
-# Run a single test method
-dotnet test tests/Oravey2.UITests --filter "FullyQualifiedName~QPress_WorldRotatesOnScreen"
-
 # Run a single test class
 dotnet test tests/Oravey2.UITests --filter "FullyQualifiedName~CameraRotationTests"
+
+# Run a single test method (when debugging a specific failure)
+dotnet test tests/Oravey2.UITests --filter "FullyQualifiedName~QPress_WorldRotatesOnScreen"
 ```
 
-Only run the full suite once all targeted tests pass, as a final confirmation.
+**Important:** Always rebuild the game binary (`dotnet build src/Oravey2.Windows/Oravey2.Windows.csproj`) before running UI tests if any game-side code changed (automation handler, SyncScripts, Program.cs).
 
 ## Never wait for time — always wait for a response
 

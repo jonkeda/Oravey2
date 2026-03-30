@@ -46,20 +46,29 @@ public class CameraFollowTests : IAsyncLifetime
     [Fact]
     public void CameraOffset_MatchesYawPitch()
     {
+        // Settle one frame so the IsometricCameraScript computes its orbit position
+        _fixture.Context.HoldKey(VirtualKey.Space, 100);
+
         var player = GameQueryHelpers.GetPlayerPosition(_fixture.Context);
         var cam = GameQueryHelpers.GetCameraState(_fixture.Context);
 
         _output.WriteLine($"Player: ({player.X:F2}, {player.Y:F2}, {player.Z:F2})");
         _output.WriteLine($"Camera: ({cam.X:F2}, {cam.Y:F2}, {cam.Z:F2}) yaw={cam.Yaw:F1} pitch={cam.Pitch:F1} zoom={cam.Zoom:F1}");
 
-        // At yaw=45°, pitch=30°, distance=50, the camera offset should be:
-        // X offset = distance * cos(pitch) * sin(yaw) ≈ 50 * cos(30°) * sin(45°) ≈ 30.6
-        // Y offset = distance * sin(pitch) ≈ 50 * sin(30°) ≈ 25
-        // Z offset = distance * cos(pitch) * cos(yaw) ≈ 50 * cos(30°) * cos(45°) ≈ 30.6
+        // Compute expected offset from the ACTUAL yaw/pitch (not hardcoded 45°)
+        // to be resilient to state carryover from other tests that rotate the camera.
+        var yawRad = cam.Yaw * Math.PI / 180.0;
+        var pitchRad = cam.Pitch * Math.PI / 180.0;
+        var distance = 50.0;
+        var expectedOffsetX = distance * Math.Cos(pitchRad) * Math.Sin(yawRad);
+        var expectedOffsetY = distance * Math.Sin(pitchRad);
+        var expectedOffsetZ = distance * Math.Cos(pitchRad) * Math.Cos(yawRad);
+
         var offsetX = cam.X - player.X;
         var offsetY = cam.Y - player.Y;
         var offsetZ = cam.Z - player.Z;
         _output.WriteLine($"Offset: ({offsetX:F2}, {offsetY:F2}, {offsetZ:F2})");
+        _output.WriteLine($"Expected: ({expectedOffsetX:F2}, {expectedOffsetY:F2}, {expectedOffsetZ:F2})");
 
         // Y offset should be positive (camera above player)
         Assert.True(offsetY > 10, $"Camera should be above player, Y offset = {offsetY:F2}");
@@ -73,6 +82,10 @@ public class CameraFollowTests : IAsyncLifetime
     [Fact]
     public void CameraFollows_PositionDelta()
     {
+        // Teleport to origin and settle so camera is stable before measuring delta
+        GameQueryHelpers.TeleportPlayer(_fixture.Context, 0, 0.5, 0);
+        _fixture.Context.HoldKey(VirtualKey.Space, 200);
+
         var playerBefore = GameQueryHelpers.GetPlayerPosition(_fixture.Context);
         var camBefore = GameQueryHelpers.GetCameraState(_fixture.Context);
 

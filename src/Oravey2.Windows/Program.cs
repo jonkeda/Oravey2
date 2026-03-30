@@ -10,7 +10,12 @@ using Oravey2.Core.Framework.Logging;
 using Oravey2.Core.Framework.Services;
 using Oravey2.Core.Framework.State;
 using Oravey2.Core.Input;
+using Oravey2.Core.Inventory.Core;
+using Oravey2.Core.Inventory.Equipment;
+using Oravey2.Core.Inventory.Items;
+using Oravey2.Core.Loot;
 using Oravey2.Core.Player;
+using Oravey2.Core.UI.Stride;
 using Oravey2.Core.World;
 using Oravey2.Windows;
 using Stride.CommunityToolkit.Engine;
@@ -97,6 +102,19 @@ void Start(Scene rootScene)
     var playerHealth = new HealthComponent(playerStats, playerLevel, eventBus);
     var playerCombat = new CombatComponent { InCombat = false };
 
+    // --- Player inventory (Phase B) ---
+    var playerInventory = new InventoryComponent(playerStats);
+    var playerEquipment = new EquipmentComponent();
+    var inventoryProcessor = new InventoryProcessor(playerInventory, playerEquipment, eventBus);
+
+    // Starting equipment
+    var startingWeapon = new ItemInstance(M0Items.PipeWrench());
+    inventoryProcessor.TryPickup(startingWeapon);
+    inventoryProcessor.TryEquip(startingWeapon, EquipmentSlot.PrimaryWeapon);
+
+    // Starting consumable
+    inventoryProcessor.TryPickup(new ItemInstance(M0Items.Medkit(), 2));
+
     // --- Tile Map ---
     var mapData = TileMapData.CreateDefault(32, 32);
     var tileMapEntity = new Entity("TileMap");
@@ -173,6 +191,28 @@ void Start(Scene rootScene)
     };
     combatScript.Enemies = enemies;
 
+    // --- Loot system (Phase B) ---
+    var lootTable = new LootTable();
+    lootTable.Add(M0Items.ScrapMetal(), 0.7f);
+    lootTable.Add(M0Items.Medkit(), 0.3f);
+    lootTable.Add(M0Items.PipeWrench(), 0.15f);
+    lootTable.Add(M0Items.LeatherJacket(), 0.1f);
+
+    var lootDropScript = new LootDropScript { LootTable = lootTable };
+    combatManagerEntity.Add(lootDropScript);
+
+    // Wire loot drop to combat
+    combatScript.LootDrop = lootDropScript;
+
+    // Loot pickup on player entity
+    var lootPickup = new LootPickupScript
+    {
+        Processor = inventoryProcessor,
+        EventBus = eventBus,
+        PickupRadius = 1.5f,
+    };
+    playerEntity.Add(lootPickup);
+
     var encounterTrigger = new EncounterTriggerScript
     {
         Player = playerEntity,
@@ -209,6 +249,27 @@ void Start(Scene rootScene)
     // Wire camera script to player movement for yaw-relative direction
     playerMovement.CameraScript = cameraScript;
 
+    // --- HUD (Phase B) ---
+    var hudEntity = new Entity("HUD");
+    var hudScript = new HudSyncScript
+    {
+        Health = playerHealth,
+        Combat = playerCombat,
+        Level = playerLevel,
+        StateManager = gameStateManager,
+    };
+    hudEntity.Add(hudScript);
+    rootScene.Entities.Add(hudEntity);
+
+    // --- Inventory overlay (Phase B) ---
+    var inventoryOverlayEntity = new Entity("InventoryOverlay");
+    var inventoryOverlay = new InventoryOverlayScript
+    {
+        Inventory = playerInventory,
+    };
+    inventoryOverlayEntity.Add(inventoryOverlay);
+    rootScene.Entities.Add(inventoryOverlayEntity);
+
     // --- Automation server (for Brinell.Stride UI tests) ---
     if (StrideAutomationExtensions.IsAutomationEnabled())
     {
@@ -218,6 +279,9 @@ void Start(Scene rootScene)
             isReadyProvider: () => true,
             isBusyProvider: () => false);
         var oraveyHandler = new OraveyAutomationHandler(strideHandler, rootScene, game);
+        oraveyHandler.SetPhaseB(
+            playerInventory, playerEquipment, playerHealth,
+            playerCombat, playerLevel, gameStateManager);
         game.UseAutomation(oraveyHandler,
             options: new AutomationServerOptions { VerboseLogging = true });
     }

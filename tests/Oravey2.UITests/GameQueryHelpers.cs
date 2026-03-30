@@ -273,4 +273,134 @@ public static class GameQueryHelpers
         return (je.GetProperty("killed").GetBoolean(),
                 je.GetProperty("remainingAlive").GetInt32());
     }
+
+    // --- Phase B: Inventory / Loot / HUD helpers ---
+
+    public record InventoryItem(string Id, string Name, string Category, int Count, double Weight);
+
+    public record InventoryState(
+        int ItemCount, double CurrentWeight, double MaxWeight,
+        bool IsOverweight, List<InventoryItem> Items);
+
+    public record EquipmentSlotInfo(string? Id, string? Name);
+
+    public record EquipmentState(Dictionary<string, EquipmentSlotInfo?> Slots);
+
+    public record HudState(int Hp, int MaxHp, int Ap, int MaxAp, int Level, string GameState);
+
+    public record LootEntityInfo(string Name, double X, double Y, double Z, int ItemCount);
+
+    public record LootEntitiesState(int Count, List<LootEntityInfo> Entities);
+
+    public static InventoryState GetInventoryState(IStrideTestContext context)
+    {
+        var response = context.SendCommand(AutomationCommand.GameQuery("GetInventoryState"));
+        if (!response.Success)
+            throw new InvalidOperationException($"GetInventoryState failed: {response.Error}");
+
+        var je = (JsonElement)response.Result!;
+
+        var items = new List<InventoryItem>();
+        if (je.TryGetProperty("items", out var arr))
+        {
+            foreach (var item in arr.EnumerateArray())
+            {
+                items.Add(new InventoryItem(
+                    item.GetProperty("id").GetString() ?? "",
+                    item.GetProperty("name").GetString() ?? "",
+                    item.GetProperty("category").GetString() ?? "",
+                    item.GetProperty("count").GetInt32(),
+                    item.GetProperty("weight").GetDouble()));
+            }
+        }
+
+        return new InventoryState(
+            je.GetProperty("itemCount").GetInt32(),
+            je.GetProperty("currentWeight").GetDouble(),
+            je.GetProperty("maxWeight").GetDouble(),
+            je.GetProperty("isOverweight").GetBoolean(),
+            items);
+    }
+
+    public static EquipmentState GetEquipmentState(IStrideTestContext context)
+    {
+        var response = context.SendCommand(AutomationCommand.GameQuery("GetEquipmentState"));
+        if (!response.Success)
+            throw new InvalidOperationException($"GetEquipmentState failed: {response.Error}");
+
+        var je = (JsonElement)response.Result!;
+        var slots = new Dictionary<string, EquipmentSlotInfo?>();
+
+        if (je.TryGetProperty("slots", out var slotsEl))
+        {
+            foreach (var prop in slotsEl.EnumerateObject())
+            {
+                if (prop.Value.ValueKind == JsonValueKind.Null)
+                {
+                    slots[prop.Name] = null;
+                }
+                else
+                {
+                    slots[prop.Name] = new EquipmentSlotInfo(
+                        prop.Value.GetProperty("id").GetString(),
+                        prop.Value.GetProperty("name").GetString());
+                }
+            }
+        }
+
+        return new EquipmentState(slots);
+    }
+
+    public static HudState GetHudState(IStrideTestContext context)
+    {
+        var response = context.SendCommand(AutomationCommand.GameQuery("GetHudState"));
+        if (!response.Success)
+            throw new InvalidOperationException($"GetHudState failed: {response.Error}");
+
+        var je = (JsonElement)response.Result!;
+        return new HudState(
+            je.GetProperty("hp").GetInt32(),
+            je.GetProperty("maxHp").GetInt32(),
+            je.GetProperty("ap").GetInt32(),
+            je.GetProperty("maxAp").GetInt32(),
+            je.GetProperty("level").GetInt32(),
+            je.GetProperty("gameState").GetString() ?? "");
+    }
+
+    public static LootEntitiesState GetLootEntities(IStrideTestContext context)
+    {
+        var response = context.SendCommand(AutomationCommand.GameQuery("GetLootEntities"));
+        if (!response.Success)
+            throw new InvalidOperationException($"GetLootEntities failed: {response.Error}");
+
+        var je = (JsonElement)response.Result!;
+
+        var entities = new List<LootEntityInfo>();
+        if (je.TryGetProperty("entities", out var arr))
+        {
+            foreach (var e in arr.EnumerateArray())
+            {
+                entities.Add(new LootEntityInfo(
+                    e.GetProperty("name").GetString() ?? "",
+                    e.GetProperty("x").GetDouble(),
+                    e.GetProperty("y").GetDouble(),
+                    e.GetProperty("z").GetDouble(),
+                    e.GetProperty("itemCount").GetInt32()));
+            }
+        }
+
+        return new LootEntitiesState(
+            je.GetProperty("count").GetInt32(),
+            entities);
+    }
+
+    public static bool GetInventoryOverlayVisible(IStrideTestContext context)
+    {
+        var response = context.SendCommand(AutomationCommand.GameQuery("GetInventoryOverlayVisible"));
+        if (!response.Success)
+            throw new InvalidOperationException($"GetInventoryOverlayVisible failed: {response.Error}");
+
+        var je = (JsonElement)response.Result!;
+        return je.GetProperty("visible").GetBoolean();
+    }
 }

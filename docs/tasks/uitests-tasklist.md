@@ -19,7 +19,7 @@ Tracking pass/fail status for all UI tests in `tests/Oravey2.UITests/`.
 ## CameraFollowTests (5 tests) ✅
 - [x] PlayerOnScreen_AtStart
 - [x] PlayerOnScreen_AfterMovement
-- [x] CameraOffset_MatchesYawPitch *(flaky — passed 2/3 runs, state carryover)*
+- [x] CameraOffset_MatchesYawPitch
 - [x] CameraFollows_PositionDelta
 - [x] PlayerVisible_FromAllFourRotations
 
@@ -72,5 +72,40 @@ Tracking pass/fail status for all UI tests in `tests/Oravey2.UITests/`.
 - [x] PlayerSlides_AlongWallDiagonal
 - [x] PlayerOnWalkableTile_AfterCollision
 
+## StartingInventoryTests (5 tests) ✅
+- [x] PlayerHas_PipeWrenchEquipped
+- [x] PlayerHas_MedkitsInInventory
+- [x] StartingWeight_IsCorrect
+- [x] NotOverweight_AtStart
+- [x] EquipmentSlots_MostlyEmpty
+
+## LootDropTests (5 tests) ✅
+- [x] NoLootEntities_AtStart
+- [x] KillEnemy_SpawnsLootCube
+- [x] LootCube_AtEnemyPosition
+- [x] LootCube_HasItems
+- [x] MultipleLootCubes_FromMultipleKills
+
+## LootPickupTests (4 tests) ✅
+- [x] WalkOverLoot_PicksUpItems
+- [x] WalkOverLoot_RemovesLootEntity
+- [x] PickupAdds_ToExistingStacks
+- [x] Inventory_WeightIncreases_AfterPickup
+
+## HudStateTests (6 tests) ✅
+- [x] HudState_HasFullHealth_AtStart
+- [x] HudState_ShowsExploring_AtStart
+- [x] HudState_ShowsLevel1_AtStart
+- [x] HudState_ApMatches_MaxAp
+- [x] HudState_ShowsInCombat_WhenFighting
+- [x] HudState_HealthDecreases_InCombat
+
+## InventoryOverlayTests (5 tests) ✅
+- [x] Overlay_NotVisible_AtStart
+- [x] TabPress_OpensOverlay
+- [x] TabPress_ClosesOverlay
+- [x] Overlay_ShowsStartingItems
+- [x] Overlay_ShowsCorrectWeight
+
 ---
-**Total: 50 tests (49 active + 1 skipped)**
+**Total: 75 tests (74 active + 1 skipped)**

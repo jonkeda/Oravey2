@@ -3,6 +3,7 @@ using Oravey2.Core.Framework.Events;
 using Oravey2.Core.Framework.Services;
 using Oravey2.Core.Framework.State;
 using Oravey2.Core.Input;
+using Oravey2.Core.Loot;
 using Stride.Core.Mathematics;
 using Stride.Engine;
 using Stride.Rendering;
@@ -37,6 +38,7 @@ public class CombatSyncScript : SyncScript
     public ActionQueue? Queue { get; set; }
     public CombatStateManager? CombatState { get; set; }
     public GameStateManager? StateManager { get; set; }
+    public LootDropScript? LootDrop { get; set; }
 
     // --- M0 weapon constants ---
     private const float WeaponAccuracy = 0.75f;
@@ -285,6 +287,9 @@ public class CombatSyncScript : SyncScript
         {
             var enemy = Enemies[i];
             if (enemy.Health.IsAlive) continue;
+
+            // Drop loot before removing the entity
+            LootDrop?.QueueDrop(enemy.Entity.Transform.Position);
 
             // Remove the entity from the scene
             enemy.Entity.Scene?.Entities.Remove(enemy.Entity);

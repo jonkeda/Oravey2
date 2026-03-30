@@ -350,11 +350,31 @@ Commands and responses are JSON over named pipe (`Brinell.Stride.Automation`), o
 
 ## Running Tests
 
+### Task list workflow
+
+**Always create a task list before running UI tests.** Maintain a checklist document at `docs/tasks/uitests-tasklist.md` that tracks every test class and method with pass/fail status. Run and fix tests **one class at a time** — never run the full suite as the first step.
+
+Workflow:
+1. Create/update the task list with all test classes and methods
+2. Run one class with `--filter "FullyQualifiedName~ClassName"`
+3. If any test fails, fix it and rerun that class only
+4. Mark the class ✅ in the task list once all its tests pass
+5. Move to the next class
+6. Run the full suite only as a final confirmation
+
+### Commands
+
 ```powershell
-# Build the game first
+# Build the game first (REQUIRED if game-side code changed)
 dotnet build src/Oravey2.Windows/Oravey2.Windows.csproj
 
-# Run UI tests (game is launched automatically by the fixture)
+# Run a single test class
+dotnet test tests/Oravey2.UITests/Oravey2.UITests.csproj --filter "FullyQualifiedName~GameLifecycleTests"
+
+# Run a single test method
+dotnet test tests/Oravey2.UITests/Oravey2.UITests.csproj --filter "FullyQualifiedName~Game_StartsAndConnects"
+
+# Run all UI tests (final confirmation only)
 dotnet test tests/Oravey2.UITests/Oravey2.UITests.csproj
 
 # Or specify game path via environment variable
