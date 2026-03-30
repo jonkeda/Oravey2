@@ -155,9 +155,9 @@ void Start(Scene rootScene)
 
         var enemyStats = new StatsComponent(new Dictionary<Stat, int>
         {
-            { Stat.Strength, 5 }, { Stat.Perception, 4 }, { Stat.Endurance, 4 },
-            { Stat.Charisma, 3 }, { Stat.Intelligence, 3 }, { Stat.Agility, 5 },
-            { Stat.Luck, 4 }
+            { Stat.Strength, 3 }, { Stat.Perception, 3 }, { Stat.Endurance, 1 },
+            { Stat.Charisma, 2 }, { Stat.Intelligence, 2 }, { Stat.Agility, 4 },
+            { Stat.Luck, 3 }
         });
         var enemyLevel = new LevelComponent(enemyStats);
         var enemyHealth = new HealthComponent(enemyStats, enemyLevel, eventBus);
@@ -169,6 +169,8 @@ void Start(Scene rootScene)
             Id = id,
             Health = enemyHealth,
             Combat = enemyCombat,
+            Stats = enemyStats,
+            Weapon = M0Items.RustyShiv().Weapon,
         });
     }
 
@@ -185,6 +187,8 @@ void Start(Scene rootScene)
         Player = playerEntity,
         PlayerHealth = playerHealth,
         PlayerCombat = playerCombat,
+        PlayerEquipment = playerEquipment,
+        PlayerStats = playerStats,
         Engine = combatEngine,
         Queue = actionQueue,
         CombatState = combatStateManager,
@@ -233,17 +237,18 @@ void Start(Scene rootScene)
         initialPosition: new Vector3(20, 10, 20),
         initialRotation: new Vector3(45, -30, 0),
         projectionMode: CameraProjectionMode.Orthographic);
-    var cameraScript = new IsometricCameraScript
+    var cameraScript = new TacticalCameraScript
     {
         Target = playerEntity,
         Pitch = 30f,
         Yaw = 45f,
-        Distance = 50f,
-        CurrentFov = 25f,
+        Distance = 40f,
+        CurrentFov = 28f,
         FovMin = 10f,
         FovMax = 50f,
         RotationSpeed = 120f,
-        ZoomSpeed = 15f
+        ZoomSpeed = 15f,
+        FollowSmoothing = 8f
     };
     cameraEntity.Add(cameraScript);
 

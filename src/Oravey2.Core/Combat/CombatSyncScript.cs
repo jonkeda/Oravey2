@@ -1,8 +1,11 @@
 using Oravey2.Core.Character.Health;
+using Oravey2.Core.Character.Stats;
 using Oravey2.Core.Framework.Events;
 using Oravey2.Core.Framework.Services;
 using Oravey2.Core.Framework.State;
 using Oravey2.Core.Input;
+using Oravey2.Core.Inventory.Equipment;
+using Oravey2.Core.Inventory.Items;
 using Oravey2.Core.Loot;
 using Stride.Core.Mathematics;
 using Stride.Engine;
@@ -21,6 +24,8 @@ internal sealed class EnemyInfo
     public required string Id { get; init; }
     public required HealthComponent Health { get; init; }
     public required CombatComponent Combat { get; init; }
+    public required StatsComponent Stats { get; init; }
+    public WeaponData? Weapon { get; init; }
 }
 
 public class CombatSyncScript : SyncScript
@@ -40,18 +45,21 @@ public class CombatSyncScript : SyncScript
     public GameStateManager? StateManager { get; set; }
     public LootDropScript? LootDrop { get; set; }
 
+    // --- Phase D: equipment/stats refs (set from Program.cs) ---
+    public EquipmentComponent? PlayerEquipment { get; set; }
+    public StatsComponent? PlayerStats { get; set; }
+
     /// <summary>
     /// Set during ProcessNextAction() for FloatingDamageScript to read.
     /// Reset to null at the start of each frame.
     /// </summary>
     public Entity? LastHitTarget { get; internal set; }
 
-    // --- M0 weapon constants ---
-    private const float WeaponAccuracy = 0.75f;
-    private const int WeaponDamage = 12;
-    private const float WeaponRange = 2f;
-    private const float CritMultiplier = 1.5f;
-    private const int MeleeAPCost = 3;
+    // --- Unarmed fallback when no weapon equipped ---
+    private static readonly WeaponData UnarmedWeapon = new(
+        Damage: 5, Range: 1.5f, ApCost: 3,
+        Accuracy: 0.50f, SkillType: "melee", CritMultiplier: 1.5f);
+
     private const string PlayerId = "player";
 
     // --- Hit flash state ---
@@ -116,7 +124,9 @@ public class CombatSyncScript : SyncScript
         if (!_inputProvider.IsActionPressed(GameAction.Attack))
             return;
 
-        if (!PlayerCombat.CanAfford(MeleeAPCost))
+        var equipped = PlayerEquipment?.GetEquipped(EquipmentSlot.PrimaryWeapon);
+        var weapon = equipped?.Definition.Weapon ?? UnarmedWeapon;
+        if (!PlayerCombat.CanAfford(weapon.ApCost))
             return;
 
         // Target the nearest living enemy
@@ -155,7 +165,9 @@ public class CombatSyncScript : SyncScript
         foreach (var enemy in Enemies)
         {
             if (!enemy.Health.IsAlive) continue;
-            if (!enemy.Combat.CanAfford(MeleeAPCost)) continue;
+
+            var weapon = enemy.Weapon ?? UnarmedWeapon;
+            if (!enemy.Combat.CanAfford(weapon.ApCost)) continue;
 
             // Check if there's already a queued action for this enemy
             if (Queue!.PendingActions.Any(a => a.ActorId == enemy.Id))
@@ -175,10 +187,13 @@ public class CombatSyncScript : SyncScript
         if (action.Type != CombatActionType.MeleeAttack || action.TargetId == null)
             return;
 
-        // Resolve attacker and target
+        // Resolve attacker, target, weapon, and stats
         CombatComponent? attackerCombat;
         HealthComponent? targetHealth;
         Entity? targetEntity;
+        WeaponData weapon;
+        int attackerLuck;
+        int targetArmorDR = 0;
         float distance;
 
         if (action.ActorId == PlayerId)
@@ -190,6 +205,11 @@ public class CombatSyncScript : SyncScript
             targetEntity = target.Entity;
             distance = Vector3.Distance(
                 Player!.Transform.Position, target.Entity.Transform.Position);
+
+            var equipped = PlayerEquipment?.GetEquipped(EquipmentSlot.PrimaryWeapon);
+            weapon = equipped?.Definition.Weapon ?? UnarmedWeapon;
+            attackerLuck = PlayerStats?.GetEffective(Stat.Luck) ?? 5;
+            // Enemies have no armor in M0
         }
         else
         {
@@ -200,24 +220,39 @@ public class CombatSyncScript : SyncScript
             targetEntity = Player;
             distance = Vector3.Distance(
                 attacker.Entity.Transform.Position, Player!.Transform.Position);
+
+            weapon = attacker.Weapon ?? UnarmedWeapon;
+            attackerLuck = attacker.Stats.GetEffective(Stat.Luck);
+
+            // Read player armor DR
+            if (PlayerEquipment != null)
+            {
+                var torsoArmor = PlayerEquipment.GetEquipped(EquipmentSlot.Torso);
+                targetArmorDR = torsoArmor?.Definition.Armor?.DamageReduction ?? 0;
+            }
         }
 
         if (attackerCombat == null || targetHealth == null || targetEntity == null)
             return;
 
+        // D3: Melee attacks use effective distance 0 (combatants at striking range)
+        var effectiveDistance = action.Type == CombatActionType.MeleeAttack
+            ? 0f
+            : distance;
+
         var context = new AttackContext(
-            WeaponAccuracy: WeaponAccuracy,
-            WeaponDamage: WeaponDamage,
-            WeaponRange: WeaponRange,
-            CritMultiplier: CritMultiplier,
+            WeaponAccuracy: weapon.Accuracy,
+            WeaponDamage: weapon.Damage,
+            WeaponRange: weapon.Range,
+            CritMultiplier: weapon.CritMultiplier,
             SkillLevel: 0,
-            Luck: 5,
-            ArmorDR: 0,
+            Luck: attackerLuck,
+            ArmorDR: targetArmorDR,
             Cover: CoverLevel.None,
-            Distance: distance);
+            Distance: effectiveDistance);
 
         var result = Engine!.ProcessAttack(
-            attackerCombat, context, targetHealth, MeleeAPCost);
+            attackerCombat, context, targetHealth, weapon.ApCost);
 
         // A5: flash target on hit
         if (result is { Hit: true })

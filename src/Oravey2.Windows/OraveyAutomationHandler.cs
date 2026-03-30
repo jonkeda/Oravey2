@@ -1,9 +1,12 @@
 using Brinell.Automation;
 using Brinell.Automation.Communication;
+using Oravey2.Core.Automation;
 using Oravey2.Core.Camera;
 using Oravey2.Core.Character.Health;
 using Oravey2.Core.Character.Level;
+using Oravey2.Core.Character.Stats;
 using Oravey2.Core.Combat;
+using Oravey2.Core.Framework.Events;
 using Oravey2.Core.Framework.Services;
 using Oravey2.Core.Framework.State;
 using Oravey2.Core.Inventory.Core;
@@ -17,8 +20,12 @@ using Stride.CommunityToolkit.Engine;
 using Stride.Core.Mathematics;
 using Stride.Engine;
 using Stride.Engine.Processors;
+using Stride.Extensions;
 using Stride.Games;
+using Stride.Graphics.GeometricPrimitives;
+using Stride.Rendering;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Oravey2.Windows;
 
@@ -123,6 +130,12 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
             "GetGameOverState" => GetGameOverState(),
             "GetEnemyHpBars" => GetEnemyHpBars(),
             "DamagePlayer" => DamagePlayer(command),
+            "GetCombatConfig" => GetCombatConfig(),
+            "EquipItem" => EquipItem(command),
+            "ResetScenario" => ResetScenario(),
+            "SpawnEnemy" => SpawnEnemy(command),
+            "SetPlayerStats" => SetPlayerStats(command),
+            "SetPlayerWeapon" => SetPlayerWeapon(command),
             _ => null // Let inner handler deal with it
         };
     }
@@ -134,8 +147,7 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
             return AutomationResponse.Fail("Player entity not found");
 
         var pos = playerEntity.Transform.Position;
-        var result = new { x = pos.X, y = pos.Y, z = pos.Z };
-        return AutomationResponse.Ok(JsonSerializer.SerializeToElement(result));
+        return Respond(new PositionResponse(pos.X, pos.Y, pos.Z));
     }
 
     private AutomationResponse GetCameraState()
@@ -144,19 +156,14 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
         if (cameraEntity == null)
             return AutomationResponse.Fail("Camera entity not found");
 
-        var cameraScript = cameraEntity.Get<IsometricCameraScript>();
+        var cameraScript = cameraEntity.Get<TacticalCameraScript>();
         var pos = cameraEntity.Transform.Position;
 
-        var result = new
-        {
-            x = pos.X,
-            y = pos.Y,
-            z = pos.Z,
-            yaw = cameraScript?.Yaw ?? 0f,
-            pitch = cameraScript?.Pitch ?? 0f,
-            zoom = cameraScript?.CurrentFov ?? 0f
-        };
-        return AutomationResponse.Ok(JsonSerializer.SerializeToElement(result));
+        return Respond(new CameraStateResponse(
+            pos.X, pos.Y, pos.Z,
+            cameraScript?.Yaw ?? 0f,
+            cameraScript?.Pitch ?? 0f,
+            cameraScript?.CurrentFov ?? 0f));
     }
 
     private AutomationResponse GetCurrentGameState()
@@ -170,20 +177,17 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
     private AutomationResponse GetSceneDiagnostics()
     {
         var entities = _rootScene.Entities;
-        var modelEntities = new List<object>();
+        var modelEntities = new List<ModelEntityDto>();
         foreach (var e in entities)
         {
             var mc = e.Get<ModelComponent>();
             if (mc != null)
             {
                 var pos = e.Transform.Position;
-                modelEntities.Add(new
-                {
-                    name = e.Name,
-                    x = pos.X, y = pos.Y, z = pos.Z,
-                    meshCount = mc.Model?.Meshes?.Count ?? 0,
-                    materialCount = mc.Model?.Materials?.Count ?? 0
-                });
+                modelEntities.Add(new ModelEntityDto(
+                    e.Name, pos.X, pos.Y, pos.Z,
+                    mc.Model?.Meshes?.Count ?? 0,
+                    mc.Model?.Materials?.Count ?? 0));
             }
             // Also check children for models
             foreach (var child in e.GetChildren())
@@ -192,20 +196,17 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
                 if (childMc != null)
                 {
                     var cpos = child.Transform.Position;
-                    modelEntities.Add(new
-                    {
-                        name = $"{e.Name}/{child.Name}",
-                        x = cpos.X, y = cpos.Y, z = cpos.Z,
-                        meshCount = childMc.Model?.Meshes?.Count ?? 0,
-                        materialCount = childMc.Model?.Materials?.Count ?? 0
-                    });
+                    modelEntities.Add(new ModelEntityDto(
+                        $"{e.Name}/{child.Name}", cpos.X, cpos.Y, cpos.Z,
+                        childMc.Model?.Meshes?.Count ?? 0,
+                        childMc.Model?.Materials?.Count ?? 0));
                 }
             }
         }
 
         // Camera diagnostics
         var cameraEntity = FindEntity("IsometricCamera");
-        object? cameraDiag = null;
+        CameraDiagnosticsDto? camDiag = null;
         if (cameraEntity != null)
         {
             var cc = cameraEntity.Get<CameraComponent>();
@@ -213,28 +214,21 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
             var camRot = cameraEntity.Transform.Rotation;
             var forward = camRot * Vector3.UnitZ;
 
-            cameraDiag = new
-            {
-                position = new { x = camPos.X, y = camPos.Y, z = camPos.Z },
-                forward = new { x = forward.X, y = forward.Y, z = forward.Z },
-                rotation = new { x = camRot.X, y = camRot.Y, z = camRot.Z, w = camRot.W },
-                projection = cc?.Projection.ToString() ?? "null",
-                orthoSize = cc?.OrthographicSize ?? 0f,
-                nearClip = cc?.NearClipPlane ?? 0f,
-                farClip = cc?.FarClipPlane ?? 0f,
-                slotId = cc?.Slot.Id.ToString() ?? "null"
-            };
+            camDiag = new CameraDiagnosticsDto(
+                new PositionResponse(camPos.X, camPos.Y, camPos.Z),
+                new PositionResponse(forward.X, forward.Y, forward.Z),
+                cc?.Projection.ToString() ?? "null",
+                cc?.OrthographicSize ?? 0f,
+                cc?.NearClipPlane ?? 0f,
+                cc?.FarClipPlane ?? 0f,
+                cc?.Slot.Id.ToString() ?? "null");
         }
 
-        // Compositor diagnostics
-        var result = new
-        {
-            totalEntities = entities.Count,
-            modelEntityCount = modelEntities.Count,
-            modelEntitiesSample = modelEntities.Take(5),
-            camera = cameraDiag
-        };
-        return AutomationResponse.Ok(JsonSerializer.SerializeToElement(result));
+        return Respond(new SceneDiagnosticsResponse(
+            entities.Count,
+            modelEntities.Count,
+            modelEntities.Take(5).ToList(),
+            camDiag));
     }
 
     private async Task<AutomationResponse> TakeScreenshotAsync()
@@ -262,7 +256,7 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
         try
         {
             var resultPath = await tcs.Task.WaitAsync(TimeSpan.FromSeconds(10));
-            return AutomationResponse.Ok(JsonSerializer.SerializeToElement(new { path = resultPath }));
+            return Respond(new ScreenshotResponse(resultPath));
         }
         catch (Exception ex)
         {
@@ -272,27 +266,27 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
 
     private AutomationResponse GetEntityPosition(AutomationCommand command)
     {
-        var name = command.Args?.FirstOrDefault()?.ToString();
-        if (string.IsNullOrEmpty(name))
-            return AutomationResponse.Fail("Entity name required as first argument");
+        var req = DeserializeArg<EntityPositionRequest>(command);
+        if (req == null || string.IsNullOrEmpty(req.EntityName))
+            return AutomationResponse.Fail("Entity name required");
 
-        var entity = FindEntity(name);
+        var entity = FindEntity(req.EntityName);
         if (entity == null)
-            return AutomationResponse.Fail($"Entity '{name}' not found");
+            return AutomationResponse.Fail($"Entity '{req.EntityName}' not found");
 
         var pos = entity.Transform.WorldMatrix.TranslationVector;
-        return AutomationResponse.Ok(JsonSerializer.SerializeToElement(
-            new { x = pos.X, y = pos.Y, z = pos.Z }));
+        return Respond(new PositionResponse(pos.X, pos.Y, pos.Z));
     }
 
     private AutomationResponse WorldToScreen(AutomationCommand command)
     {
-        if (command.Args == null || command.Args.Length < 3)
+        var req = DeserializeArg<WorldToScreenRequest>(command);
+        if (req == null)
             return AutomationResponse.Fail("WorldToScreen requires x, y, z arguments");
 
-        float x = Convert.ToSingle(command.Args[0]?.ToString());
-        float y = Convert.ToSingle(command.Args[1]?.ToString());
-        float z = Convert.ToSingle(command.Args[2]?.ToString());
+        float x = (float)req.X;
+        float y = (float)req.Y;
+        float z = (float)req.Z;
 
         var cameraEntity = FindEntity("IsometricCamera");
         if (cameraEntity == null)
@@ -306,7 +300,7 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
         // We can't use Transform.Position/Rotation because they may be stale
         // (set during the last Update() tick, but a key press may have changed
         // Yaw/Pitch since then without the camera transform being recomputed).
-        var camScript = cameraEntity.Get<IsometricCameraScript>();
+        var camScript = cameraEntity.Get<TacticalCameraScript>();
         var (viewProj, backBuffer) = BuildCameraViewProj(cameraEntity, cc, camScript);
 
         // Project world point
@@ -323,21 +317,19 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
 
         bool onScreen = normX >= 0f && normX <= 1f && normY >= 0f && normY <= 1f;
 
-        return AutomationResponse.Ok(JsonSerializer.SerializeToElement(new
-        {
+        return Respond(new ScreenPositionResponse(
             screenX, screenY, normX, normY, onScreen,
-            screenWidth = backBuffer.Width,
-            screenHeight = backBuffer.Height
-        }));
+            backBuffer.Width, backBuffer.Height));
     }
 
     private AutomationResponse GetTileAtWorldPos(AutomationCommand command)
     {
-        if (command.Args == null || command.Args.Length < 2)
+        var req = DeserializeArg<TileAtWorldPosRequest>(command);
+        if (req == null)
             return AutomationResponse.Fail("GetTileAtWorldPos requires worldX, worldZ arguments");
 
-        float worldX = Convert.ToSingle(command.Args[0]?.ToString());
-        float worldZ = Convert.ToSingle(command.Args[1]?.ToString());
+        float worldX = (float)req.WorldX;
+        float worldZ = (float)req.WorldZ;
 
         var tileMapEntity = FindEntity("TileMap");
         if (tileMapEntity == null)
@@ -354,12 +346,8 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
 
         var tileType = map.GetTile(tileX, tileZ);
 
-        return AutomationResponse.Ok(JsonSerializer.SerializeToElement(new
-        {
-            tileX, tileZ,
-            tileType = tileType.ToString(),
-            tileTypeId = (int)tileType
-        }));
+        return Respond(new TileInfoResponse(
+            tileX, tileZ, tileType.ToString(), (int)tileType));
     }
 
     private AutomationResponse GetPlayerScreenPosition()
@@ -378,7 +366,7 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
 
         var playerPos = playerEntity.Transform.Position;
 
-        var camScript = cameraEntity.Get<IsometricCameraScript>();
+        var camScript = cameraEntity.Get<TacticalCameraScript>();
         var (viewProj, backBuffer) = BuildCameraViewProj(cameraEntity, cc, camScript);
         var clipPos = Vector3.TransformCoordinate(playerPos, viewProj);
 
@@ -388,21 +376,19 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
         float normY = screenY / backBuffer.Height;
         bool onScreen = normX >= 0f && normX <= 1f && normY >= 0f && normY <= 1f;
 
-        return AutomationResponse.Ok(JsonSerializer.SerializeToElement(new
-        {
-            worldX = playerPos.X, worldY = playerPos.Y, worldZ = playerPos.Z,
+        return Respond(new PlayerScreenPositionResponse(
+            playerPos.X, playerPos.Y, playerPos.Z,
             screenX, screenY, normX, normY, onScreen,
-            screenWidth = backBuffer.Width, screenHeight = backBuffer.Height
-        }));
+            backBuffer.Width, backBuffer.Height));
     }
 
     /// <summary>
     /// Build the view-projection matrix from the camera script's live Yaw/Pitch/Distance/Target
-    /// properties, mirroring IsometricCameraScript.UpdateCameraTransform(). This ensures we get
+    /// properties, mirroring TacticalCameraScript.UpdateCameraTransform(). This ensures we get
     /// the current view even if the script's Update() hasn't run yet this frame.
     /// </summary>
     private (Matrix ViewProj, Stride.Graphics.Texture BackBuffer) BuildCameraViewProj(
-        Entity cameraEntity, CameraComponent cc, IsometricCameraScript? camScript)
+        Entity cameraEntity, CameraComponent cc, TacticalCameraScript? camScript)
     {
         Vector3 camPos;
         Quaternion camRot;
@@ -421,7 +407,7 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
 
             camPos = targetPos + offset;
 
-            // Use RotationYawPitchRoll matching IsometricCameraScript (see RCA-004)
+            // Use RotationYawPitchRoll matching TacticalCameraScript (see RCA-004)
             camRot = Quaternion.RotationYawPitchRoll(
                 yawRad, MathUtil.DegreesToRadians(-camScript.Pitch), 0f);
 
@@ -459,6 +445,21 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
         return null;
     }
 
+    private static readonly JsonSerializerOptions _jsonOpts = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    };
+
+    private static T? DeserializeArg<T>(AutomationCommand command) where T : class
+    {
+        var json = command.Args?.FirstOrDefault()?.ToString();
+        return string.IsNullOrEmpty(json) ? null : JsonSerializer.Deserialize<T>(json, _jsonOpts);
+    }
+
+    private static AutomationResponse Respond<T>(T result)
+        => AutomationResponse.Ok(JsonSerializer.SerializeToElement(result, _jsonOpts));
+
     private AutomationResponse GetCombatState()
     {
         var combatManager = FindEntity("CombatManager");
@@ -469,55 +470,48 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
         if (script == null)
             return AutomationResponse.Fail("CombatSyncScript not found");
 
-        var enemies = script.Enemies.Select(e => new
-        {
-            id = e.Id,
-            hp = e.Health.CurrentHP,
-            maxHp = e.Health.MaxHP,
-            ap = (int)e.Combat.CurrentAP,
-            maxAp = e.Combat.MaxAP,
-            isAlive = e.Health.IsAlive,
-            x = e.Entity.Transform.Position.X,
-            y = e.Entity.Transform.Position.Y,
-            z = e.Entity.Transform.Position.Z,
-        });
+        var enemies = script.Enemies.Select(e => new EnemyStateDto(
+            e.Id, e.Health.CurrentHP, e.Health.MaxHP,
+            (int)e.Combat.CurrentAP, e.Combat.MaxAP,
+            e.Health.IsAlive,
+            e.Entity.Transform.Position.X,
+            e.Entity.Transform.Position.Y,
+            e.Entity.Transform.Position.Z)).ToList();
 
-        var result = new
-        {
-            inCombat = script.CombatState?.InCombat ?? false,
-            enemyCount = script.Enemies.Count,
+        return Respond(new CombatStateResponse(
+            script.CombatState?.InCombat ?? false,
+            script.Enemies.Count,
             enemies,
-            playerHp = script.PlayerHealth?.CurrentHP ?? 0,
-            playerMaxHp = script.PlayerHealth?.MaxHP ?? 0,
-            playerAp = (int)(script.PlayerCombat?.CurrentAP ?? 0),
-            playerMaxAp = script.PlayerCombat?.MaxAP ?? 0,
-        };
-        return AutomationResponse.Ok(JsonSerializer.SerializeToElement(result));
+            script.PlayerHealth?.CurrentHP ?? 0,
+            script.PlayerHealth?.MaxHP ?? 0,
+            (int)(script.PlayerCombat?.CurrentAP ?? 0),
+            script.PlayerCombat?.MaxAP ?? 0));
     }
 
     private AutomationResponse TeleportPlayer(AutomationCommand command)
     {
-        if (command.Args == null || command.Args.Length < 3)
+        var req = DeserializeArg<TeleportPlayerRequest>(command);
+        if (req == null)
             return AutomationResponse.Fail("TeleportPlayer requires x, y, z arguments");
 
-        float x = Convert.ToSingle(command.Args[0]?.ToString());
-        float y = Convert.ToSingle(command.Args[1]?.ToString());
-        float z = Convert.ToSingle(command.Args[2]?.ToString());
+        float x = (float)req.X;
+        float y = (float)req.Y;
+        float z = (float)req.Z;
 
         var player = FindEntity("Player");
         if (player == null)
             return AutomationResponse.Fail("Player entity not found");
 
         player.Transform.Position = new Vector3(x, y, z);
-        return AutomationResponse.Ok(JsonSerializer.SerializeToElement(
-            new { x, y, z }));
+        return Respond(new PositionResponse(x, y, z));
     }
 
     private AutomationResponse KillEnemy(AutomationCommand command)
     {
-        var enemyId = command.Args?.FirstOrDefault()?.ToString();
+        var req = DeserializeArg<KillEnemyRequest>(command);
+        var enemyId = req?.EnemyId;
         if (string.IsNullOrEmpty(enemyId))
-            return AutomationResponse.Fail("Enemy ID required as first argument");
+            return AutomationResponse.Fail("Enemy ID required");
 
         var combatManager = FindEntity("CombatManager");
         var script = combatManager?.Get<CombatSyncScript>();
@@ -531,8 +525,7 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
         enemy.Health.TakeDamage(enemy.Health.CurrentHP);
         var remaining = script.Enemies.Count(e => e.Health.IsAlive);
 
-        return AutomationResponse.Ok(JsonSerializer.SerializeToElement(
-            new { killed = true, remainingAlive = remaining }));
+        return Respond(new KillEnemyResponse(true, remaining));
     }
 
     // ---- Phase B queries ----
@@ -542,24 +535,17 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
         if (_playerInventory == null)
             return AutomationResponse.Fail("Player inventory not initialized");
 
-        var items = _playerInventory.Items.Select(i => new
-        {
-            id = i.Definition.Id,
-            name = i.Definition.Name,
-            category = i.Definition.Category.ToString(),
-            count = i.StackCount,
-            weight = i.TotalWeight,
-        });
+        var items = _playerInventory.Items.Select(i => new InventoryItemDto(
+            i.Definition.Id, i.Definition.Name,
+            i.Definition.Category.ToString(),
+            i.StackCount, i.TotalWeight)).ToList();
 
-        var result = new
-        {
-            itemCount = _playerInventory.Items.Count,
-            currentWeight = _playerInventory.CurrentWeight,
-            maxWeight = _playerInventory.MaxCarryWeight,
-            isOverweight = _playerInventory.IsOverweight,
-            items,
-        };
-        return AutomationResponse.Ok(JsonSerializer.SerializeToElement(result));
+        return Respond(new InventoryStateResponse(
+            _playerInventory.Items.Count,
+            _playerInventory.CurrentWeight,
+            _playerInventory.MaxCarryWeight,
+            _playerInventory.IsOverweight,
+            items));
     }
 
     private AutomationResponse GetEquipmentState()
@@ -567,30 +553,27 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
         if (_playerEquipment == null)
             return AutomationResponse.Fail("Player equipment not initialized");
 
-        var slots = new Dictionary<string, object?>();
+        var slots = new Dictionary<string, EquipmentSlotDto?>();
         foreach (var slot in Enum.GetValues<EquipmentSlot>())
         {
             var item = _playerEquipment.GetEquipped(slot);
             slots[slot.ToString()] = item != null
-                ? new { id = item.Definition.Id, name = item.Definition.Name }
+                ? new EquipmentSlotDto(item.Definition.Id, item.Definition.Name)
                 : null;
         }
 
-        return AutomationResponse.Ok(JsonSerializer.SerializeToElement(new { slots }));
+        return Respond(new EquipmentStateResponse(slots));
     }
 
     private AutomationResponse GetHudState()
     {
-        var result = new
-        {
-            hp = _playerHealth?.CurrentHP ?? 0,
-            maxHp = _playerHealth?.MaxHP ?? 0,
-            ap = (int)(_playerCombat?.CurrentAP ?? 0),
-            maxAp = _playerCombat?.MaxAP ?? 0,
-            level = _playerLevel?.Level ?? 0,
-            gameState = _gameStateManager?.CurrentState.ToString() ?? "Unknown",
-        };
-        return AutomationResponse.Ok(JsonSerializer.SerializeToElement(result));
+        return Respond(new HudStateResponse(
+            _playerHealth?.CurrentHP ?? 0,
+            _playerHealth?.MaxHP ?? 0,
+            (int)(_playerCombat?.CurrentAP ?? 0),
+            _playerCombat?.MaxAP ?? 0,
+            _playerLevel?.Level ?? 0,
+            _gameStateManager?.CurrentState.ToString() ?? "Unknown"));
     }
 
     private AutomationResponse GetLootEntities()
@@ -600,22 +583,16 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
             .Select(e =>
             {
                 LootDropScript.TryGetLootItems(e, out var items);
-                return new
-                {
-                    name = e.Name,
-                    x = e.Transform.Position.X,
-                    y = e.Transform.Position.Y,
-                    z = e.Transform.Position.Z,
-                    itemCount = items?.Count ?? 0,
-                };
+                return new LootEntityDto(
+                    e.Name,
+                    e.Transform.Position.X,
+                    e.Transform.Position.Y,
+                    e.Transform.Position.Z,
+                    items?.Count ?? 0);
             })
             .ToList();
 
-        return AutomationResponse.Ok(JsonSerializer.SerializeToElement(new
-        {
-            count = lootEntities.Count,
-            entities = lootEntities,
-        }));
+        return Respond(new LootEntitiesResponse(lootEntities.Count, lootEntities));
     }
 
     private AutomationResponse GetInventoryOverlayVisible()
@@ -625,8 +602,7 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
         if (script == null)
             return AutomationResponse.Fail("InventoryOverlay entity not found");
 
-        var visible = script.IsVisible;
-        return AutomationResponse.Ok(JsonSerializer.SerializeToElement(new { visible }));
+        return Respond(new InventoryOverlayResponse(script.IsVisible));
     }
 
     // ---- Phase C queries ----
@@ -637,17 +613,10 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
             return AutomationResponse.Fail("NotificationService not initialized");
 
         var active = _notificationService.GetActive();
-        var messages = active.Select(n => new
-        {
-            text = n.Message,
-            timeRemaining = n.TimeRemaining,
-        });
+        var messages = active.Select(n => new NotificationMessageDto(
+            n.Message, n.TimeRemaining)).ToList();
 
-        return AutomationResponse.Ok(JsonSerializer.SerializeToElement(new
-        {
-            count = active.Count,
-            messages,
-        }));
+        return Respond(new NotificationFeedResponse(active.Count, messages));
     }
 
     private AutomationResponse GetGameOverState()
@@ -655,11 +624,9 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
         if (_gameOverOverlay == null)
             return AutomationResponse.Fail("GameOverOverlay not initialized");
 
-        return AutomationResponse.Ok(JsonSerializer.SerializeToElement(new
-        {
-            visible = _gameOverOverlay.IsVisible,
-            title = _gameOverOverlay.CurrentTitle ?? "",
-        }));
+        return Respond(new GameOverStateResponse(
+            _gameOverOverlay.IsVisible,
+            _gameOverOverlay.CurrentTitle ?? ""));
     }
 
     private AutomationResponse GetEnemyHpBars()
@@ -672,18 +639,10 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
         var inCombat = script.CombatState?.InCombat ?? false;
         var bars = script.Enemies
             .Where(e => e.Health.IsAlive)
-            .Select(e => new
-            {
-                enemyId = e.Id,
-                hp = e.Health.CurrentHP,
-                maxHp = e.Health.MaxHP,
-            });
+            .Select(e => new EnemyHpBarDto(e.Id, e.Health.CurrentHP, e.Health.MaxHP))
+            .ToList();
 
-        return AutomationResponse.Ok(JsonSerializer.SerializeToElement(new
-        {
-            visible = inCombat,
-            bars,
-        }));
+        return Respond(new EnemyHpBarsResponse(inCombat, bars));
     }
 
     private AutomationResponse DamagePlayer(AutomationCommand command)
@@ -691,17 +650,278 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
         if (_playerHealth == null)
             return AutomationResponse.Fail("Player health not initialized");
 
-        if (command.Args == null || command.Args.Length < 1)
+        var req = DeserializeArg<DamagePlayerRequest>(command);
+        if (req == null)
             return AutomationResponse.Fail("DamagePlayer requires amount argument");
 
-        int amount = Convert.ToInt32(command.Args[0]?.ToString());
+        int amount = req.Amount;
         _playerHealth.TakeDamage(amount);
 
-        return AutomationResponse.Ok(JsonSerializer.SerializeToElement(new
+        // Trigger GameOver if player died (normally done inside CombatSyncScript.Update)
+        if (!_playerHealth.IsAlive && _gameStateManager != null
+            && _gameStateManager.CurrentState != GameState.GameOver)
         {
-            newHp = _playerHealth.CurrentHP,
-            maxHp = _playerHealth.MaxHP,
-            isAlive = _playerHealth.IsAlive,
-        }));
+            _gameStateManager.ForceState(GameState.GameOver);
+        }
+
+        return Respond(new DamagePlayerResponse(
+            _playerHealth.CurrentHP, _playerHealth.MaxHP, _playerHealth.IsAlive));
+    }
+
+    private AutomationResponse GetCombatConfig()
+    {
+        var combatManager = FindEntity("CombatManager");
+        var script = combatManager?.Get<CombatSyncScript>();
+        if (script == null)
+            return AutomationResponse.Fail("CombatSyncScript not found");
+
+        // Read player's equipped weapon
+        var playerWeapon = script.PlayerEquipment
+            ?.GetEquipped(EquipmentSlot.PrimaryWeapon)
+            ?.Definition.Weapon;
+
+        // Read first enemy's weapon (all M0 enemies share the same weapon)
+        WeaponData? enemyWeapon = null;
+        if (script.Enemies.Count > 0)
+            enemyWeapon = script.Enemies[0].Weapon;
+
+        return Respond(new CombatConfigResponse(
+            new WeaponConfigDto(
+                playerWeapon?.Damage ?? 5,
+                playerWeapon?.Accuracy ?? 0.50f,
+                playerWeapon?.Range ?? 1.5f,
+                playerWeapon?.CritMultiplier ?? 1.5f,
+                playerWeapon?.ApCost ?? 3),
+            new WeaponConfigDto(
+                enemyWeapon?.Damage ?? 5,
+                enemyWeapon?.Accuracy ?? 0.50f,
+                enemyWeapon?.Range ?? 1.5f,
+                enemyWeapon?.CritMultiplier ?? 1.5f,
+                enemyWeapon?.ApCost ?? 3),
+            0f));
+    }
+
+    private AutomationResponse EquipItem(AutomationCommand command)
+    {
+        var req = DeserializeArg<EquipItemRequest>(command);
+        var itemId = req?.ItemId;
+        if (_playerInventory == null || _playerEquipment == null)
+            return AutomationResponse.Fail("Inventory not initialized");
+
+        // Find the item in inventory
+        var item = _playerInventory.Items
+            .FirstOrDefault(i => i.Definition.Id == itemId);
+
+        if (item == null)
+        {
+            // Item not in inventory — create and add it
+            var definition = itemId switch
+            {
+                "leather_jacket" => M0Items.LeatherJacket(),
+                "pipe_wrench" => M0Items.PipeWrench(),
+                "rusty_shiv" => M0Items.RustyShiv(),
+                _ => null,
+            };
+
+            if (definition == null)
+                return AutomationResponse.Fail($"Unknown item: {itemId}");
+
+            item = new ItemInstance(definition);
+            _playerInventory.Add(item);
+        }
+
+        if (item.Definition.Slot == null)
+            return AutomationResponse.Fail($"Item '{itemId}' has no equipment slot");
+
+        _playerEquipment.Equip(item, item.Definition.Slot.Value);
+
+        return Respond(new EquipItemResponse(true, item.Definition.Slot.Value.ToString(), item.Definition.Name));
+    }
+
+    // ---- Phase E: Scenario commands ----
+
+    private MaterialInstance? _cachedEnemyMaterial;
+
+    private AutomationResponse ResetScenario()
+    {
+        try
+        {
+            var combatManager = FindEntity("CombatManager");
+            var combatScript = combatManager?.Get<CombatSyncScript>();
+            if (combatScript == null)
+                return AutomationResponse.Fail("CombatSyncScript not found");
+
+            // Force back to Exploring first to stop script Update from running combat logic
+            if (_gameStateManager != null && _gameStateManager.CurrentState != GameState.Exploring)
+                _gameStateManager.ForceState(GameState.Exploring);
+
+            // Remove all enemy entities from scene (combatScript.Enemies is shared with triggerScript)
+            foreach (var enemy in combatScript.Enemies.ToList())
+            {
+                enemy.Entity.Scene?.Entities.Remove(enemy.Entity);
+                enemy.Combat.InCombat = false;
+            }
+            combatScript.Enemies.Clear();
+
+            // Exit combat if active
+            if (combatScript.CombatState?.InCombat == true)
+                combatScript.CombatState.ExitCombat();
+
+            // Reset player combat state
+            if (combatScript.PlayerCombat != null)
+            {
+                combatScript.PlayerCombat.InCombat = false;
+                combatScript.PlayerCombat.ResetAP();
+            }
+            combatScript.Queue?.Clear();
+
+            _playerHealth?.HealToMax();
+
+            // Teleport player to origin
+            var player = FindEntity("Player");
+            if (player != null)
+                player.Transform.Position = new Vector3(0, 0.5f, 0);
+
+            // Remove loot cubes (best-effort, collection may be modified concurrently)
+            try
+            {
+                var lootEntities = _rootScene.Entities
+                    .Where(e => e != null && LootDropScript.HasLoot(e))
+                    .ToList();
+                foreach (var loot in lootEntities)
+                    _rootScene.Entities.Remove(loot);
+            }
+            catch { /* Loot cleanup is best-effort */ }
+
+            return Respond(new ScenarioResetResponse(true, _playerHealth?.CurrentHP ?? 0, 0));
+        }
+        catch (Exception ex)
+        {
+            return AutomationResponse.Fail($"ResetScenario error: {ex.Message}");
+        }
+    }
+
+    private AutomationResponse SpawnEnemy(AutomationCommand command)
+    {
+        var req = DeserializeArg<SpawnEnemyRequest>(command);
+        if (req == null)
+            return AutomationResponse.Fail("SpawnEnemy requires JSON config argument");
+
+        var id = req.Id ?? $"enemy_{Guid.NewGuid():N}";
+        var x = (float)req.X;
+        var z = (float)req.Z;
+        var endurance = req.Endurance ?? 1;
+        var luck = req.Luck ?? 3;
+        var weaponDamage = req.WeaponDamage ?? 4;
+        var weaponAccuracy = req.WeaponAccuracy ?? 0.50f;
+
+        // Create enemy entity with visual
+        var enemyEntity = new Entity(id);
+        enemyEntity.Transform.Position = new Vector3(x, 0.5f, z);
+
+        var enemyVisual = new Entity($"{id}_Visual");
+        var mesh = GeometricPrimitive.Capsule.New(_game.GraphicsDevice, 0.3f, 0.8f).ToMeshDraw();
+        var model = new Model();
+        model.Meshes.Add(new Mesh { Draw = mesh });
+        _cachedEnemyMaterial ??= _game.CreateMaterial(new Color(0.8f, 0.15f, 0.15f));
+        model.Materials.Add(_cachedEnemyMaterial);
+        enemyVisual.Add(new ModelComponent(model));
+        enemyEntity.AddChild(enemyVisual);
+
+        _rootScene.Entities.Add(enemyEntity);
+
+        // Stats
+        var stats = new StatsComponent(new Dictionary<Stat, int>
+        {
+            { Stat.Strength, 3 }, { Stat.Perception, 3 }, { Stat.Endurance, endurance },
+            { Stat.Charisma, 2 }, { Stat.Intelligence, 2 }, { Stat.Agility, 4 },
+            { Stat.Luck, luck },
+        });
+        var level = new LevelComponent(stats);
+
+        // Resolve IEventBus from ServiceLocator
+        ServiceLocator.Instance.TryGet<IEventBus>(out var eventBus);
+        var health = new HealthComponent(stats, level, eventBus);
+        var combat = new CombatComponent { InCombat = false };
+
+        // Override HP if specified
+        if (req.Hp.HasValue && req.Hp.Value < health.MaxHP)
+            health.TakeDamage(health.MaxHP - req.Hp.Value);
+
+        // Weapon
+        var weapon = new WeaponData(
+            Damage: weaponDamage, Range: 1.5f, ApCost: 3,
+            Accuracy: weaponAccuracy, SkillType: "melee", CritMultiplier: 1.5f);
+
+        var enemyInfo = new EnemyInfo
+        {
+            Entity = enemyEntity,
+            Id = id,
+            Health = health,
+            Combat = combat,
+            Stats = stats,
+            Weapon = weapon,
+        };
+
+        // Add to combat + trigger systems
+        var combatManager = FindEntity("CombatManager");
+        var combatScript = combatManager?.Get<CombatSyncScript>();
+        var triggerScript = combatManager?.Get<EncounterTriggerScript>();
+
+        // Add to shared enemy list (combatScript.Enemies and triggerScript.Enemies are the same reference)
+        combatScript?.Enemies.Add(enemyInfo);
+
+        return Respond(new SpawnEnemyResponse(true, id, health.CurrentHP, health.MaxHP));
+    }
+
+    private AutomationResponse SetPlayerStats(AutomationCommand command)
+    {
+        var req = DeserializeArg<SetPlayerStatsRequest>(command);
+        if (req == null)
+            return AutomationResponse.Fail("SetPlayerStats requires JSON config argument");
+
+        var combatManager = FindEntity("CombatManager");
+        var script = combatManager?.Get<CombatSyncScript>();
+        if (script?.PlayerStats == null || _playerHealth == null)
+            return AutomationResponse.Fail("Player stats not initialized");
+
+        if (req.Endurance.HasValue) script.PlayerStats.SetBase(Stat.Endurance, req.Endurance.Value);
+        if (req.Luck.HasValue) script.PlayerStats.SetBase(Stat.Luck, req.Luck.Value);
+        if (req.Strength.HasValue) script.PlayerStats.SetBase(Stat.Strength, req.Strength.Value);
+
+        _playerHealth.HealToMax();
+
+        if (req.Hp.HasValue && req.Hp.Value < _playerHealth.MaxHP)
+            _playerHealth.TakeDamage(_playerHealth.MaxHP - req.Hp.Value);
+
+        return Respond(new SetStatsResponse(true, _playerHealth.CurrentHP, _playerHealth.MaxHP));
+    }
+
+    private AutomationResponse SetPlayerWeapon(AutomationCommand command)
+    {
+        var req = DeserializeArg<SetPlayerWeaponRequest>(command);
+        if (req == null)
+            return AutomationResponse.Fail("SetPlayerWeapon requires JSON config argument");
+
+        if (_playerEquipment == null || _playerInventory == null)
+            return AutomationResponse.Fail("Equipment not initialized");
+
+        var weaponData = new WeaponData(req.Damage, req.Range, req.ApCost, req.Accuracy, "melee", CritMultiplier: req.CritMultiplier);
+        var definition = new ItemDefinition(
+            Id: "test_weapon",
+            Name: "Test Weapon",
+            Description: "Custom test weapon",
+            Category: ItemCategory.WeaponMelee,
+            Weight: 1f,
+            Stackable: false,
+            Value: 0,
+            Slot: EquipmentSlot.PrimaryWeapon,
+            Weapon: weaponData);
+
+        var item = new ItemInstance(definition);
+        _playerInventory.Add(item);
+        _playerEquipment.Equip(item, EquipmentSlot.PrimaryWeapon);
+
+        return Respond(new SetWeaponResponse(true, req.Damage, req.Accuracy));
     }
 }

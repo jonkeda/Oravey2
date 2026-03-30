@@ -8,26 +8,26 @@ Upgrades the text-only HUD from Phase B into a proper combat HUD with visual HP/
 
 ## Scope
 
-| Sub-task | Summary |
-|----------|---------|
-| C1 | Upgrade HudSyncScript — visual HP/AP bars with color gradients, combat state banner |
-| C2 | Enemy HP bars — floating bars above enemy heads, visible only during InCombat |
-| C3 | Notification feed — wire NotificationService into the HUD, show timed messages |
-| C4 | Game over state — detect player death, show overlay, freeze input |
-| C5 | Victory text — show "ENEMIES DEFEATED" on combat end, auto-dismiss |
-| C6 | Floating damage numbers — brief text at hit location showing damage dealt |
+| Sub-task | Summary                                                                              |
+| -------- | ------------------------------------------------------------------------------------ |
+| C1       | Upgrade HudSyncScript — visual HP/AP bars with color gradients, combat state banner |
+| C2       | Enemy HP bars — floating bars above enemy heads, visible only during InCombat       |
+| C3       | Notification feed — wire NotificationService into the HUD, show timed messages      |
+| C4       | Game over state — detect player death, show overlay, freeze input                   |
+| C5       | Victory text — show "ENEMIES DEFEATED" on combat end, auto-dismiss                  |
+| C6       | Floating damage numbers — brief text at hit location showing damage dealt           |
 
 ### What's Deferred
 
-| Item | Deferred To |
-|------|-------------|
-| Minimap | Post-M0 |
-| Quick-slot bar rendering | Post-M0 |
-| Status effect icons | Post-M0 |
-| Animated health bar transitions | Post-M0 |
-| Enemy nameplate / level indicator | Post-M0 |
-| Sound effects on game over / victory | Post-M0 |
-| Restart from game over | Post-M0 (M0: game over freezes, user closes window) |
+| Item                                 | Deferred To                                         |
+| ------------------------------------ | --------------------------------------------------- |
+| Minimap                              | Post-M0                                             |
+| Quick-slot bar rendering             | Post-M0                                             |
+| Status effect icons                  | Post-M0                                             |
+| Animated health bar transitions      | Post-M0                                             |
+| Enemy nameplate / level indicator    | Post-M0                                             |
+| Sound effects on game over / victory | Post-M0                                             |
+| Restart from game over               | Post-M0 (M0: game over freezes, user closes window) |
 
 ---
 
@@ -112,13 +112,14 @@ Replace the plain TextBlock HUD with a visual layout:
 ```
 ┌──────────────────────────────────────┐
 │ HP ████████████░░░░  75/105          │  ← green→yellow→red gradient
-│ AP ██████░░░░░░░░░░  6/10           │  ← blue bar
-│ LVL 1  XP 0/100                     │
+│ AP ██████░░░░░░░░░░  6/10            │  ← blue bar
+│ LVL 1  XP 0/100                      │
 │ [Exploring]                          │  ← State banner (changes color per state)
 └──────────────────────────────────────┘
 ```
 
 Each "bar" is a `Grid` with two overlapping children:
+
 1. Background `Border` (dark gray, full width)
 2. Foreground `Border` (colored, width = fraction of max)
 
@@ -127,6 +128,7 @@ Bar width is 200px. The bar fills as a fraction: `HP bar width = (CurrentHP / Ma
 ### HP Bar Color
 
 Computed each frame based on HP fraction:
+
 - ≥ 60%: Green `(0.2, 0.8, 0.2)`
 - 25–59%: Yellow `(0.9, 0.8, 0.1)`
 - < 25%: Red `(0.9, 0.2, 0.1)`
@@ -406,8 +408,8 @@ A `NotificationFeedScript` SyncScript that renders active notifications from `No
 
 ```
                     ┌─────────────────────────┐
-                    │  Picked up Scrap Metal   │
-                    │  Picked up Medkit         │  ← bottom-center, fades
+                    │  Picked up Scrap Metal  │
+                    │  Picked up Medkit       │  ← bottom-center, fades
                     └─────────────────────────┘
 ```
 
@@ -493,6 +495,7 @@ This means any code that publishes `NotificationEvent` (e.g., loot pickup in Pha
 ### Design
 
 When the player's HP reaches 0 during combat, the game should:
+
 1. Transition to `GameState.GameOver`
 2. Display a full-screen semi-transparent overlay with "GAME OVER" text
 3. Freeze all input (movement, combat, UI toggles)
@@ -881,6 +884,7 @@ public Entity? LastHitTarget { get; internal set; }
 In `Update()`, at the top: `LastHitTarget = null;`
 
 In `ProcessNextAction()`, before `StartHitFlash(targetEntity)`:
+
 ```csharp
 LastHitTarget = targetEntity;
 ```
@@ -959,12 +963,12 @@ oraveyHandler.SetPhaseC(notificationService, gameOverOverlay);
 
 New queries to add to `OraveyAutomationHandler.cs`:
 
-| Query | Args | Returns | Purpose |
-|-------|------|---------|---------|
-| `GetNotificationFeed` | — | `{ count, messages: [{text, timeRemaining}] }` | Current visible notifications |
-| `GetGameOverState` | — | `{ visible, title, subtitle }` | Game over overlay state |
-| `GetEnemyHpBars` | — | `{ visible, bars: [{enemyId, hp, maxHp}] }` | Enemy HP bar data |
-| `DamagePlayer` | `amount` | `{ newHp, maxHp, isAlive }` | Force damage to player for testing game over |
+| Query                   | Args       | Returns                                          | Purpose                                      |
+| ----------------------- | ---------- | ------------------------------------------------ | -------------------------------------------- |
+| `GetNotificationFeed` | —         | `{ count, messages: [{text, timeRemaining}] }` | Current visible notifications                |
+| `GetGameOverState`    | —         | `{ visible, title, subtitle }`                 | Game over overlay state                      |
+| `GetEnemyHpBars`      | —         | `{ visible, bars: [{enemyId, hp, maxHp}] }`    | Enemy HP bar data                            |
+| `DamagePlayer`        | `amount` | `{ newHp, maxHp, isAlive }`                    | Force damage to player for testing game over |
 
 ### Why DamagePlayer
 
@@ -1105,19 +1109,19 @@ Implementation order: C1 → C3 → C2 → C6 → C4/C5
 
 ## Acceptance Criteria
 
-| # | Criterion |
-|---|-----------|
-| 1 | Player HUD shows colored HP bar (green→yellow→red based on HP%) and AP bar (blue) |
-| 2 | HP/AP bars update in real-time during combat |
-| 3 | Enemy HP bars appear above enemies during combat, hidden during exploring |
-| 4 | Enemy HP bars disappear when enemy dies |
-| 5 | Notifications appear at bottom-center and fade after their duration |
-| 6 | Player death transitions to GameOver state and shows "GAME OVER" overlay |
-| 7 | Input is frozen during GameOver (no movement, no combat, no Tab) |
-| 8 | Defeating all enemies shows "ENEMIES DEFEATED" text that auto-dismisses after 2s |
-| 9 | Floating damage numbers appear at hit location and float upward |
-| 10 | Critical hits show gold "CRIT" text |
-| 11 | `GetGameOverState` automation query returns correct overlay state |
-| 12 | `DamagePlayer` automation query allows deterministic game over testing |
-| 13 | All existing unit tests still pass |
-| 14 | All existing UI tests still pass |
+| #  | Criterion                                                                           |
+| -- | ----------------------------------------------------------------------------------- |
+| 1  | Player HUD shows colored HP bar (green→yellow→red based on HP%) and AP bar (blue) |
+| 2  | HP/AP bars update in real-time during combat                                        |
+| 3  | Enemy HP bars appear above enemies during combat, hidden during exploring           |
+| 4  | Enemy HP bars disappear when enemy dies                                             |
+| 5  | Notifications appear at bottom-center and fade after their duration                 |
+| 6  | Player death transitions to GameOver state and shows "GAME OVER" overlay            |
+| 7  | Input is frozen during GameOver (no movement, no combat, no Tab)                    |
+| 8  | Defeating all enemies shows "ENEMIES DEFEATED" text that auto-dismisses after 2s    |
+| 9  | Floating damage numbers appear at hit location and float upward                     |
+| 10 | Critical hits show gold "CRIT" text                                                 |
+| 11 | `GetGameOverState` automation query returns correct overlay state                 |
+| 12 | `DamagePlayer` automation query allows deterministic game over testing            |
+| 13 | All existing unit tests still pass                                                  |
+| 14 | All existing UI tests still pass                                                    |

@@ -118,7 +118,7 @@ public class EnemyHpBarScript : SyncScript
         var cc = CameraEntity?.Get<CameraComponent>();
         if (cc == null) return null;
 
-        var camScript = CameraEntity!.Get<IsometricCameraScript>();
+        var camScript = CameraEntity!.Get<TacticalCameraScript>();
         if (camScript?.Target == null) return null;
 
         var targetPos = camScript.Target.Transform.Position;

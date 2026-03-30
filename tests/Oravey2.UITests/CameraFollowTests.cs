@@ -46,7 +46,7 @@ public class CameraFollowTests : IAsyncLifetime
     [Fact]
     public void CameraOffset_MatchesYawPitch()
     {
-        // Settle one frame so the IsometricCameraScript computes its orbit position
+        // Settle one frame so the TacticalCameraScript computes its orbit position
         _fixture.Context.HoldKey(VirtualKey.Space, 100);
 
         var player = GameQueryHelpers.GetPlayerPosition(_fixture.Context);

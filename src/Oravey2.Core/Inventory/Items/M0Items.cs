@@ -55,4 +55,21 @@ public static class M0Items
             {
                 { "torso", 0.8f }, { "arms", 0.5f }
             }));
+
+    public static ItemDefinition RustyShiv() => new(
+        Id: "rusty_shiv",
+        Name: "Rusty Shiv",
+        Description: "A crude blade. Barely functional.",
+        Category: ItemCategory.WeaponMelee,
+        Weight: 0.5f,
+        Stackable: false,
+        Value: 3,
+        Slot: EquipmentSlot.PrimaryWeapon,
+        Weapon: new WeaponData(
+            Damage: 4,
+            Range: 1.5f,
+            ApCost: 3,
+            Accuracy: 0.50f,
+            SkillType: "melee",
+            CritMultiplier: 1.5f));
 }

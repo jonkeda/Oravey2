@@ -1,6 +1,8 @@
 using Brinell.Stride.Communication;
 using Brinell.Stride.Interfaces;
+using Oravey2.Core.Automation;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Oravey2.UITests;
 
@@ -9,38 +11,13 @@ namespace Oravey2.UITests;
 /// </summary>
 public static class GameQueryHelpers
 {
-    public record Position(double X, double Y, double Z);
+    // --- Phase A: Position / Camera / Screen / Tile / Diagnostics (typed contracts) ---
 
-    public record CameraState(double X, double Y, double Z, double Yaw, double Pitch, double Zoom);
+    public static PositionResponse GetPlayerPosition(IStrideTestContext context)
+        => SendQuery<PositionResponse>("GetPlayerPosition", context);
 
-    public static Position GetPlayerPosition(IStrideTestContext context)
-    {
-        var response = context.SendCommand(AutomationCommand.GameQuery("GetPlayerPosition"));
-        if (!response.Success)
-            throw new InvalidOperationException($"GetPlayerPosition failed: {response.Error}");
-
-        var je = (JsonElement)response.Result!;
-        return new Position(
-            je.GetProperty("x").GetDouble(),
-            je.GetProperty("y").GetDouble(),
-            je.GetProperty("z").GetDouble());
-    }
-
-    public static CameraState GetCameraState(IStrideTestContext context)
-    {
-        var response = context.SendCommand(AutomationCommand.GameQuery("GetCameraState"));
-        if (!response.Success)
-            throw new InvalidOperationException($"GetCameraState failed: {response.Error}");
-
-        var je = (JsonElement)response.Result!;
-        return new CameraState(
-            je.GetProperty("x").GetDouble(),
-            je.GetProperty("y").GetDouble(),
-            je.GetProperty("z").GetDouble(),
-            je.GetProperty("yaw").GetDouble(),
-            je.GetProperty("pitch").GetDouble(),
-            je.GetProperty("zoom").GetDouble());
-    }
+    public static CameraStateResponse GetCameraState(IStrideTestContext context)
+        => SendQuery<CameraStateResponse>("GetCameraState", context);
 
     public static string GetGameState(IStrideTestContext context)
     {
@@ -51,442 +28,135 @@ public static class GameQueryHelpers
         return response.Result?.ToString() ?? "";
     }
 
-    public record SceneDiagnostics(
-        int TotalEntities,
-        int ModelEntityCount,
-        List<ModelEntityInfo> ModelEntitiesSample,
-        CameraDiagnostics? Camera);
-
-    public record ModelEntityInfo(string Name, double X, double Y, double Z, int MeshCount, int MaterialCount);
-
-    public record CameraDiagnostics(
-        Position Position,
-        Position Forward,
-        string Projection,
-        double OrthoSize,
-        double NearClip,
-        double FarClip,
-        string SlotId);
-
-    public static SceneDiagnostics GetSceneDiagnostics(IStrideTestContext context)
-    {
-        var response = context.SendCommand(AutomationCommand.GameQuery("GetSceneDiagnostics"));
-        if (!response.Success)
-            throw new InvalidOperationException($"GetSceneDiagnostics failed: {response.Error}");
-
-        var je = (JsonElement)response.Result!;
-
-        var modelEntities = new List<ModelEntityInfo>();
-        if (je.TryGetProperty("modelEntitiesSample", out var sample))
-        {
-            foreach (var item in sample.EnumerateArray())
-            {
-                modelEntities.Add(new ModelEntityInfo(
-                    item.GetProperty("name").GetString() ?? "",
-                    item.GetProperty("x").GetDouble(),
-                    item.GetProperty("y").GetDouble(),
-                    item.GetProperty("z").GetDouble(),
-                    item.GetProperty("meshCount").GetInt32(),
-                    item.GetProperty("materialCount").GetInt32()));
-            }
-        }
-
-        CameraDiagnostics? camDiag = null;
-        if (je.TryGetProperty("camera", out var cam) && cam.ValueKind != JsonValueKind.Null)
-        {
-            var pos = cam.GetProperty("position");
-            var fwd = cam.GetProperty("forward");
-            camDiag = new CameraDiagnostics(
-                new Position(pos.GetProperty("x").GetDouble(), pos.GetProperty("y").GetDouble(), pos.GetProperty("z").GetDouble()),
-                new Position(fwd.GetProperty("x").GetDouble(), fwd.GetProperty("y").GetDouble(), fwd.GetProperty("z").GetDouble()),
-                cam.GetProperty("projection").GetString() ?? "",
-                cam.GetProperty("orthoSize").GetDouble(),
-                cam.GetProperty("nearClip").GetDouble(),
-                cam.GetProperty("farClip").GetDouble(),
-                cam.GetProperty("slotId").GetString() ?? "");
-        }
-
-        return new SceneDiagnostics(
-            je.GetProperty("totalEntities").GetInt32(),
-            je.GetProperty("modelEntityCount").GetInt32(),
-            modelEntities,
-            camDiag);
-    }
+    public static SceneDiagnosticsResponse GetSceneDiagnostics(IStrideTestContext context)
+        => SendQuery<SceneDiagnosticsResponse>("GetSceneDiagnostics", context);
 
     public static string TakeScreenshot(IStrideTestContext context)
     {
-        var response = context.SendCommand(AutomationCommand.GameQuery("TakeScreenshot"));
-        if (!response.Success)
-            throw new InvalidOperationException($"TakeScreenshot failed: {response.Error}");
-
-        var je = (JsonElement)response.Result!;
-        return je.GetProperty("path").GetString() ?? "";
+        var result = SendQuery<ScreenshotResponse>("TakeScreenshot", context);
+        return result.Path;
     }
 
-    public record ScreenPosition(
-        double ScreenX, double ScreenY,
-        double NormX, double NormY,
-        bool OnScreen,
-        int ScreenWidth, int ScreenHeight);
+    public static ScreenPositionResponse WorldToScreen(IStrideTestContext context, double x, double y, double z)
+        => SendQuery<ScreenPositionResponse>("WorldToScreen", context, new WorldToScreenRequest(x, y, z));
 
-    public static ScreenPosition WorldToScreen(IStrideTestContext context, double x, double y, double z)
-    {
-        var response = context.SendCommand(AutomationCommand.GameQuery("WorldToScreen", x, y, z));
-        if (!response.Success)
-            throw new InvalidOperationException($"WorldToScreen failed: {response.Error}");
+    public static PlayerScreenPositionResponse GetPlayerScreenPosition(IStrideTestContext context)
+        => SendQuery<PlayerScreenPositionResponse>("GetPlayerScreenPosition", context);
 
-        var je = (JsonElement)response.Result!;
-        return new ScreenPosition(
-            je.GetProperty("screenX").GetDouble(),
-            je.GetProperty("screenY").GetDouble(),
-            je.GetProperty("normX").GetDouble(),
-            je.GetProperty("normY").GetDouble(),
-            je.GetProperty("onScreen").GetBoolean(),
-            je.GetProperty("screenWidth").GetInt32(),
-            je.GetProperty("screenHeight").GetInt32());
-    }
+    public static TileInfoResponse GetTileAtWorldPos(IStrideTestContext context, double worldX, double worldZ)
+        => SendQuery<TileInfoResponse>("GetTileAtWorldPos", context, new TileAtWorldPosRequest(worldX, worldZ));
 
-    public record PlayerScreenInfo(
-        double WorldX, double WorldY, double WorldZ,
-        double ScreenX, double ScreenY,
-        double NormX, double NormY,
-        bool OnScreen,
-        int ScreenWidth, int ScreenHeight);
+    public static PositionResponse GetEntityPosition(IStrideTestContext context, string entityName)
+        => SendQuery<PositionResponse>("GetEntityPosition", context, new EntityPositionRequest(entityName));
 
-    public static PlayerScreenInfo GetPlayerScreenPosition(IStrideTestContext context)
-    {
-        var response = context.SendCommand(AutomationCommand.GameQuery("GetPlayerScreenPosition"));
-        if (!response.Success)
-            throw new InvalidOperationException($"GetPlayerScreenPosition failed: {response.Error}");
+    // --- Combat helpers (typed contracts) ---
 
-        var je = (JsonElement)response.Result!;
-        return new PlayerScreenInfo(
-            je.GetProperty("worldX").GetDouble(),
-            je.GetProperty("worldY").GetDouble(),
-            je.GetProperty("worldZ").GetDouble(),
-            je.GetProperty("screenX").GetDouble(),
-            je.GetProperty("screenY").GetDouble(),
-            je.GetProperty("normX").GetDouble(),
-            je.GetProperty("normY").GetDouble(),
-            je.GetProperty("onScreen").GetBoolean(),
-            je.GetProperty("screenWidth").GetInt32(),
-            je.GetProperty("screenHeight").GetInt32());
-    }
+    public static CombatStateResponse GetCombatState(IStrideTestContext context)
+        => SendQuery<CombatStateResponse>("GetCombatState", context);
 
-    public record TileInfo(int TileX, int TileZ, string TileType, int TileTypeId);
+    public static PositionResponse TeleportPlayer(IStrideTestContext context, double x, double y, double z)
+        => SendQuery<PositionResponse>("TeleportPlayer", context, new TeleportPlayerRequest(x, y, z));
 
-    public static TileInfo GetTileAtWorldPos(IStrideTestContext context, double worldX, double worldZ)
-    {
-        var response = context.SendCommand(AutomationCommand.GameQuery("GetTileAtWorldPos", worldX, worldZ));
-        if (!response.Success)
-            throw new InvalidOperationException($"GetTileAtWorldPos failed: {response.Error}");
+    public static KillEnemyResponse KillEnemy(IStrideTestContext context, string enemyId)
+        => SendQuery<KillEnemyResponse>("KillEnemy", context, new KillEnemyRequest(enemyId));
 
-        var je = (JsonElement)response.Result!;
-        return new TileInfo(
-            je.GetProperty("tileX").GetInt32(),
-            je.GetProperty("tileZ").GetInt32(),
-            je.GetProperty("tileType").GetString() ?? "",
-            je.GetProperty("tileTypeId").GetInt32());
-    }
+    // --- Phase B: Inventory / Loot / HUD helpers (typed contracts) ---
 
-    public static Position GetEntityPosition(IStrideTestContext context, string entityName)
-    {
-        var response = context.SendCommand(AutomationCommand.GameQuery("GetEntityPosition", entityName));
-        if (!response.Success)
-            throw new InvalidOperationException($"GetEntityPosition({entityName}) failed: {response.Error}");
+    public static InventoryStateResponse GetInventoryState(IStrideTestContext context)
+        => SendQuery<InventoryStateResponse>("GetInventoryState", context);
 
-        var je = (JsonElement)response.Result!;
-        return new Position(
-            je.GetProperty("x").GetDouble(),
-            je.GetProperty("y").GetDouble(),
-            je.GetProperty("z").GetDouble());
-    }
+    public static EquipmentStateResponse GetEquipmentState(IStrideTestContext context)
+        => SendQuery<EquipmentStateResponse>("GetEquipmentState", context);
 
-    // --- Combat helpers ---
+    public static HudStateResponse GetHudState(IStrideTestContext context)
+        => SendQuery<HudStateResponse>("GetHudState", context);
 
-    public record EnemyState(
-        string Id, int Hp, int MaxHp, int Ap, int MaxAp,
-        bool IsAlive, double X, double Y, double Z);
-
-    public record CombatState(
-        bool InCombat, int EnemyCount,
-        List<EnemyState> Enemies,
-        int PlayerHp, int PlayerMaxHp,
-        int PlayerAp, int PlayerMaxAp);
-
-    public static CombatState GetCombatState(IStrideTestContext context)
-    {
-        var response = context.SendCommand(AutomationCommand.GameQuery("GetCombatState"));
-        if (!response.Success)
-            throw new InvalidOperationException($"GetCombatState failed: {response.Error}");
-
-        var je = (JsonElement)response.Result!;
-
-        var enemies = new List<EnemyState>();
-        if (je.TryGetProperty("enemies", out var arr))
-        {
-            foreach (var item in arr.EnumerateArray())
-            {
-                enemies.Add(new EnemyState(
-                    item.GetProperty("id").GetString() ?? "",
-                    item.GetProperty("hp").GetInt32(),
-                    item.GetProperty("maxHp").GetInt32(),
-                    item.GetProperty("ap").GetInt32(),
-                    item.GetProperty("maxAp").GetInt32(),
-                    item.GetProperty("isAlive").GetBoolean(),
-                    item.GetProperty("x").GetDouble(),
-                    item.GetProperty("y").GetDouble(),
-                    item.GetProperty("z").GetDouble()));
-            }
-        }
-
-        return new CombatState(
-            je.GetProperty("inCombat").GetBoolean(),
-            je.GetProperty("enemyCount").GetInt32(),
-            enemies,
-            je.GetProperty("playerHp").GetInt32(),
-            je.GetProperty("playerMaxHp").GetInt32(),
-            je.GetProperty("playerAp").GetInt32(),
-            je.GetProperty("playerMaxAp").GetInt32());
-    }
-
-    public static Position TeleportPlayer(IStrideTestContext context, double x, double y, double z)
-    {
-        var response = context.SendCommand(AutomationCommand.GameQuery("TeleportPlayer", x, y, z));
-        if (!response.Success)
-            throw new InvalidOperationException($"TeleportPlayer failed: {response.Error}");
-
-        var je = (JsonElement)response.Result!;
-        return new Position(
-            je.GetProperty("x").GetDouble(),
-            je.GetProperty("y").GetDouble(),
-            je.GetProperty("z").GetDouble());
-    }
-
-    public static (bool Killed, int RemainingAlive) KillEnemy(IStrideTestContext context, string enemyId)
-    {
-        var response = context.SendCommand(AutomationCommand.GameQuery("KillEnemy", enemyId));
-        if (!response.Success)
-            throw new InvalidOperationException($"KillEnemy({enemyId}) failed: {response.Error}");
-
-        var je = (JsonElement)response.Result!;
-        return (je.GetProperty("killed").GetBoolean(),
-                je.GetProperty("remainingAlive").GetInt32());
-    }
-
-    // --- Phase B: Inventory / Loot / HUD helpers ---
-
-    public record InventoryItem(string Id, string Name, string Category, int Count, double Weight);
-
-    public record InventoryState(
-        int ItemCount, double CurrentWeight, double MaxWeight,
-        bool IsOverweight, List<InventoryItem> Items);
-
-    public record EquipmentSlotInfo(string? Id, string? Name);
-
-    public record EquipmentState(Dictionary<string, EquipmentSlotInfo?> Slots);
-
-    public record HudState(int Hp, int MaxHp, int Ap, int MaxAp, int Level, string GameState);
-
-    public record LootEntityInfo(string Name, double X, double Y, double Z, int ItemCount);
-
-    public record LootEntitiesState(int Count, List<LootEntityInfo> Entities);
-
-    public static InventoryState GetInventoryState(IStrideTestContext context)
-    {
-        var response = context.SendCommand(AutomationCommand.GameQuery("GetInventoryState"));
-        if (!response.Success)
-            throw new InvalidOperationException($"GetInventoryState failed: {response.Error}");
-
-        var je = (JsonElement)response.Result!;
-
-        var items = new List<InventoryItem>();
-        if (je.TryGetProperty("items", out var arr))
-        {
-            foreach (var item in arr.EnumerateArray())
-            {
-                items.Add(new InventoryItem(
-                    item.GetProperty("id").GetString() ?? "",
-                    item.GetProperty("name").GetString() ?? "",
-                    item.GetProperty("category").GetString() ?? "",
-                    item.GetProperty("count").GetInt32(),
-                    item.GetProperty("weight").GetDouble()));
-            }
-        }
-
-        return new InventoryState(
-            je.GetProperty("itemCount").GetInt32(),
-            je.GetProperty("currentWeight").GetDouble(),
-            je.GetProperty("maxWeight").GetDouble(),
-            je.GetProperty("isOverweight").GetBoolean(),
-            items);
-    }
-
-    public static EquipmentState GetEquipmentState(IStrideTestContext context)
-    {
-        var response = context.SendCommand(AutomationCommand.GameQuery("GetEquipmentState"));
-        if (!response.Success)
-            throw new InvalidOperationException($"GetEquipmentState failed: {response.Error}");
-
-        var je = (JsonElement)response.Result!;
-        var slots = new Dictionary<string, EquipmentSlotInfo?>();
-
-        if (je.TryGetProperty("slots", out var slotsEl))
-        {
-            foreach (var prop in slotsEl.EnumerateObject())
-            {
-                if (prop.Value.ValueKind == JsonValueKind.Null)
-                {
-                    slots[prop.Name] = null;
-                }
-                else
-                {
-                    slots[prop.Name] = new EquipmentSlotInfo(
-                        prop.Value.GetProperty("id").GetString(),
-                        prop.Value.GetProperty("name").GetString());
-                }
-            }
-        }
-
-        return new EquipmentState(slots);
-    }
-
-    public static HudState GetHudState(IStrideTestContext context)
-    {
-        var response = context.SendCommand(AutomationCommand.GameQuery("GetHudState"));
-        if (!response.Success)
-            throw new InvalidOperationException($"GetHudState failed: {response.Error}");
-
-        var je = (JsonElement)response.Result!;
-        return new HudState(
-            je.GetProperty("hp").GetInt32(),
-            je.GetProperty("maxHp").GetInt32(),
-            je.GetProperty("ap").GetInt32(),
-            je.GetProperty("maxAp").GetInt32(),
-            je.GetProperty("level").GetInt32(),
-            je.GetProperty("gameState").GetString() ?? "");
-    }
-
-    public static LootEntitiesState GetLootEntities(IStrideTestContext context)
-    {
-        var response = context.SendCommand(AutomationCommand.GameQuery("GetLootEntities"));
-        if (!response.Success)
-            throw new InvalidOperationException($"GetLootEntities failed: {response.Error}");
-
-        var je = (JsonElement)response.Result!;
-
-        var entities = new List<LootEntityInfo>();
-        if (je.TryGetProperty("entities", out var arr))
-        {
-            foreach (var e in arr.EnumerateArray())
-            {
-                entities.Add(new LootEntityInfo(
-                    e.GetProperty("name").GetString() ?? "",
-                    e.GetProperty("x").GetDouble(),
-                    e.GetProperty("y").GetDouble(),
-                    e.GetProperty("z").GetDouble(),
-                    e.GetProperty("itemCount").GetInt32()));
-            }
-        }
-
-        return new LootEntitiesState(
-            je.GetProperty("count").GetInt32(),
-            entities);
-    }
+    public static LootEntitiesResponse GetLootEntities(IStrideTestContext context)
+        => SendQuery<LootEntitiesResponse>("GetLootEntities", context);
 
     public static bool GetInventoryOverlayVisible(IStrideTestContext context)
     {
-        var response = context.SendCommand(AutomationCommand.GameQuery("GetInventoryOverlayVisible"));
-        if (!response.Success)
-            throw new InvalidOperationException($"GetInventoryOverlayVisible failed: {response.Error}");
-
-        var je = (JsonElement)response.Result!;
-        return je.GetProperty("visible").GetBoolean();
+        var result = SendQuery<InventoryOverlayResponse>("GetInventoryOverlayVisible", context);
+        return result.Visible;
     }
 
-    // --- Phase C: Notification / Game Over / Enemy Bars helpers ---
+    // --- Phase C: Notification / Game Over / Enemy Bars helpers (typed contracts) ---
 
-    public record NotificationMessage(string Text, double TimeRemaining);
+    public static NotificationFeedResponse GetNotificationFeed(IStrideTestContext context)
+        => SendQuery<NotificationFeedResponse>("GetNotificationFeed", context);
 
-    public record NotificationFeedState(int Count, List<NotificationMessage> Messages);
+    public static GameOverStateResponse GetGameOverState(IStrideTestContext context)
+        => SendQuery<GameOverStateResponse>("GetGameOverState", context);
 
-    public record GameOverState(bool Visible, string Title);
+    public static EnemyHpBarsResponse GetEnemyHpBars(IStrideTestContext context)
+        => SendQuery<EnemyHpBarsResponse>("GetEnemyHpBars", context);
 
-    public record EnemyHpBarInfo(string EnemyId, int Hp, int MaxHp);
+    public static DamagePlayerResponse DamagePlayer(IStrideTestContext context, int amount)
+        => SendQuery<DamagePlayerResponse>("DamagePlayer", context, new DamagePlayerRequest(amount));
 
-    public record EnemyHpBarsState(bool Visible, List<EnemyHpBarInfo> Bars);
+    // --- Phase D: Combat config & equip helpers (typed contracts) ---
 
-    public record DamageResult(int NewHp, int MaxHp, bool IsAlive);
+    public static CombatConfigResponse GetCombatConfig(IStrideTestContext context)
+        => SendQuery<CombatConfigResponse>("GetCombatConfig", context);
 
-    public static NotificationFeedState GetNotificationFeed(IStrideTestContext context)
+    public static EquipItemResponse EquipItem(IStrideTestContext context, string itemId)
+        => SendQuery<EquipItemResponse>("EquipItem", context, new EquipItemRequest { ItemId = itemId });
+
+    // --- Phase E: Scenario helpers (typed contracts) ---
+
+    private static readonly JsonSerializerOptions _jsonOpts = new()
     {
-        var response = context.SendCommand(AutomationCommand.GameQuery("GetNotificationFeed"));
-        if (!response.Success)
-            throw new InvalidOperationException($"GetNotificationFeed failed: {response.Error}");
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    };
 
-        var je = (JsonElement)response.Result!;
-        var messages = new List<NotificationMessage>();
-        if (je.TryGetProperty("messages", out var arr))
+    private static TResponse SendQuery<TResponse>(
+        string method, IStrideTestContext context, object? request = null)
+    {
+        var args = request != null
+            ? new object[] { JsonSerializer.Serialize(request, _jsonOpts) }
+            : Array.Empty<object>();
+
+        var response = context.SendCommand(AutomationCommand.GameQuery(method, args));
+        if (!response.Success)
+            throw new InvalidOperationException($"{method} failed: {response.Error}");
+
+        var json = ((JsonElement)response.Result!).GetRawText();
+        return JsonSerializer.Deserialize<TResponse>(json, _jsonOpts)
+            ?? throw new InvalidOperationException($"{method} returned null");
+    }
+
+    public static ScenarioResetResponse ResetScenario(IStrideTestContext context)
+        => SendQuery<ScenarioResetResponse>("ResetScenario", context);
+
+    public static SpawnEnemyResponse SpawnEnemy(
+        IStrideTestContext context,
+        string id, double x, double z,
+        int? hp = null, int endurance = 1, int luck = 3,
+        int weaponDamage = 4, float weaponAccuracy = 0.50f)
+        => SendQuery<SpawnEnemyResponse>("SpawnEnemy", context, new SpawnEnemyRequest
         {
-            foreach (var m in arr.EnumerateArray())
-            {
-                messages.Add(new NotificationMessage(
-                    m.GetProperty("text").GetString() ?? "",
-                    m.GetProperty("timeRemaining").GetDouble()));
-            }
-        }
+            Id = id, X = x, Z = z, Hp = hp,
+            Endurance = endurance, Luck = luck,
+            WeaponDamage = weaponDamage, WeaponAccuracy = weaponAccuracy,
+        });
 
-        return new NotificationFeedState(
-            je.GetProperty("count").GetInt32(),
-            messages);
-    }
-
-    public static GameOverState GetGameOverState(IStrideTestContext context)
-    {
-        var response = context.SendCommand(AutomationCommand.GameQuery("GetGameOverState"));
-        if (!response.Success)
-            throw new InvalidOperationException($"GetGameOverState failed: {response.Error}");
-
-        var je = (JsonElement)response.Result!;
-        return new GameOverState(
-            je.GetProperty("visible").GetBoolean(),
-            je.GetProperty("title").GetString() ?? "");
-    }
-
-    public static EnemyHpBarsState GetEnemyHpBars(IStrideTestContext context)
-    {
-        var response = context.SendCommand(AutomationCommand.GameQuery("GetEnemyHpBars"));
-        if (!response.Success)
-            throw new InvalidOperationException($"GetEnemyHpBars failed: {response.Error}");
-
-        var je = (JsonElement)response.Result!;
-        var bars = new List<EnemyHpBarInfo>();
-        if (je.TryGetProperty("bars", out var arr))
+    public static SetStatsResponse SetPlayerStats(
+        IStrideTestContext context,
+        int? endurance = null, int? luck = null,
+        int? strength = null, int? hp = null)
+        => SendQuery<SetStatsResponse>("SetPlayerStats", context, new SetPlayerStatsRequest
         {
-            foreach (var b in arr.EnumerateArray())
-            {
-                bars.Add(new EnemyHpBarInfo(
-                    b.GetProperty("enemyId").GetString() ?? "",
-                    b.GetProperty("hp").GetInt32(),
-                    b.GetProperty("maxHp").GetInt32()));
-            }
-        }
+            Endurance = endurance, Luck = luck, Strength = strength, Hp = hp,
+        });
 
-        return new EnemyHpBarsState(
-            je.GetProperty("visible").GetBoolean(),
-            bars);
-    }
-
-    public static DamageResult DamagePlayer(IStrideTestContext context, int amount)
-    {
-        var response = context.SendCommand(AutomationCommand.GameQuery("DamagePlayer", amount));
-        if (!response.Success)
-            throw new InvalidOperationException($"DamagePlayer failed: {response.Error}");
-
-        var je = (JsonElement)response.Result!;
-        return new DamageResult(
-            je.GetProperty("newHp").GetInt32(),
-            je.GetProperty("maxHp").GetInt32(),
-            je.GetProperty("isAlive").GetBoolean());
-    }
+    public static SetWeaponResponse SetPlayerWeapon(
+        IStrideTestContext context,
+        int damage, float accuracy,
+        float range = 2f, int apCost = 3, float critMultiplier = 1.5f)
+        => SendQuery<SetWeaponResponse>("SetPlayerWeapon", context, new SetPlayerWeaponRequest
+        {
+            Damage = damage, Accuracy = accuracy,
+            Range = range, ApCost = apCost, CritMultiplier = critMultiplier,
+        });
 }

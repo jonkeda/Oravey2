@@ -38,6 +38,14 @@ public sealed class GameStateManager
         return true;
     }
 
+    public void ForceState(GameState newState)
+    {
+        var oldState = CurrentState;
+        CurrentState = newState;
+        _logger.LogInformation("Forced state transition: {From} -> {To}", oldState, newState);
+        _eventBus.Publish(new GameStateChangedEvent(oldState, newState));
+    }
+
     private static bool IsValidTransition(GameState from, GameState to)
     {
         return (from, to) switch

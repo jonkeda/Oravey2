@@ -16,7 +16,7 @@ public class PlayerMovementScript : SyncScript
     /// <summary>
     /// Reference to the camera script to read current yaw for movement direction.
     /// </summary>
-    public IsometricCameraScript? CameraScript { get; set; }
+    public TacticalCameraScript? CameraScript { get; set; }
 
     /// <summary>
     /// Tile map used for walkability checks. If null, no collision is enforced.

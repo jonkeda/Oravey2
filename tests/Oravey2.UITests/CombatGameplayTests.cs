@@ -1,5 +1,6 @@
 using Brinell.Stride.Communication;
 using Brinell.Stride.Infrastructure;
+using Oravey2.Core.Automation;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -19,7 +20,7 @@ public class CombatGameplayTests : IAsyncLifetime
     public async Task InitializeAsync() => await _fixture.InitializeAsync();
     public async Task DisposeAsync() => await _fixture.DisposeAsync();
 
-    private GameQueryHelpers.CombatState WaitForCombat()
+    private CombatStateResponse WaitForCombat()
     {
         // Find any alive enemy to teleport near (resilient to test ordering)
         var combat = GameQueryHelpers.GetCombatState(_fixture.Context);

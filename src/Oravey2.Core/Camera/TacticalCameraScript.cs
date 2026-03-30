@@ -7,7 +7,7 @@ using Stride.Engine.Processors;
 
 namespace Oravey2.Core.Camera;
 
-public class IsometricCameraScript : SyncScript
+public class TacticalCameraScript : SyncScript
 {
     /// <summary>
     /// The entity the camera follows (typically the player).

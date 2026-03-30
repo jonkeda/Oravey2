@@ -1,4 +1,5 @@
 using Brinell.Stride.Infrastructure;
+using Oravey2.Core.Automation;
 using Xunit;
 
 namespace Oravey2.UITests;
@@ -80,7 +81,7 @@ public class CombatTriggerTests : IAsyncLifetime
     {
         GameQueryHelpers.TeleportPlayer(_fixture.Context, 4, 0.5, 8);
 
-        GameQueryHelpers.CombatState combat = null!;
+        CombatStateResponse combat = null!;
         for (int i = 0; i < 10; i++)
         {
             _fixture.Context.HoldKey(VirtualKey.Space, 50);
