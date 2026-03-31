@@ -85,6 +85,7 @@ public sealed class GameBootstrapper
 
         // --- Scenario loader ---
         var scenarioLoader = new ScenarioLoader { Font = font };
+        var zoneManager = new ZoneManager(scenarioLoader);
 
         // Helper: build SaveData from current scenario state
         SaveData? BuildSaveData()
@@ -115,6 +116,31 @@ public sealed class GameBootstrapper
         {
             scenarioLoader.Load(scenarioId, rootScene, game,
                 cameraEntity, gameStateManager, eventBus, inputProvider, logger);
+
+            // Track the current zone
+            var zoneId = scenarioId switch { "m0_combat" => "wasteland", _ => scenarioId };
+            zoneManager.SetCurrentZone(zoneId);
+
+            // Wire zone exit trigger if present (town has a gate exit)
+            if (scenarioLoader.ZoneExitTrigger != null)
+            {
+                scenarioLoader.ZoneExitTrigger.OnZoneExit = (targetZoneId, spawnPos) =>
+                {
+                    PerformSave();
+                    zoneManager.TransitionTo(targetZoneId, rootScene, game,
+                        cameraEntity, gameStateManager, eventBus, inputProvider, logger, spawnPos);
+                    // Re-wire death penalty for the new scenario
+                    eventBus.Subscribe<GameStateChangedEvent>(e =>
+                    {
+                        if (e.NewState == GameState.GameOver && scenarioLoader.PlayerInventory != null)
+                        {
+                            var lost = scenarioLoader.PlayerInventory.ApplyDeathPenalty();
+                            if (lost > 0)
+                                scenarioLoader.NotificationService?.Add($"Lost {lost} Caps", 3f);
+                        }
+                    });
+                };
+            }
 
             // Death penalty: lose 10% Caps on GameOver
             eventBus.Subscribe<GameStateChangedEvent>(e =>
@@ -240,6 +266,7 @@ public sealed class GameBootstrapper
                 isBusyProvider: () => false);
             var oraveyHandler = new OraveyAutomationHandler(strideHandler, rootScene, game);
             oraveyHandler.SetScenarioLoader(scenarioLoader);
+            oraveyHandler.SetZoneManager(zoneManager);
             oraveyHandler.SetM1(saveService, autoSaveTracker, startMenuScript, pauseMenuScript, settingsMenuScript);
             game.UseAutomation(oraveyHandler,
                 options: new AutomationServerOptions { VerboseLogging = true });

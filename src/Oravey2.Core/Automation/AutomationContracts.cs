@@ -199,3 +199,7 @@ public record DialogueChoiceResponse(bool Success, bool DialogueEnded);
 public record GiveItemToPlayerRequest(string ItemId, int Count);
 
 public record GiveItemToPlayerResponse(bool Success);
+
+// ---- M1 Phase 2.6: Zone transitions ----
+
+public record CurrentZoneResponse(string ZoneId, string ZoneName);

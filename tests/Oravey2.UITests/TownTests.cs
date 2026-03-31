@@ -1,5 +1,6 @@
 using Brinell.Stride.Context;
 using Brinell.Stride.Testing;
+using Oravey2.Core.Automation;
 using Xunit;
 
 namespace Oravey2.UITests;
@@ -215,5 +216,45 @@ public class TownTests : IAsyncLifetime
 
         var capsAfter = GameQueryHelpers.GetCapsState(_fixture.Context);
         Assert.Equal(capsBefore.Caps + 5, capsAfter.Caps);
+    }
+
+    // --- Sub-Phase 2.6: Zone Transitions ---
+
+    [Fact]
+    public void Town_CurrentZone_IsTown()
+    {
+        var zone = GameQueryHelpers.GetCurrentZone(_fixture.Context);
+        Assert.Equal("town", zone.ZoneId);
+        Assert.Equal("Haven", zone.ZoneName);
+    }
+
+    [Fact]
+    public void Town_TeleportToGate_TransitionsZone()
+    {
+        // Gate exit trigger is at world (14.5, 0.5, 2.0) with radius 1.5
+        GameQueryHelpers.TeleportPlayer(_fixture.Context, 14.5, 0.5, 2.0);
+
+        // Allow game frames to tick so ZoneExitTriggerScript.Update() processes
+        Thread.Sleep(500);
+
+        var zone = GameQueryHelpers.GetCurrentZone(_fixture.Context);
+        Assert.Equal("wasteland", zone.ZoneId);
+    }
+
+    [Fact]
+    public void Town_ZoneTransition_PlayerAtSpawn()
+    {
+        // If previous test already transitioned, we're in wasteland
+        var zone = GameQueryHelpers.GetCurrentZone(_fixture.Context);
+        if (zone.ZoneId == "town")
+        {
+            GameQueryHelpers.TeleportPlayer(_fixture.Context, 14.5, 0.5, 2.0);
+            Thread.Sleep(500);
+        }
+
+        var pos = GameQueryHelpers.GetPlayerPosition(_fixture.Context);
+        Assert.Equal(0.0, pos.X, 1.0);
+        Assert.Equal(0.5, pos.Y, 0.5);
+        Assert.Equal(0.0, pos.Z, 1.0);
     }
 }

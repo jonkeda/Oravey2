@@ -201,4 +201,9 @@ public static class GameQueryHelpers
 
     public static GiveItemToPlayerResponse GiveItemToPlayer(IStrideTestContext context, string itemId, int count = 1)
         => SendQuery<GiveItemToPlayerResponse>("GiveItemToPlayer", context, new GiveItemToPlayerRequest(itemId, count));
+
+    // --- M1 Phase 2.6: Zone helpers ---
+
+    public static CurrentZoneResponse GetCurrentZone(IStrideTestContext context)
+        => SendQuery<CurrentZoneResponse>("GetCurrentZone", context);
 }

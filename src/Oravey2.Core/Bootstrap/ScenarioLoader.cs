@@ -50,6 +50,7 @@ public sealed class ScenarioLoader
     public Entity? PlayerEntity { get; private set; }
     public DialogueProcessor? DialogueProcessor { get; private set; }
     public DialogueContext? DialogueContext { get; private set; }
+    public ZoneExitTriggerScript? ZoneExitTrigger { get; private set; }
 
     public bool IsLoaded => _loadedEntities.Count > 0;
     public string? CurrentScenarioId { get; private set; }
@@ -100,6 +101,7 @@ public sealed class ScenarioLoader
         PlayerEntity = null;
         DialogueProcessor = null;
         DialogueContext = null;
+        ZoneExitTrigger = null;
         CurrentScenarioId = null;
     }
 
@@ -499,6 +501,21 @@ public sealed class ScenarioLoader
 
         // NPCs
         SpawnNpcs(rootScene, game, playerEntity, inputProvider, eventBus, gameStateManager);
+
+        // Zone exit trigger at gate (tile 30,17 / 30,18 → world ~14.5, 0.5, 2.0)
+        var zoneExitEntity = new Entity("ZoneExitTrigger");
+        zoneExitEntity.Transform.Position = new Vector3(14.5f, 0.5f, 2.0f);
+        var zoneExitScript = new ZoneExitTriggerScript
+        {
+            Player = playerEntity,
+            TargetZoneId = "wasteland",
+            TargetSpawnPosition = new Vector3(0f, 0.5f, 0f),
+            TriggerRadius = 1.5f,
+            StateManager = gameStateManager,
+        };
+        zoneExitEntity.Add(zoneExitScript);
+        AddEntity(zoneExitEntity, rootScene);
+        ZoneExitTrigger = zoneExitScript;
     }
 
     private void SpawnNpcs(Scene rootScene, Game game,

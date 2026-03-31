@@ -62,6 +62,7 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
     private PauseMenuScript? _pauseMenu;
     private SettingsMenuScript? _settingsMenu;
     private ScenarioLoader? _scenarioLoader;
+    private ZoneManager? _zoneManager;
 
     public OraveyAutomationHandler(IAutomationHandler inner, Scene rootScene, Game game)
     {
@@ -123,6 +124,11 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
     public void SetScenarioLoader(ScenarioLoader scenarioLoader)
     {
         _scenarioLoader = scenarioLoader;
+    }
+
+    public void SetZoneManager(ZoneManager zoneManager)
+    {
+        _zoneManager = zoneManager;
     }
 
     /// <summary>
@@ -203,6 +209,7 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
             "GetDialogueState" => GetDialogueState(),
             "SelectDialogueChoice" => SelectDialogueChoice(command),
             "GiveItemToPlayer" => GiveItemToPlayer(command),
+            "GetCurrentZone" => GetCurrentZone(),
             _ => null // Let inner handler deal with it
         };
     }
@@ -1246,5 +1253,15 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
         var def = ItemResolver.Resolve(req.ItemId);
         _playerInventory.Add(new ItemInstance(def, req.Count));
         return Respond(new GiveItemToPlayerResponse(true));
+    }
+
+    private AutomationResponse GetCurrentZone()
+    {
+        if (_zoneManager == null)
+            return AutomationResponse.Fail("ZoneManager not initialized");
+
+        return Respond(new CurrentZoneResponse(
+            _zoneManager.CurrentZoneId ?? "unknown",
+            _zoneManager.CurrentZoneName));
     }
 }

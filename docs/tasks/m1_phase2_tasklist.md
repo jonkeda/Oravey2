@@ -1,6 +1,6 @@
 # M1 Phase 2 — Task List
 
-**Baseline:** 692 unit tests + 22 UI tests passing (8 smoke + 14 town)
+**Baseline:** 697 unit tests + 25 UI tests passing (8 smoke + 17 town)
 
 ---
 
@@ -68,16 +68,16 @@
 - [x] `TradeActionTests.cs` — 12 unit tests (buy/sell/give + dialogue processor integration)
 - [x] UI tests (+3): buy deducts caps, buy adds to inventory, sell adds caps
 
-## Sub-Phase 2.6 — Zone Transition (Town → Wasteland) ⬜
+## Sub-Phase 2.6 — Zone Transition (Town → Wasteland) ✅
 
-- [ ] `ZoneExitTriggerScript.cs` — SyncScript: player proximity to gate → fires callback
-- [ ] `ZoneManager.cs` — Tracks current zone, delegates load/unload to ScenarioLoader
-- [ ] `ScenarioLoader.LoadTown()` — Place `ZoneExitTriggerScript` at gate
-- [ ] `GameBootstrapper` — Create `ZoneManager`, wire zone exit + auto-save
-- [ ] `AutomationContracts` — `CurrentZoneResponse`
-- [ ] `OraveyAutomationHandler` — `GetCurrentZone` handler
-- [ ] `ZoneManagerTests.cs` — 5 unit tests (zone tracking, defaults, overwrite)
-- [ ] UI tests (+3): current zone = town, teleport to gate → wasteland, player at spawn
+- [x] `ZoneExitTriggerScript.cs` — SyncScript: player proximity to gate → fires callback
+- [x] `ZoneManager.cs` — Tracks current zone, delegates load/unload to ScenarioLoader
+- [x] `ScenarioLoader.LoadTown()` — Place `ZoneExitTriggerScript` at gate
+- [x] `GameBootstrapper` — Create `ZoneManager`, wire zone exit + auto-save
+- [x] `AutomationContracts` — `CurrentZoneResponse`
+- [x] `OraveyAutomationHandler` — `GetCurrentZone` handler
+- [x] `ZoneManagerTests.cs` — 5 unit tests (zone tracking, defaults, overwrite)
+- [x] UI tests (+3): current zone = town, teleport to gate → wasteland, player at spawn
 
 ---
 
@@ -91,4 +91,6 @@
 | 2.3 Interaction | ✅ Done | +4 | +3 |
 | 2.4 Dialogue | ✅ Done | +10 | +5 |
 | 2.5 Merchant | ✅ Done | +12 | +3 |
-| 2.6 Zones | ⬜ | +5 | +3 |
+| 2.6 Zones | ✅ Done | +5 | +3 |
+
+**Final: 697 unit tests + 25 UI tests — M1 Phase 2 COMPLETE**
