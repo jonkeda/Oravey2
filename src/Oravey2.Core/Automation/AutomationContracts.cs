@@ -171,3 +171,9 @@ public record TriggerLoadResponse(bool Success);
 public record SaveExistsResponse(bool Exists);
 
 public record CapsStateResponse(int Caps);
+
+// ---- M1 Phase 2: NPC commands ----
+
+public record NpcDto(string Id, string DisplayName, string Role, double X, double Y, double Z);
+
+public record NpcListResponse(int Count, List<NpcDto> Npcs);

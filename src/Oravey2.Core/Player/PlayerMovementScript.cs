@@ -3,6 +3,7 @@ using Oravey2.Core.Framework.Events;
 using Oravey2.Core.Framework.Services;
 using Oravey2.Core.Framework.State;
 using Oravey2.Core.Input;
+using Oravey2.Core.NPC;
 using Oravey2.Core.World;
 using Stride.Core.Mathematics;
 using Stride.Engine;
@@ -12,6 +13,11 @@ namespace Oravey2.Core.Player;
 public class PlayerMovementScript : SyncScript
 {
     public float MoveSpeed { get; set; } = 5f;
+
+    /// <summary>
+    /// Collision radius matching the player capsule visual (0.3).
+    /// </summary>
+    public float CollisionRadius { get; set; } = 0.3f;
 
     /// <summary>
     /// Reference to the camera script to read current yaw for movement direction.
@@ -73,18 +79,65 @@ public class PlayerMovementScript : SyncScript
         var delta = worldDir * MoveSpeed * dt;
         var newPos = oldPosition + delta;
 
-        // Axis-separated tile collision: check X and Z independently for wall sliding
+        // Axis-separated tile collision: check bounding box corners for wall sliding
         if (MapData != null)
         {
-            if (!MapData.IsWalkableAtWorld(newPos.X, oldPosition.Z, TileSize))
+            var r = CollisionRadius;
+
+            if (!IsWalkableBBox(MapData, newPos.X, oldPosition.Z, r, TileSize))
                 newPos.X = oldPosition.X;
 
-            if (!MapData.IsWalkableAtWorld(newPos.X, newPos.Z, TileSize))
+            if (!IsWalkableBBox(MapData, newPos.X, newPos.Z, r, TileSize))
                 newPos.Z = oldPosition.Z;
         }
+
+        // NPC circle-circle collision: reject movement that overlaps any NPC
+        newPos = ResolveNpcCollision(newPos, oldPosition);
 
         Entity.Transform.Position = newPos;
 
         _eventBus?.Publish(new PlayerMovedEvent(oldPosition, Entity.Transform.Position));
+    }
+
+    /// <summary>
+    /// Returns true only if all four corners of the player's bounding box are on walkable tiles.
+    /// </summary>
+    private static bool IsWalkableBBox(TileMapData map, float x, float z, float radius, float tileSize)
+    {
+        return map.IsWalkableAtWorld(x - radius, z - radius, tileSize)
+            && map.IsWalkableAtWorld(x + radius, z - radius, tileSize)
+            && map.IsWalkableAtWorld(x - radius, z + radius, tileSize)
+            && map.IsWalkableAtWorld(x + radius, z + radius, tileSize);
+    }
+
+    /// <summary>
+    /// Pushes the player out of any overlapping NPC using axis-separated resolution.
+    /// </summary>
+    private Vector3 ResolveNpcCollision(Vector3 newPos, Vector3 oldPos)
+    {
+        if (Entity.Scene == null) return newPos;
+
+        foreach (var entity in Entity.Scene.Entities)
+        {
+            var npc = entity.Get<NpcComponent>();
+            if (npc == null) continue;
+
+            var npcPos = entity.Transform.Position;
+            var minDist = CollisionRadius + npc.CollisionRadius;
+
+            // Check X axis
+            var dx = newPos.X - npcPos.X;
+            var dz = oldPos.Z - npcPos.Z;
+            if (dx * dx + dz * dz < minDist * minDist)
+                newPos.X = oldPos.X;
+
+            // Check Z axis  
+            dx = newPos.X - npcPos.X;
+            dz = newPos.Z - npcPos.Z;
+            if (dx * dx + dz * dz < minDist * minDist)
+                newPos.Z = oldPos.Z;
+        }
+
+        return newPos;
     }
 }

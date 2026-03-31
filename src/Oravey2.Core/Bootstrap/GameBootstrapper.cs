@@ -156,13 +156,13 @@ public sealed class GameBootstrapper
         startMenuScript.OnNewGame = () =>
         {
             startMenuScript.Hide();
-            LoadAndWireScenario("m0_combat");
+            LoadAndWireScenario("town");
             logger.LogInformation("New game started");
         };
         startMenuScript.OnContinue = () =>
         {
             startMenuScript.Hide();
-            LoadAndWireScenario("m0_combat");
+            LoadAndWireScenario("town");
             ApplyLoadedSave();
             logger.LogInformation("Game loaded from save");
         };
@@ -221,8 +221,9 @@ public sealed class GameBootstrapper
         saveLoadScript.OnLoad = () =>
         {
             // QuickLoad: reload current scenario + overlay saved state
+            var currentScenario = scenarioLoader.CurrentScenarioId ?? "town";
             scenarioLoader.Unload(rootScene);
-            LoadAndWireScenario("m0_combat");
+            LoadAndWireScenario(currentScenario);
             ApplyLoadedSave();
         };
         saveLoadScript.HasSave = () => saveService.HasSaveFile();

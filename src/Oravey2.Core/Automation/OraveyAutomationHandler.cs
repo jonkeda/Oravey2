@@ -13,6 +13,7 @@ using Oravey2.Core.Inventory.Core;
 using Oravey2.Core.Inventory.Equipment;
 using Oravey2.Core.Inventory.Items;
 using Oravey2.Core.Loot;
+using Oravey2.Core.NPC;
 using Oravey2.Core.Save;
 using Oravey2.Core.UI;
 using Oravey2.Core.UI.Stride;
@@ -195,6 +196,7 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
             "TriggerLoad" => TriggerLoad(),
             "GetSaveExists" => GetSaveExists(),
             "GetCapsState" => GetCapsState(),
+            "GetNpcList" => GetNpcList(),
             _ => null // Let inner handler deal with it
         };
     }
@@ -985,6 +987,22 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
     }
 
     // ---- M1 Phase 1: Menu / Save / Load commands ----
+
+    private AutomationResponse GetNpcList()
+    {
+        var npcs = _rootScene.Entities
+            .Select(e => (Entity: e, Npc: e.Get<NpcComponent>()))
+            .Where(x => x.Npc?.Definition != null)
+            .Select(x =>
+            {
+                var pos = x.Entity.Transform.Position;
+                var def = x.Npc!.Definition!;
+                return new NpcDto(def.Id, def.DisplayName, def.Role.ToString(), pos.X, pos.Y, pos.Z);
+            })
+            .ToList();
+
+        return Respond(new NpcListResponse(npcs.Count, npcs));
+    }
 
     private AutomationResponse GetMenuState(AutomationCommand command)
     {

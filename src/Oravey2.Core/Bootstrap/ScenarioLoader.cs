@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Oravey2.Core.Camera;
 using Oravey2.Core.Character.Health;
 using Oravey2.Core.Character.Level;
+using Oravey2.Core.NPC;
 using Oravey2.Core.Character.Stats;
 using Oravey2.Core.Combat;
 using Oravey2.Core.Framework.Events;
@@ -65,6 +66,9 @@ public sealed class ScenarioLoader
                 break;
             case "empty":
                 LoadEmpty(rootScene, game, cameraEntity, gameStateManager, eventBus, inputProvider, logger);
+                break;
+            case "town":
+                LoadTown(rootScene, game, cameraEntity, gameStateManager, eventBus, inputProvider, logger);
                 break;
             default:
                 logger.LogWarning("Unknown scenario: {Id}, falling back to m0_combat", scenarioId);
@@ -393,5 +397,109 @@ public sealed class ScenarioLoader
         gameOverEntity.Add(gameOverOverlay);
         AddEntity(gameOverEntity, rootScene);
         GameOverOverlay = gameOverOverlay;
+    }
+
+    // ---- town: Haven settlement (no enemies, NPCs added in later sub-phases) ----
+
+    private void LoadTown(Scene rootScene, Game game, Entity cameraEntity,
+        GameStateManager gameStateManager, IEventBus eventBus, IInputProvider inputProvider, ILogger logger)
+    {
+        var (playerEntity, playerMovement, playerStats, playerLevel, playerHealth,
+            playerCombat, playerInventory, playerEquipment, inventoryProcessor)
+            = CreatePlayer(rootScene, game, cameraEntity, gameStateManager, eventBus);
+
+        // Town tile map
+        var mapData = TownMapBuilder.CreateTownMap();
+        var tileMapEntity = new Entity("TileMap");
+        var tileMapRenderer = new TileMapRendererScript { MapData = mapData };
+        tileMapEntity.Add(tileMapRenderer);
+        AddEntity(tileMapEntity, rootScene);
+
+        playerMovement.MapData = mapData;
+        playerMovement.TileSize = tileMapRenderer.TileSize;
+
+        // Notification feed
+        var notificationService = new NotificationService();
+        eventBus.Subscribe<NotificationEvent>(e => notificationService.Add(e.Message, e.DurationSeconds));
+        NotificationService = notificationService;
+
+        var notificationEntity = new Entity("NotificationFeed");
+        notificationEntity.Add(new NotificationFeedScript { Notifications = notificationService, Font = Font });
+        AddEntity(notificationEntity, rootScene);
+
+        // HUD
+        var hudEntity = new Entity("HUD");
+        hudEntity.Add(new HudSyncScript
+        {
+            Health = playerHealth, Combat = playerCombat,
+            Level = playerLevel, StateManager = gameStateManager,
+            Font = Font,
+        });
+        AddEntity(hudEntity, rootScene);
+
+        // Inventory overlay
+        var inventoryOverlayEntity = new Entity("InventoryOverlay");
+        inventoryOverlayEntity.Add(new InventoryOverlayScript
+        {
+            Inventory = playerInventory, StateManager = gameStateManager,
+            Font = Font,
+        });
+        AddEntity(inventoryOverlayEntity, rootScene);
+
+        // Game over overlay
+        var gameOverEntity = new Entity("GameOverOverlay");
+        var gameOverOverlay = new GameOverOverlayScript { StateManager = gameStateManager, Font = Font };
+        gameOverEntity.Add(gameOverOverlay);
+        AddEntity(gameOverEntity, rootScene);
+        GameOverOverlay = gameOverOverlay;
+
+        // NPCs
+        SpawnNpcs(rootScene, game);
+    }
+
+    private void SpawnNpcs(Scene rootScene, Game game)
+    {
+        var npcs = new (NpcDefinition def, Vector3 pos, Color color)[]
+        {
+            (new NpcDefinition("elder", "Elder Tomas", NpcRole.QuestGiver, "elder_dialogue"),
+                new Vector3(-4f, 0.5f, -4.5f), new Color(0.9f, 0.8f, 0.2f)),
+            (new NpcDefinition("merchant", "Mara", NpcRole.Merchant, "merchant_dialogue"),
+                new Vector3(1f, 0.5f, -3.5f), new Color(0.2f, 0.3f, 0.9f)),
+            (new NpcDefinition("civilian_1", "Settler", NpcRole.Civilian, "civilian_dialogue"),
+                new Vector3(-4f, 0.5f, 3.5f), new Color(0.6f, 0.6f, 0.6f)),
+            (new NpcDefinition("civilian_2", "Settler", NpcRole.Civilian, "civilian_dialogue"),
+                new Vector3(13f, 0.5f, 3.5f), new Color(0.6f, 0.6f, 0.6f)),
+        };
+
+        foreach (var (def, pos, color) in npcs)
+        {
+            var npcEntity = new Entity($"npc_{def.Id}");
+            npcEntity.Transform.Position = pos;
+
+            // Capsule visual
+            var visual = new Entity($"npc_{def.Id}_Visual");
+            var mesh = GeometricPrimitive.Capsule.New(game.GraphicsDevice, 0.3f, 0.8f).ToMeshDraw();
+            var model = new Model();
+            model.Meshes.Add(new Mesh { Draw = mesh });
+            model.Materials.Add(game.CreateMaterial(color));
+            visual.Add(new ModelComponent(model));
+            npcEntity.AddChild(visual);
+
+            // NPC component
+            npcEntity.Add(new NpcComponent { Definition = def });
+
+            // Floating name label (offset above capsule)
+            var labelEntity = new Entity($"npc_{def.Id}_Label");
+            labelEntity.Transform.Position = new Vector3(0, 1.2f, 0);
+            labelEntity.Add(new NpcNameLabelScript
+            {
+                DisplayName = def.DisplayName,
+                LabelColor = color,
+                Font = Font,
+            });
+            npcEntity.AddChild(labelEntity);
+
+            AddEntity(npcEntity, rootScene);
+        }
     }
 }

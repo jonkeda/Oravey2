@@ -181,4 +181,9 @@ public static class GameQueryHelpers
 
     public static CapsStateResponse GetCapsState(IStrideTestContext context)
         => SendQuery<CapsStateResponse>("GetCapsState", context);
+
+    // --- M1 Phase 2: NPC helpers (typed contracts) ---
+
+    public static NpcListResponse GetNpcList(IStrideTestContext context)
+        => SendQuery<NpcListResponse>("GetNpcList", context);
 }

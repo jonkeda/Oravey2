@@ -30,6 +30,7 @@ public class StartMenuScript : SyncScript
     private UIComponent? _uiComponent;
     private Border? _overlay;
     private Button? _continueButton;
+    private bool _pendingHide;
 
     /// <summary>Whether the start menu overlay is currently visible.</summary>
     public bool IsVisible => _overlay?.Visibility == Visibility.Visible;
@@ -100,7 +101,7 @@ public class StartMenuScript : SyncScript
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch,
             Content = buttonStack,
-            Visibility = Visibility.Visible,
+            Visibility = _pendingHide ? Visibility.Collapsed : Visibility.Visible,
         };
 
         var page = new UIPage { RootElement = _overlay };
@@ -117,12 +118,14 @@ public class StartMenuScript : SyncScript
 
     public void Show()
     {
+        _pendingHide = false;
         if (_overlay != null)
             _overlay.Visibility = Visibility.Visible;
     }
 
     public void Hide()
     {
+        _pendingHide = true;
         if (_overlay != null)
             _overlay.Visibility = Visibility.Collapsed;
     }
