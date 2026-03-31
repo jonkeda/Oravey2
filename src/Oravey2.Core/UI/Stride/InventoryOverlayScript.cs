@@ -1,10 +1,10 @@
 using global::Stride.Engine;
 using global::Stride.Graphics;
-using global::Stride.Input;
 using global::Stride.UI;
 using global::Stride.UI.Controls;
 using global::Stride.UI.Panels;
 using Oravey2.Core.Framework.State;
+using Oravey2.Core.Input;
 using Oravey2.Core.Inventory.Core;
 using Oravey2.Core.Inventory.Items;
 using Oravey2.Core.UI.ViewModels;
@@ -19,11 +19,13 @@ public class InventoryOverlayScript : SyncScript
 {
     public InventoryComponent? Inventory { get; set; }
     public GameStateManager? StateManager { get; set; }
+    public IInputProvider? InputProvider { get; set; }
     public SpriteFont? Font { get; set; }
 
     private UIComponent? _uiComponent;
     private StackPanel? _itemList;
     private TextBlock? _weightText;
+    private TextBlock? _capsText;
     private bool _visible;
 
     /// <summary>
@@ -39,9 +41,9 @@ public class InventoryOverlayScript : SyncScript
 
     public override void Update()
     {
-        if (StateManager?.CurrentState == GameState.GameOver) return;
+        if (StateManager?.CurrentState is GameState.GameOver or GameState.InDialogue) return;
 
-        if (Input.IsKeyPressed(Keys.Tab))
+        if (InputProvider?.IsActionPressed(GameAction.Inventory) == true)
         {
             _visible = !_visible;
             if (_uiComponent != null)
@@ -67,7 +69,16 @@ public class InventoryOverlayScript : SyncScript
             Font = Font,
             TextSize = 16,
             TextColor = global::Stride.Core.Mathematics.Color.White,
-            Margin = new Thickness(10, 10, 10, 5)
+            Margin = new Thickness(10, 0, 10, 5)
+        };
+
+        _capsText = new TextBlock
+        {
+            Text = "Caps: 0",
+            Font = Font,
+            TextSize = 16,
+            TextColor = new global::Stride.Core.Mathematics.Color(255, 220, 50),
+            Margin = new Thickness(10, 5, 10, 5)
         };
 
         _itemList = new StackPanel
@@ -93,7 +104,7 @@ public class InventoryOverlayScript : SyncScript
             VerticalAlignment = VerticalAlignment.Top,
             BackgroundColor = new global::Stride.Core.Mathematics.Color(0, 0, 0, 180),
             Width = 350,
-            Children = { header, _weightText, _itemList },
+            Children = { header, _capsText, _weightText, _itemList },
             Visibility = Visibility.Collapsed
         };
 
@@ -109,6 +120,9 @@ public class InventoryOverlayScript : SyncScript
         var vm = InventoryViewModel.Create(Inventory);
         _weightText.Text = $"Weight: {vm.CurrentWeight:F1} / {vm.MaxCarryWeight:F0}" +
                            (vm.IsOverweight ? " [OVERWEIGHT]" : "");
+
+        if (_capsText != null)
+            _capsText.Text = $"Caps: {Inventory.Caps}";
 
         _itemList.Children.Clear();
 

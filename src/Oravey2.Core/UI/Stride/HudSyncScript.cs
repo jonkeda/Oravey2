@@ -7,6 +7,7 @@ using Oravey2.Core.Character.Health;
 using Oravey2.Core.Character.Level;
 using Oravey2.Core.Combat;
 using Oravey2.Core.Framework.State;
+using Oravey2.Core.Inventory.Core;
 using Color = global::Stride.Core.Mathematics.Color;
 
 namespace Oravey2.Core.UI.Stride;
@@ -20,6 +21,7 @@ public class HudSyncScript : SyncScript
     public HealthComponent? Health { get; set; }
     public CombatComponent? Combat { get; set; }
     public LevelComponent? Level { get; set; }
+    public InventoryComponent? Inventory { get; set; }
     public GameStateManager? StateManager { get; set; }
     public SpriteFont? Font { get; set; }
 
@@ -33,6 +35,7 @@ public class HudSyncScript : SyncScript
     private Border? _apBarFill;
     private TextBlock? _apText;
     private TextBlock? _levelText;
+    private TextBlock? _capsText;
     private TextBlock? _stateText;
 
     public override void Start()
@@ -109,6 +112,16 @@ public class HudSyncScript : SyncScript
             Margin = new Thickness(4, 2, 0, 2),
         };
 
+        // --- Caps text ---
+        _capsText = new TextBlock
+        {
+            Text = "Caps: 0",
+            Font = Font,
+            TextSize = 14,
+            TextColor = new Color(255, 220, 50),
+            Margin = new Thickness(4, 2, 0, 2),
+        };
+
         // --- State banner ---
         _stateText = new TextBlock
         {
@@ -126,7 +139,7 @@ public class HudSyncScript : SyncScript
             VerticalAlignment = VerticalAlignment.Top,
             BackgroundColor = new Color(0, 0, 0, 120),
             Margin = new Thickness(10, 10, 0, 0),
-            Children = { hpRow, apRow, _levelText, _stateText },
+            Children = { hpRow, apRow, _levelText, _capsText, _stateText },
         };
 
         var page = new UIPage { RootElement = stack };
@@ -156,6 +169,9 @@ public class HudSyncScript : SyncScript
 
         if (Level != null && _levelText != null)
             _levelText.Text = $"LVL: {Level.Level}  XP: {Level.CurrentXP}/{Level.XPToNextLevel}";
+
+        if (Inventory != null && _capsText != null)
+            _capsText.Text = $"Caps: {Inventory.Caps}";
 
         if (StateManager != null && _stateText != null)
         {

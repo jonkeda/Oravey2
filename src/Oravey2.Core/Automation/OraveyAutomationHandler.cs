@@ -6,6 +6,7 @@ using Oravey2.Core.Character.Health;
 using Oravey2.Core.Character.Level;
 using Oravey2.Core.Character.Stats;
 using Oravey2.Core.Combat;
+using Oravey2.Core.Dialogue;
 using Oravey2.Core.Framework.Events;
 using Oravey2.Core.Framework.Services;
 using Oravey2.Core.Framework.State;
@@ -197,6 +198,11 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
             "GetSaveExists" => GetSaveExists(),
             "GetCapsState" => GetCapsState(),
             "GetNpcList" => GetNpcList(),
+            "GetNpcInRange" => GetNpcInRange(),
+            "InteractWithNpc" => InteractWithNpc(command),
+            "GetDialogueState" => GetDialogueState(),
+            "SelectDialogueChoice" => SelectDialogueChoice(command),
+            "GiveItemToPlayer" => GiveItemToPlayer(command),
             _ => null // Let inner handler deal with it
         };
     }
@@ -1004,6 +1010,103 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
         return Respond(new NpcListResponse(npcs.Count, npcs));
     }
 
+    private AutomationResponse GetNpcInRange()
+    {
+        var playerEntity = FindEntity("Player");
+        if (playerEntity == null)
+            return AutomationResponse.Fail("Player entity not found");
+
+        var playerPos = playerEntity.Transform.Position;
+        InteractionTriggerScript? closest = null;
+        Entity? closestEntity = null;
+        float closestDist = float.MaxValue;
+
+        foreach (var entity in _rootScene.Entities)
+        {
+            var trigger = entity.Get<InteractionTriggerScript>();
+            if (trigger?.NpcDef == null) continue;
+
+            var dist = (playerPos - entity.Transform.Position).Length();
+            if (dist <= trigger.InteractionRadius && dist < closestDist)
+            {
+                closest = trigger;
+                closestEntity = entity;
+                closestDist = dist;
+            }
+        }
+
+        if (closest == null)
+            return Respond(new NpcInRangeResponse(false, null, null, -1));
+
+        return Respond(new NpcInRangeResponse(true, closest.NpcDef!.Id, closest.NpcDef.DisplayName, closestDist));
+    }
+
+    private AutomationResponse InteractWithNpc(AutomationCommand command)
+    {
+        var req = DeserializeArg<InteractWithNpcRequest>(command);
+        var npcId = req?.NpcId;
+
+        foreach (var entity in _rootScene.Entities)
+        {
+            var npc = entity.Get<NpcComponent>();
+            if (npc?.Definition?.Id != npcId) continue;
+
+            var trigger = entity.Get<InteractionTriggerScript>();
+            if (trigger?.EventBus == null || trigger.NpcDef == null)
+                return AutomationResponse.Fail($"NPC '{npcId}' has no interaction trigger");
+
+            trigger.EventBus.Publish(new NpcInteractionEvent(trigger.NpcDef.Id, trigger.NpcDef.DialogueTreeId));
+            return Respond(new InteractResponse(true, trigger.NpcDef.Id, trigger.NpcDef.DialogueTreeId));
+        }
+
+        return AutomationResponse.Fail($"NPC '{npcId}' not found");
+    }
+
+    private AutomationResponse GetDialogueState()
+    {
+        var proc = _scenarioLoader?.DialogueProcessor;
+        if (proc == null || !proc.IsActive)
+            return Respond(new DialogueStateResponse(false, null, null, null, null, []));
+
+        var ctx = _scenarioLoader!.DialogueContext;
+        var node = proc.CurrentNode;
+        var choices = ctx != null
+            ? proc.GetAvailableChoices(ctx)
+                .Select(c => new DialogueChoiceDto(c.Choice.Text, c.Available))
+                .ToList()
+            : new List<DialogueChoiceDto>();
+
+        return Respond(new DialogueStateResponse(
+            true,
+            node?.Speaker,
+            node?.Text,
+            proc.ActiveTree?.Id,
+            node?.Id,
+            choices));
+    }
+
+    private AutomationResponse SelectDialogueChoice(AutomationCommand command)
+    {
+        var proc = _scenarioLoader?.DialogueProcessor;
+        var ctx = _scenarioLoader?.DialogueContext;
+        if (proc == null || !proc.IsActive || ctx == null)
+            return AutomationResponse.Fail("No active dialogue");
+
+        var req = DeserializeArg<SelectDialogueChoiceRequest>(command);
+        if (req == null)
+            return AutomationResponse.Fail("SelectDialogueChoice requires index argument");
+
+        var selected = proc.SelectChoice(req.Index, ctx);
+        if (!selected)
+            return AutomationResponse.Fail($"Choice {req.Index} not available");
+
+        var ended = !proc.IsActive;
+        if (ended && _gameStateManager?.CurrentState == GameState.InDialogue)
+            _gameStateManager.TransitionTo(GameState.Exploring);
+
+        return Respond(new DialogueChoiceResponse(true, ended));
+    }
+
     private AutomationResponse GetMenuState(AutomationCommand command)
     {
         var req = DeserializeArg<ClickMenuButtonRequest>(command);
@@ -1129,5 +1232,19 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
     private AutomationResponse GetCapsState()
     {
         return Respond(new CapsStateResponse(_playerInventory?.Caps ?? 0));
+    }
+
+    private AutomationResponse GiveItemToPlayer(AutomationCommand command)
+    {
+        if (_playerInventory == null)
+            return AutomationResponse.Fail("Player inventory not initialized");
+
+        var req = DeserializeArg<GiveItemToPlayerRequest>(command);
+        if (req == null)
+            return AutomationResponse.Fail("Invalid GiveItemToPlayer request");
+
+        var def = ItemResolver.Resolve(req.ItemId);
+        _playerInventory.Add(new ItemInstance(def, req.Count));
+        return Respond(new GiveItemToPlayerResponse(true));
     }
 }

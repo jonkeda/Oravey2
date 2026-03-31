@@ -186,4 +186,19 @@ public static class GameQueryHelpers
 
     public static NpcListResponse GetNpcList(IStrideTestContext context)
         => SendQuery<NpcListResponse>("GetNpcList", context);
+
+    public static NpcInRangeResponse GetNpcInRange(IStrideTestContext context)
+        => SendQuery<NpcInRangeResponse>("GetNpcInRange", context);
+
+    public static InteractResponse InteractWithNpc(IStrideTestContext context, string npcId)
+        => SendQuery<InteractResponse>("InteractWithNpc", context, new InteractWithNpcRequest(npcId));
+
+    public static DialogueStateResponse GetDialogueState(IStrideTestContext context)
+        => SendQuery<DialogueStateResponse>("GetDialogueState", context);
+
+    public static DialogueChoiceResponse SelectDialogueChoice(IStrideTestContext context, int index)
+        => SendQuery<DialogueChoiceResponse>("SelectDialogueChoice", context, new SelectDialogueChoiceRequest(index));
+
+    public static GiveItemToPlayerResponse GiveItemToPlayer(IStrideTestContext context, string itemId, int count = 1)
+        => SendQuery<GiveItemToPlayerResponse>("GiveItemToPlayer", context, new GiveItemToPlayerRequest(itemId, count));
 }

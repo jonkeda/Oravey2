@@ -177,3 +177,25 @@ public record CapsStateResponse(int Caps);
 public record NpcDto(string Id, string DisplayName, string Role, double X, double Y, double Z);
 
 public record NpcListResponse(int Count, List<NpcDto> Npcs);
+
+public record NpcInRangeResponse(bool InRange, string? NpcId, string? DisplayName, double Distance);
+
+public record InteractWithNpcRequest(string NpcId);
+
+public record InteractResponse(bool Success, string? NpcId, string? DialogueTreeId);
+
+public record DialogueChoiceDto(string Text, bool Available);
+
+public record DialogueStateResponse(
+    bool Active, string? Speaker, string? Text, string? TreeId, string? NodeId,
+    List<DialogueChoiceDto> Choices);
+
+public record SelectDialogueChoiceRequest(int Index);
+
+public record DialogueChoiceResponse(bool Success, bool DialogueEnded);
+
+// ---- M1 Phase 2.5: Trade test helpers ----
+
+public record GiveItemToPlayerRequest(string ItemId, int Count);
+
+public record GiveItemToPlayerResponse(bool Success);

@@ -24,6 +24,10 @@ public sealed class KeyboardMouseInputProvider : IInputProvider
         { GameAction.ToggleFullscreen, [Keys.F11] },
         { GameAction.QuickSave, [Keys.F5] },
         { GameAction.QuickLoad, [Keys.F9] },
+        { GameAction.DialogueChoice1, [Keys.D1] },
+        { GameAction.DialogueChoice2, [Keys.D2] },
+        { GameAction.DialogueChoice3, [Keys.D3] },
+        { GameAction.DialogueChoice4, [Keys.D4] },
     };
 
     private InputManager? _input;

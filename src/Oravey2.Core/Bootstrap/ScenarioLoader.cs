@@ -2,6 +2,8 @@ using Microsoft.Extensions.Logging;
 using Oravey2.Core.Camera;
 using Oravey2.Core.Character.Health;
 using Oravey2.Core.Character.Level;
+using Oravey2.Core.Character.Skills;
+using Oravey2.Core.Dialogue;
 using Oravey2.Core.NPC;
 using Oravey2.Core.Character.Stats;
 using Oravey2.Core.Combat;
@@ -46,6 +48,8 @@ public sealed class ScenarioLoader
     public NotificationService? NotificationService { get; private set; }
     public GameOverOverlayScript? GameOverOverlay { get; private set; }
     public Entity? PlayerEntity { get; private set; }
+    public DialogueProcessor? DialogueProcessor { get; private set; }
+    public DialogueContext? DialogueContext { get; private set; }
 
     public bool IsLoaded => _loadedEntities.Count > 0;
     public string? CurrentScenarioId { get; private set; }
@@ -94,6 +98,8 @@ public sealed class ScenarioLoader
         NotificationService = null;
         GameOverOverlay = null;
         PlayerEntity = null;
+        DialogueProcessor = null;
+        DialogueContext = null;
         CurrentScenarioId = null;
     }
 
@@ -269,7 +275,8 @@ public sealed class ScenarioLoader
         hudEntity.Add(new HudSyncScript
         {
             Health = playerHealth, Combat = playerCombat,
-            Level = playerLevel, StateManager = gameStateManager,
+            Level = playerLevel, Inventory = playerInventory,
+            StateManager = gameStateManager,
             Font = Font,
         });
         AddEntity(hudEntity, rootScene);
@@ -279,6 +286,7 @@ public sealed class ScenarioLoader
         inventoryOverlayEntity.Add(new InventoryOverlayScript
         {
             Inventory = playerInventory, StateManager = gameStateManager,
+            InputProvider = inputProvider,
             Font = Font,
         });
         AddEntity(inventoryOverlayEntity, rootScene);
@@ -353,7 +361,8 @@ public sealed class ScenarioLoader
         hudEntity.Add(new HudSyncScript
         {
             Health = playerHealth, Combat = playerCombat,
-            Level = playerLevel, StateManager = gameStateManager,
+            Level = playerLevel, Inventory = playerInventory,
+            StateManager = gameStateManager,
             Font = Font,
         });
         AddEntity(hudEntity, rootScene);
@@ -432,7 +441,8 @@ public sealed class ScenarioLoader
         hudEntity.Add(new HudSyncScript
         {
             Health = playerHealth, Combat = playerCombat,
-            Level = playerLevel, StateManager = gameStateManager,
+            Level = playerLevel, Inventory = playerInventory,
+            StateManager = gameStateManager,
             Font = Font,
         });
         AddEntity(hudEntity, rootScene);
@@ -442,6 +452,7 @@ public sealed class ScenarioLoader
         inventoryOverlayEntity.Add(new InventoryOverlayScript
         {
             Inventory = playerInventory, StateManager = gameStateManager,
+            InputProvider = inputProvider,
             Font = Font,
         });
         AddEntity(inventoryOverlayEntity, rootScene);
@@ -453,11 +464,45 @@ public sealed class ScenarioLoader
         AddEntity(gameOverEntity, rootScene);
         GameOverOverlay = gameOverOverlay;
 
+        // Dialogue system
+        var dialogueProcessor = new DialogueProcessor(eventBus);
+        var skills = new SkillsComponent(playerStats);
+        var worldState = new WorldStateService();
+        var dialogueContext = new DialogueContext(skills, playerInventory, worldState, playerLevel, eventBus);
+        DialogueProcessor = dialogueProcessor;
+        DialogueContext = dialogueContext;
+
+        // NPC interaction → start dialogue
+        eventBus.Subscribe<NpcInteractionEvent>(e =>
+        {
+            if (dialogueProcessor.IsActive) return;
+            var tree = TownDialogueTrees.GetTree(e.DialogueTreeId);
+            if (tree != null)
+            {
+                dialogueProcessor.StartDialogue(tree);
+                gameStateManager.TransitionTo(GameState.InDialogue);
+            }
+        });
+
+        // Dialogue overlay
+        var dialogueOverlayEntity = new Entity("DialogueOverlay");
+        dialogueOverlayEntity.Add(new DialogueOverlayScript
+        {
+            Processor = dialogueProcessor,
+            Context = dialogueContext,
+            StateManager = gameStateManager,
+            InputProvider = inputProvider,
+            Font = Font,
+            PlayerEntity = playerEntity,
+        });
+        AddEntity(dialogueOverlayEntity, rootScene);
+
         // NPCs
-        SpawnNpcs(rootScene, game);
+        SpawnNpcs(rootScene, game, playerEntity, inputProvider, eventBus, gameStateManager);
     }
 
-    private void SpawnNpcs(Scene rootScene, Game game)
+    private void SpawnNpcs(Scene rootScene, Game game,
+        Entity playerEntity, IInputProvider inputProvider, IEventBus eventBus, GameStateManager gameStateManager)
     {
         var npcs = new (NpcDefinition def, Vector3 pos, Color color)[]
         {
@@ -498,6 +543,16 @@ public sealed class ScenarioLoader
                 Font = Font,
             });
             npcEntity.AddChild(labelEntity);
+
+            // Interaction trigger
+            npcEntity.Add(new InteractionTriggerScript
+            {
+                Player = playerEntity,
+                NpcDef = def,
+                InputProvider = inputProvider,
+                EventBus = eventBus,
+                StateManager = gameStateManager,
+            });
 
             AddEntity(npcEntity, rootScene);
         }

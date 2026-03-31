@@ -12,5 +12,9 @@ public enum GameAction
     Inventory,
     ToggleFullscreen,
     QuickSave,
-    QuickLoad
+    QuickLoad,
+    DialogueChoice1,
+    DialogueChoice2,
+    DialogueChoice3,
+    DialogueChoice4
 }
