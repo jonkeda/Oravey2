@@ -11,6 +11,7 @@ public class CameraDefaultTests : IAsyncLifetime
     public async Task DisposeAsync() => await _fixture.DisposeAsync();
 
     [Fact]
+    [Trait("Category", "Smoke")]
     public void CameraZoom_MatchesTunedDefault()
     {
         var cam = GameQueryHelpers.GetCameraState(_fixture.Context);

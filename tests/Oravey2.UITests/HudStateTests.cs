@@ -14,6 +14,7 @@ public class HudStateTests : IAsyncLifetime
     public async Task DisposeAsync() => await _fixture.DisposeAsync();
 
     [Fact]
+    [Trait("Category", "Smoke")]
     public void HudState_HasFullHealth_AtStart()
     {
         var hud = GameQueryHelpers.GetHudState(_fixture.Context);

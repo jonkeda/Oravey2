@@ -10,5 +10,7 @@ public enum GameAction
     Attack,
     Pause,
     Inventory,
-    ToggleFullscreen
+    ToggleFullscreen,
+    QuickSave,
+    QuickLoad
 }

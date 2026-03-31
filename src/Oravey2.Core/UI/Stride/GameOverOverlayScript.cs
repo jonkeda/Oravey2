@@ -1,5 +1,6 @@
 using Oravey2.Core.Framework.State;
 using Stride.Engine;
+using Stride.Graphics;
 using Stride.UI;
 using Stride.UI.Controls;
 using Stride.UI.Panels;
@@ -15,6 +16,7 @@ namespace Oravey2.Core.UI.Stride;
 public class GameOverOverlayScript : SyncScript
 {
     public GameStateManager? StateManager { get; set; }
+    public SpriteFont? Font { get; set; }
 
     private UIComponent? _uiComponent;
     private Border? _overlay;
@@ -41,6 +43,7 @@ public class GameOverOverlayScript : SyncScript
         _titleText = new TextBlock
         {
             Text = "",
+            Font = Font,
             TextSize = 48,
             TextColor = Color.White,
             HorizontalAlignment = HorizontalAlignment.Center,
@@ -49,6 +52,7 @@ public class GameOverOverlayScript : SyncScript
         _subtitleText = new TextBlock
         {
             Text = "",
+            Font = Font,
             TextSize = 20,
             TextColor = Color.LightGray,
             HorizontalAlignment = HorizontalAlignment.Center,

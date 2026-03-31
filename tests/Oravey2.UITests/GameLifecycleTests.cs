@@ -16,6 +16,7 @@ public class GameLifecycleTests : IAsyncLifetime
     public async Task DisposeAsync() => await _fixture.DisposeAsync();
 
     [Fact]
+    [Trait("Category", "Smoke")]
     public void Game_StartsAndConnects()
     {
         Assert.True(_fixture.Context.IsGameReady);

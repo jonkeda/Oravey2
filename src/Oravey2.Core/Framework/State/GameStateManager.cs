@@ -51,6 +51,8 @@ public sealed class GameStateManager
         return (from, to) switch
         {
             (GameState.Loading, GameState.Exploring) => true,
+            (GameState.Loading, GameState.InMenu) => true,
+            (GameState.InMenu, GameState.Loading) => true,
             (GameState.Exploring, GameState.InCombat) => true,
             (GameState.Exploring, GameState.InDialogue) => true,
             (GameState.Exploring, GameState.InMenu) => true,

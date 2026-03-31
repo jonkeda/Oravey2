@@ -19,6 +19,7 @@ public class SpatialMovementTests : IAsyncLifetime
     public async Task DisposeAsync() => await _fixture.DisposeAsync();
 
     [Fact]
+    [Trait("Category", "Smoke")]
     public void MoveW_PlayerMovesToExpectedTile()
     {
         var before = GameQueryHelpers.GetPlayerPosition(_fixture.Context);

@@ -159,4 +159,26 @@ public static class GameQueryHelpers
             Damage = damage, Accuracy = accuracy,
             Range = range, ApCost = apCost, CritMultiplier = critMultiplier,
         });
+
+    // --- M1 Phase 1: Menu / Save / Load helpers (typed contracts) ---
+
+    public static MenuStateResponse GetMenuState(IStrideTestContext context, string? screen = null)
+        => screen == null
+            ? SendQuery<MenuStateResponse>("GetMenuState", context)
+            : SendQuery<MenuStateResponse>("GetMenuState", context, new ClickMenuButtonRequest(screen, ""));
+
+    public static ClickMenuButtonResponse ClickMenuButton(IStrideTestContext context, string screen, string button)
+        => SendQuery<ClickMenuButtonResponse>("ClickMenuButton", context, new ClickMenuButtonRequest(screen, button));
+
+    public static TriggerSaveResponse TriggerSave(IStrideTestContext context)
+        => SendQuery<TriggerSaveResponse>("TriggerSave", context);
+
+    public static TriggerLoadResponse TriggerLoad(IStrideTestContext context)
+        => SendQuery<TriggerLoadResponse>("TriggerLoad", context);
+
+    public static SaveExistsResponse GetSaveExists(IStrideTestContext context)
+        => SendQuery<SaveExistsResponse>("GetSaveExists", context);
+
+    public static CapsStateResponse GetCapsState(IStrideTestContext context)
+        => SendQuery<CapsStateResponse>("GetCapsState", context);
 }

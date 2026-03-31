@@ -105,4 +105,7 @@ public sealed class SaveDataRestorer
 
     /// <summary>Unlocked perk IDs.</summary>
     public IReadOnlyList<string> UnlockedPerks => _data.UnlockedPerks;
+
+    /// <summary>Player currency (caps).</summary>
+    public int Caps => _data.Caps;
 }

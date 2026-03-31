@@ -1,4 +1,5 @@
 using Stride.Engine;
+using Stride.Graphics;
 using Stride.UI;
 using Stride.UI.Controls;
 using Stride.UI.Panels;
@@ -13,6 +14,7 @@ namespace Oravey2.Core.UI.Stride;
 public class NotificationFeedScript : SyncScript
 {
     public NotificationService? Notifications { get; set; }
+    public SpriteFont? Font { get; set; }
 
     private StackPanel? _stack;
     private UIComponent? _uiComponent;
@@ -53,6 +55,7 @@ public class NotificationFeedScript : SyncScript
             _stack.Children.Add(new TextBlock
             {
                 Text = notification.Message,
+                Font = Font,
                 TextSize = 16,
                 TextColor = color,
                 HorizontalAlignment = HorizontalAlignment.Center,

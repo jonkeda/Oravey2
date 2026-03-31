@@ -4,6 +4,7 @@ using Oravey2.Core.Framework.State;
 using Stride.Core.Mathematics;
 using Stride.Engine;
 using Stride.Engine.Processors;
+using Stride.Graphics;
 using Stride.UI;
 using Stride.UI.Controls;
 using Stride.UI.Panels;
@@ -20,6 +21,7 @@ public class EnemyHpBarScript : SyncScript
     public GameStateManager? StateManager { get; set; }
     internal List<EnemyInfo>? Enemies { get; set; }
     public Entity? CameraEntity { get; set; }
+    public SpriteFont? Font { get; set; }
 
     private Canvas? _canvas;
     private UIComponent? _uiComponent;
@@ -103,6 +105,7 @@ public class EnemyHpBarScript : SyncScript
         };
         var text = new TextBlock
         {
+            Font = Font,
             TextSize = 11,
             TextColor = Color.White,
         };

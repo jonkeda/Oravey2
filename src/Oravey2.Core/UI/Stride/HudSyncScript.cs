@@ -1,4 +1,5 @@
 using global::Stride.Engine;
+using global::Stride.Graphics;
 using global::Stride.UI;
 using global::Stride.UI.Controls;
 using global::Stride.UI.Panels;
@@ -20,6 +21,7 @@ public class HudSyncScript : SyncScript
     public CombatComponent? Combat { get; set; }
     public LevelComponent? Level { get; set; }
     public GameStateManager? StateManager { get; set; }
+    public SpriteFont? Font { get; set; }
 
     private const float BarWidth = 200f;
     private const float BarHeight = 16f;
@@ -54,6 +56,7 @@ public class HudSyncScript : SyncScript
         _hpText = new TextBlock
         {
             Text = "HP: --/--",
+            Font = Font,
             TextSize = 14,
             TextColor = Color.White,
             VerticalAlignment = VerticalAlignment.Center,
@@ -83,6 +86,7 @@ public class HudSyncScript : SyncScript
         _apText = new TextBlock
         {
             Text = "AP: --/--",
+            Font = Font,
             TextSize = 14,
             TextColor = Color.White,
             VerticalAlignment = VerticalAlignment.Center,
@@ -99,6 +103,7 @@ public class HudSyncScript : SyncScript
         _levelText = new TextBlock
         {
             Text = "LVL: -",
+            Font = Font,
             TextSize = 14,
             TextColor = new Color(250, 250, 210),
             Margin = new Thickness(4, 2, 0, 2),
@@ -108,6 +113,7 @@ public class HudSyncScript : SyncScript
         _stateText = new TextBlock
         {
             Text = "Exploring",
+            Font = Font,
             TextSize = 13,
             TextColor = Color.LightGray,
             Margin = new Thickness(4, 2, 0, 2),

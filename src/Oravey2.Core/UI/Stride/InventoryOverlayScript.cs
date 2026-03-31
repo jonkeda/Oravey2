@@ -1,4 +1,5 @@
 using global::Stride.Engine;
+using global::Stride.Graphics;
 using global::Stride.Input;
 using global::Stride.UI;
 using global::Stride.UI.Controls;
@@ -18,6 +19,7 @@ public class InventoryOverlayScript : SyncScript
 {
     public InventoryComponent? Inventory { get; set; }
     public GameStateManager? StateManager { get; set; }
+    public SpriteFont? Font { get; set; }
 
     private UIComponent? _uiComponent;
     private StackPanel? _itemList;
@@ -62,6 +64,7 @@ public class InventoryOverlayScript : SyncScript
         _weightText = new TextBlock
         {
             Text = "Weight: 0/0",
+            Font = Font,
             TextSize = 16,
             TextColor = global::Stride.Core.Mathematics.Color.White,
             Margin = new Thickness(10, 10, 10, 5)
@@ -76,6 +79,7 @@ public class InventoryOverlayScript : SyncScript
         var header = new TextBlock
         {
             Text = "=== INVENTORY ===",
+            Font = Font,
             TextSize = 20,
             TextColor = global::Stride.Core.Mathematics.Color.Gold,
             Margin = new Thickness(10, 10, 10, 5),
@@ -113,6 +117,7 @@ public class InventoryOverlayScript : SyncScript
             _itemList.Children.Add(new TextBlock
             {
                 Text = "(empty)",
+                Font = Font,
                 TextSize = 14,
                 TextColor = global::Stride.Core.Mathematics.Color.Gray,
                 Margin = new Thickness(5, 2, 0, 2)
@@ -141,6 +146,7 @@ public class InventoryOverlayScript : SyncScript
             _itemList.Children.Add(new TextBlock
             {
                 Text = $"{item.Name}{countSuffix}{durSuffix}  ({item.Weight:F1} kg)",
+                Font = Font,
                 TextSize = 14,
                 TextColor = color,
                 Margin = new Thickness(5, 2, 0, 2)

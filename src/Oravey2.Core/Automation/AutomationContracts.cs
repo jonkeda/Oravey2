@@ -155,3 +155,19 @@ public record EnemyHpBarDto(string EnemyId, int Hp, int MaxHp);
 public record EnemyHpBarsResponse(bool Visible, List<EnemyHpBarDto> Bars);
 
 public record DamagePlayerResponse(int NewHp, int MaxHp, bool IsAlive);
+
+// ---- M1 Phase 1: Menu / Save / Load commands ----
+
+public record MenuStateResponse(string Screen, List<string> Buttons, bool Visible);
+
+public record ClickMenuButtonRequest(string Screen, string Button);
+
+public record ClickMenuButtonResponse(bool Success);
+
+public record TriggerSaveResponse(bool Success, string Path);
+
+public record TriggerLoadResponse(bool Success);
+
+public record SaveExistsResponse(bool Exists);
+
+public record CapsStateResponse(int Caps);

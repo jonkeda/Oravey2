@@ -4,6 +4,7 @@ using Oravey2.Core.Framework.Events;
 using Stride.Core.Mathematics;
 using Stride.Engine;
 using Stride.Engine.Processors;
+using Stride.Graphics;
 using Stride.UI;
 using Stride.UI.Controls;
 using Stride.UI.Panels;
@@ -20,6 +21,7 @@ public class FloatingDamageScript : SyncScript
     public Entity? CameraEntity { get; set; }
     public IEventBus? EventBus { get; set; }
     public CombatSyncScript? CombatScript { get; set; }
+    public SpriteFont? Font { get; set; }
 
     private Canvas? _canvas;
     private UIComponent? _uiComponent;
@@ -78,6 +80,7 @@ public class FloatingDamageScript : SyncScript
             var text = new TextBlock
             {
                 Text = $"{prefix}{dmg.Damage}",
+                Font = Font,
                 TextSize = dmg.Critical ? PopupTextSize + 4 : PopupTextSize,
                 TextColor = color,
             };

@@ -20,14 +20,17 @@ Before running any UI tests, create (or update) a task list document at `docs/ta
 
 UI tests are slow (~6s each including game startup/teardown). **Never run the full suite as the first step.** Instead:
 
-1. Run one test class at a time using `--filter`
-2. If any test in the class fails, **fix it before moving to the next class**
-3. After fixing, rerun only that class to confirm the fix
-4. Update the task list after each class completes
-5. Only run the full suite as a final confirmation after all classes pass individually
+1. Run smoke tests first: `dotnet test tests/Oravey2.UITests --filter "Category=Smoke"`
+2. For new functionality, run the specific test class: `dotnet test tests/Oravey2.UITests --filter "FullyQualifiedName~MyNewTests"`
+3. If any test fails, **fix it before moving to the next class**
+4. After fixing, rerun only that class to confirm the fix
+5. Only run the full suite as a final confirmation when explicitly requested
 
 ```bash
-# Run a single test class
+# Run smoke tests only (fast validation ~20s)
+dotnet test tests/Oravey2.UITests --filter "Category=Smoke"
+
+# Run a single test class (for new or changed functionality)
 dotnet test tests/Oravey2.UITests --filter "FullyQualifiedName~CameraRotationTests"
 
 # Run a single test method (when debugging a specific failure)

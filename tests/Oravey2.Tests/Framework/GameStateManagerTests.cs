@@ -90,4 +90,36 @@ public class GameStateManagerTests
         Assert.True(mgr.TransitionTo(GameState.Paused));
         Assert.True(mgr.TransitionTo(GameState.Exploring));
     }
+
+    [Fact]
+    public void Loading_to_InMenu_valid()
+    {
+        var bus = new EventBus();
+        var mgr = new GameStateManager(bus);
+
+        Assert.True(mgr.TransitionTo(GameState.InMenu));
+        Assert.Equal(GameState.InMenu, mgr.CurrentState);
+    }
+
+    [Fact]
+    public void InMenu_to_Loading_valid()
+    {
+        var bus = new EventBus();
+        var mgr = new GameStateManager(bus);
+        mgr.TransitionTo(GameState.InMenu);
+
+        Assert.True(mgr.TransitionTo(GameState.Loading));
+        Assert.Equal(GameState.Loading, mgr.CurrentState);
+    }
+
+    [Fact]
+    public void InMenu_to_Exploring_valid()
+    {
+        var bus = new EventBus();
+        var mgr = new GameStateManager(bus);
+        mgr.TransitionTo(GameState.InMenu);
+
+        Assert.True(mgr.TransitionTo(GameState.Exploring));
+        Assert.Equal(GameState.Exploring, mgr.CurrentState);
+    }
 }

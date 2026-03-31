@@ -22,6 +22,8 @@ public sealed class KeyboardMouseInputProvider : IInputProvider
         { GameAction.Pause, [Keys.Escape] },
         { GameAction.Inventory, [Keys.I] },
         { GameAction.ToggleFullscreen, [Keys.F11] },
+        { GameAction.QuickSave, [Keys.F5] },
+        { GameAction.QuickLoad, [Keys.F9] },
     };
 
     private InputManager? _input;

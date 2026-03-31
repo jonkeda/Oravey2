@@ -1,6 +1,5 @@
 using Brinell.Automation;
 using Brinell.Automation.Communication;
-using Oravey2.Core.Automation;
 using Oravey2.Core.Bootstrap;
 using Oravey2.Core.Camera;
 using Oravey2.Core.Character.Health;
@@ -29,7 +28,7 @@ using Stride.Rendering;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Oravey2.Windows;
+namespace Oravey2.Core.Automation;
 
 /// <summary>
 /// Custom automation handler that wraps StrideUIHandler and adds

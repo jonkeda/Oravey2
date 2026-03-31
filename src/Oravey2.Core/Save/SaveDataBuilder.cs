@@ -77,6 +77,8 @@ public sealed class SaveDataBuilder
             var equipped = equipment.GetEquipped(slot);
             _data.Equipment[slot] = equipped?.Definition.Id;
         }
+
+        _data.Caps = inventory.Caps;
         return this;
     }
 

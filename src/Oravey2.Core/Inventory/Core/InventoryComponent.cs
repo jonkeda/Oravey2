@@ -13,6 +13,18 @@ public class InventoryComponent
     public float MaxCarryWeight => LevelFormulas.CarryWeight(_stats.GetEffective(Stat.Strength));
     public float CurrentWeight => _items.Sum(i => i.TotalWeight);
     public bool IsOverweight => CurrentWeight > MaxCarryWeight;
+    public int Caps { get; set; } = 50;
+
+    /// <summary>
+    /// Applies the death penalty: lose 10% of Caps (rounded down, minimum 0).
+    /// Returns the amount lost.
+    /// </summary>
+    public int ApplyDeathPenalty()
+    {
+        var loss = Caps / 10; // integer division = floor
+        Caps = Math.Max(0, Caps - loss);
+        return loss;
+    }
 
     public InventoryComponent(StatsComponent stats)
     {

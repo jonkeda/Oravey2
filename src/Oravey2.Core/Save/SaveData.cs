@@ -39,6 +39,9 @@ public sealed class SaveData
     public Dictionary<string, string> QuestStages { get; set; } = new();
     public Dictionary<string, bool> WorldFlags { get; set; } = new();
 
+    // Currency
+    public int Caps { get; set; }
+
     // Survival
     public float Hunger { get; set; }
     public float Thirst { get; set; }
