@@ -16,6 +16,7 @@ using Oravey2.Core.Inventory.Equipment;
 using Oravey2.Core.Inventory.Items;
 using Oravey2.Core.Loot;
 using Oravey2.Core.Player;
+using Oravey2.Core.Quests;
 using Oravey2.Core.UI;
 using Oravey2.Core.UI.Stride;
 using Oravey2.Core.World;
@@ -30,11 +31,16 @@ using Stride.Rendering;
 namespace Oravey2.Core.Bootstrap;
 
 /// <summary>
-/// Loads/unloads game world scenarios. Keeps the menu-only scene clean.
+/// Loads/unloads game world scenarios into a child scene.
+/// Each zone gets its own Scene, swapped atomically on transition.
 /// </summary>
 public sealed class ScenarioLoader
 {
-    private readonly List<Entity> _loadedEntities = [];
+    /// <summary>
+    /// The child scene containing all world entities for the current zone.
+    /// Null when no scenario is loaded.
+    /// </summary>
+    public Scene? WorldScene { get; private set; }
 
     public SpriteFont? Font { get; set; }
 
@@ -51,9 +57,49 @@ public sealed class ScenarioLoader
     public DialogueProcessor? DialogueProcessor { get; private set; }
     public DialogueContext? DialogueContext { get; private set; }
     public ZoneExitTriggerScript? ZoneExitTrigger { get; private set; }
+    public CombatSyncScript? CombatScript { get; private set; }
+    public QuestTrackerScript? QuestTracker { get; private set; }
+    public QuestJournalScript? QuestJournal { get; private set; }
+    public DeathRespawnScript? DeathRespawn { get; private set; }
+    public VictoryCheckScript? VictoryCheck { get; private set; }
 
-    public bool IsLoaded => _loadedEntities.Count > 0;
+    // Persistent across zone transitions
+    public WorldStateService WorldState { get; } = new();
+    public QuestLogComponent QuestLog { get; } = new();
+    public QuestProcessor? QuestProcessor { get; private set; }
+    public KillTracker? KillTracker { get; private set; }
+
+    public bool IsLoaded => WorldScene != null;
     public string? CurrentScenarioId { get; private set; }
+
+    private bool _questSystemInitialized;
+
+    /// <summary>
+    /// Initializes the quest system (subscriptions). Call once from GameBootstrapper.
+    /// </summary>
+    public void InitializeQuestSystem(IEventBus eventBus)
+    {
+        if (_questSystemInitialized) return;
+        _questSystemInitialized = true;
+
+        QuestProcessor = new QuestProcessor(eventBus);
+
+        eventBus.Subscribe<QuestStartRequestedEvent>(e =>
+        {
+            var quest = QuestChainDefinitions.GetQuest(e.QuestId);
+            if (quest != null)
+            {
+                QuestProcessor.StartQuest(QuestLog, quest);
+                WorldState.SetFlag($"{e.QuestId}_active", true);
+            }
+        });
+
+        eventBus.Subscribe<QuestUpdatedEvent>(e =>
+        {
+            if (e.NewStatus == QuestStatus.Completed)
+                WorldState.SetFlag($"{e.QuestId}_active", false);
+        });
+    }
 
     public void Load(string scenarioId, Scene rootScene, Game game,
         Entity cameraEntity, GameStateManager gameStateManager,
@@ -64,31 +110,40 @@ public sealed class ScenarioLoader
 
         CurrentScenarioId = scenarioId;
 
+        // Create a fresh child scene for this zone
+        WorldScene = new Scene();
+        rootScene.Children.Add(WorldScene);
+
         switch (scenarioId)
         {
             case "m0_combat":
-                LoadM0Combat(rootScene, game, cameraEntity, gameStateManager, eventBus, inputProvider, logger);
+                LoadM0Combat(WorldScene, game, cameraEntity, gameStateManager, eventBus, inputProvider, logger);
                 break;
             case "empty":
-                LoadEmpty(rootScene, game, cameraEntity, gameStateManager, eventBus, inputProvider, logger);
+                LoadEmpty(WorldScene, game, cameraEntity, gameStateManager, eventBus, inputProvider, logger);
                 break;
             case "town":
-                LoadTown(rootScene, game, cameraEntity, gameStateManager, eventBus, inputProvider, logger);
+                LoadTown(WorldScene, game, cameraEntity, gameStateManager, eventBus, inputProvider, logger);
+                break;
+            case "wasteland":
+                LoadWasteland(WorldScene, game, cameraEntity, gameStateManager, eventBus, inputProvider, logger);
                 break;
             default:
                 logger.LogWarning("Unknown scenario: {Id}, falling back to m0_combat", scenarioId);
-                LoadM0Combat(rootScene, game, cameraEntity, gameStateManager, eventBus, inputProvider, logger);
+                LoadM0Combat(WorldScene, game, cameraEntity, gameStateManager, eventBus, inputProvider, logger);
                 break;
         }
 
-        logger.LogInformation("Scenario '{Id}' loaded with {Count} entities", scenarioId, _loadedEntities.Count);
+        logger.LogInformation("Scenario '{Id}' loaded with {Count} entities", scenarioId, WorldScene.Entities.Count);
     }
 
     public void Unload(Scene rootScene)
     {
-        foreach (var entity in _loadedEntities)
-            rootScene.Entities.Remove(entity);
-        _loadedEntities.Clear();
+        if (WorldScene != null)
+        {
+            rootScene.Children.Remove(WorldScene);
+            WorldScene = null;
+        }
 
         PlayerInventory = null;
         PlayerEquipment = null;
@@ -102,13 +157,19 @@ public sealed class ScenarioLoader
         DialogueProcessor = null;
         DialogueContext = null;
         ZoneExitTrigger = null;
+        CombatScript = null;
+        QuestTracker = null;
+        QuestJournal = null;
+        KillTracker = null;
+        DeathRespawn = null;
+        VictoryCheck = null;
         CurrentScenarioId = null;
+        // Note: WorldState, QuestLog, QuestProcessor persist across zone transitions
     }
 
-    private Entity AddEntity(Entity entity, Scene rootScene)
+    private Entity AddEntity(Entity entity, Scene worldScene)
     {
-        rootScene.Entities.Add(entity);
-        _loadedEntities.Add(entity);
+        worldScene.Entities.Add(entity);
         return entity;
     }
 
@@ -242,7 +303,7 @@ public sealed class ScenarioLoader
             PlayerCombat = playerCombat, PlayerEquipment = playerEquipment,
             PlayerStats = playerStats, Engine = combatEngine,
             Queue = actionQueue, CombatState = combatStateManager,
-            StateManager = gameStateManager,
+            StateManager = gameStateManager, EventBus = eventBus,
         };
         combatScript.Enemies = enemies;
 
@@ -271,6 +332,7 @@ public sealed class ScenarioLoader
         combatManagerEntity.Add(combatScript);
         combatManagerEntity.Add(encounterTrigger);
         AddEntity(combatManagerEntity, rootScene);
+        CombatScript = combatScript;
 
         // HUD
         var hudEntity = new Entity("HUD");
@@ -380,7 +442,7 @@ public sealed class ScenarioLoader
             PlayerCombat = playerCombat, PlayerEquipment = playerEquipment,
             PlayerStats = playerStats, Engine = combatEngine,
             Queue = new ActionQueue(), CombatState = combatStateManager,
-            StateManager = gameStateManager,
+            StateManager = gameStateManager, EventBus = eventBus,
         };
         combatScript.Enemies = [];
         var encounterTrigger = new EncounterTriggerScript
@@ -392,6 +454,7 @@ public sealed class ScenarioLoader
         combatManagerEntity.Add(combatScript);
         combatManagerEntity.Add(encounterTrigger);
         AddEntity(combatManagerEntity, rootScene);
+        CombatScript = combatScript;
 
         // Inventory overlay
         var inventoryOverlayEntity = new Entity("InventoryOverlay");
@@ -466,11 +529,24 @@ public sealed class ScenarioLoader
         AddEntity(gameOverEntity, rootScene);
         GameOverOverlay = gameOverOverlay;
 
+        // Death respawn script
+        var deathRespawnEntity = new Entity("DeathRespawn");
+        var deathRespawnScript = new DeathRespawnScript
+        {
+            PlayerHealth = playerHealth,
+            PlayerInventory = playerInventory,
+            GameStateManager = gameStateManager,
+            DeathOverlay = gameOverOverlay,
+            Notifications = NotificationService,
+        };
+        deathRespawnEntity.Add(deathRespawnScript);
+        AddEntity(deathRespawnEntity, rootScene);
+        DeathRespawn = deathRespawnScript;
+
         // Dialogue system
         var dialogueProcessor = new DialogueProcessor(eventBus);
         var skills = new SkillsComponent(playerStats);
-        var worldState = new WorldStateService();
-        var dialogueContext = new DialogueContext(skills, playerInventory, worldState, playerLevel, eventBus);
+        var dialogueContext = new DialogueContext(skills, playerInventory, WorldState, playerLevel, eventBus);
         DialogueProcessor = dialogueProcessor;
         DialogueContext = dialogueContext;
 
@@ -502,6 +578,60 @@ public sealed class ScenarioLoader
         // NPCs
         SpawnNpcs(rootScene, game, playerEntity, inputProvider, eventBus, gameStateManager);
 
+        // Quest evaluation script (evaluates active quests each frame)
+        if (QuestProcessor != null)
+        {
+            var questContext = new QuestContext(playerInventory, WorldState, playerLevel, QuestLog, eventBus);
+            var questEvalEntity = new Entity("QuestEval");
+            questEvalEntity.Add(new QuestEvalScript
+            {
+                Processor = QuestProcessor,
+                QuestLog = QuestLog,
+                Context = questContext,
+                StateManager = gameStateManager,
+            });
+            AddEntity(questEvalEntity, rootScene);
+        }
+
+        // Quest HUD tracker (top-right, shows active objective)
+        var questTrackerEntity = new Entity("QuestTracker");
+        var questTrackerScript = new QuestTrackerScript
+        {
+            QuestLog = QuestLog,
+            WorldState = WorldState,
+            StateManager = gameStateManager,
+            Font = Font,
+        };
+        questTrackerEntity.Add(questTrackerScript);
+        AddEntity(questTrackerEntity, rootScene);
+        QuestTracker = questTrackerScript;
+
+        // Quest journal overlay (J key)
+        var questJournalEntity = new Entity("QuestJournal");
+        var questJournalScript = new QuestJournalScript
+        {
+            QuestLog = QuestLog,
+            WorldState = WorldState,
+            StateManager = gameStateManager,
+            InputProvider = inputProvider,
+            Font = Font,
+        };
+        questJournalEntity.Add(questJournalScript);
+        AddEntity(questJournalEntity, rootScene);
+        QuestJournal = questJournalScript;
+
+        // Victory check script (detects m1_complete flag)
+        var victoryCheckEntity = new Entity("VictoryCheck");
+        var victoryCheckScript = new VictoryCheckScript
+        {
+            Overlay = gameOverOverlay,
+            WorldState = WorldState,
+            StateManager = gameStateManager,
+        };
+        victoryCheckEntity.Add(victoryCheckScript);
+        AddEntity(victoryCheckEntity, rootScene);
+        VictoryCheck = victoryCheckScript;
+
         // Zone exit trigger at gate (tile 30,17 / 30,18 → world ~14.5, 0.5, 2.0)
         var zoneExitEntity = new Entity("ZoneExitTrigger");
         zoneExitEntity.Transform.Position = new Vector3(14.5f, 0.5f, 2.0f);
@@ -509,6 +639,235 @@ public sealed class ScenarioLoader
         {
             Player = playerEntity,
             TargetZoneId = "wasteland",
+            TargetSpawnPosition = new Vector3(0f, 0.5f, 0f),
+            TriggerRadius = 1.5f,
+            StateManager = gameStateManager,
+        };
+        zoneExitEntity.Add(zoneExitScript);
+        AddEntity(zoneExitEntity, rootScene);
+        ZoneExitTrigger = zoneExitScript;
+    }
+
+    // ---- wasteland: Scorched Outskirts with enemies ----
+
+    private void LoadWasteland(Scene rootScene, Game game, Entity cameraEntity,
+        GameStateManager gameStateManager, IEventBus eventBus, IInputProvider inputProvider, ILogger logger)
+    {
+        var (playerEntity, playerMovement, playerStats, playerLevel, playerHealth,
+            playerCombat, playerInventory, playerEquipment, inventoryProcessor)
+            = CreatePlayer(rootScene, game, cameraEntity, gameStateManager, eventBus);
+
+        // Wasteland tile map
+        var mapData = WastelandMapBuilder.CreateWastelandMap();
+        var tileMapEntity = new Entity("TileMap");
+        var tileMapRenderer = new TileMapRendererScript { MapData = mapData };
+        tileMapEntity.Add(tileMapRenderer);
+        AddEntity(tileMapEntity, rootScene);
+
+        playerMovement.MapData = mapData;
+        playerMovement.TileSize = tileMapRenderer.TileSize;
+
+        // Notification feed
+        var notificationService = new NotificationService();
+        eventBus.Subscribe<NotificationEvent>(e => notificationService.Add(e.Message, e.DurationSeconds));
+        NotificationService = notificationService;
+
+        var notificationEntity = new Entity("NotificationFeed");
+        notificationEntity.Add(new NotificationFeedScript { Notifications = notificationService, Font = Font });
+        AddEntity(notificationEntity, rootScene);
+
+        // Enemies — spawn radrats at configured positions
+        var spawnPoints = new List<EnemySpawnPoint>
+        {
+            new("radrat_south", -2f, -2f, Count: 1, Endurance: 1, Luck: 3, WeaponDamage: 4, WeaponAccuracy: 0.50f, Tag: "radrat"),
+            new("radrat_east",   2f, -2f, Count: 1, Endurance: 1, Luck: 3, WeaponDamage: 4, WeaponAccuracy: 0.50f, Tag: "radrat"),
+            new("radrat_road",  -2f,  0f, Count: 1, Endurance: 1, Luck: 3, WeaponDamage: 4, WeaponAccuracy: 0.50f, Tag: "radrat"),
+        };
+
+        // Scar boss: only spawns when q_raider_camp quest is active
+        if (QuestLog.GetStatus("q_raider_camp") == QuestStatus.Active)
+        {
+            spawnPoints.Add(new EnemySpawnPoint(
+                "scar_boss", 10f, 0f, Count: 1,
+                Endurance: 3, Luck: 5, WeaponDamage: 8, WeaponAccuracy: 0.65f,
+                Tag: "scar"));
+        }
+
+        var enemySpawner = new EnemySpawner(game, eventBus);
+
+        // KillTracker — wire enemy death → counter/flag updates
+        var killTracker = new KillTracker(WorldState, eventBus);
+        killTracker.RegisterCounter("radrat", "rats_killed");
+        killTracker.RegisterFlag("scar", "scar_killed");
+        KillTracker = killTracker;
+
+        // Combat manager
+        var damageResolver = new DamageResolver();
+        var combatEngine = new CombatEngine(damageResolver, eventBus);
+        var combatStateManager = new CombatStateManager(eventBus, gameStateManager);
+
+        var combatManagerEntity = new Entity("CombatManager");
+        var combatScript = new CombatSyncScript
+        {
+            Player = playerEntity, PlayerHealth = playerHealth,
+            PlayerCombat = playerCombat, PlayerEquipment = playerEquipment,
+            PlayerStats = playerStats, Engine = combatEngine,
+            Queue = new ActionQueue(), CombatState = combatStateManager,
+            StateManager = gameStateManager, EventBus = eventBus,
+        };
+        combatScript.Enemies = [];
+
+        var encounterTrigger = new EncounterTriggerScript
+        {
+            Player = playerEntity, StateManager = gameStateManager,
+            CombatState = combatStateManager, TriggerRadius = 5f,
+        };
+        encounterTrigger.Enemies = combatScript.Enemies;
+
+        // Spawn enemies into combat system
+        enemySpawner.SpawnFromPoints(rootScene, spawnPoints, combatScript, encounterTrigger);
+
+        var lootTable = new LootTable();
+        lootTable.Add(M0Items.ScrapMetal(), 0.7f);
+        lootTable.Add(M0Items.Medkit(), 0.3f);
+        var lootDropScript = new LootDropScript { LootTable = lootTable };
+        combatManagerEntity.Add(lootDropScript);
+        combatScript.LootDrop = lootDropScript;
+
+        var lootPickup = new LootPickupScript
+        {
+            Processor = inventoryProcessor, EventBus = eventBus, PickupRadius = 1.5f,
+        };
+        playerEntity.Add(lootPickup);
+
+        combatManagerEntity.Add(combatScript);
+        combatManagerEntity.Add(encounterTrigger);
+        AddEntity(combatManagerEntity, rootScene);
+        CombatScript = combatScript;
+
+        // HUD
+        var hudEntity = new Entity("HUD");
+        hudEntity.Add(new HudSyncScript
+        {
+            Health = playerHealth, Combat = playerCombat,
+            Level = playerLevel, Inventory = playerInventory,
+            StateManager = gameStateManager,
+            Font = Font,
+        });
+        AddEntity(hudEntity, rootScene);
+
+        // Inventory overlay
+        var inventoryOverlayEntity = new Entity("InventoryOverlay");
+        inventoryOverlayEntity.Add(new InventoryOverlayScript
+        {
+            Inventory = playerInventory, StateManager = gameStateManager,
+            InputProvider = inputProvider,
+            Font = Font,
+        });
+        AddEntity(inventoryOverlayEntity, rootScene);
+
+        // Enemy HP bars
+        var enemyHpEntity = new Entity("EnemyHpBars");
+        var enemyHpBars = new EnemyHpBarScript
+        {
+            StateManager = gameStateManager, CameraEntity = cameraEntity,
+            Font = Font,
+        };
+        enemyHpBars.Enemies = combatScript.Enemies;
+        enemyHpEntity.Add(enemyHpBars);
+        AddEntity(enemyHpEntity, rootScene);
+
+        // Game over overlay
+        var gameOverEntity = new Entity("GameOverOverlay");
+        var gameOverOverlay = new GameOverOverlayScript { StateManager = gameStateManager, Font = Font };
+        gameOverEntity.Add(gameOverOverlay);
+        AddEntity(gameOverEntity, rootScene);
+        GameOverOverlay = gameOverOverlay;
+
+        // Death respawn script
+        var deathRespawnEntity = new Entity("DeathRespawn");
+        var deathRespawnScript = new DeathRespawnScript
+        {
+            PlayerHealth = playerHealth,
+            PlayerInventory = playerInventory,
+            GameStateManager = gameStateManager,
+            DeathOverlay = gameOverOverlay,
+            Notifications = NotificationService,
+        };
+        deathRespawnEntity.Add(deathRespawnScript);
+        AddEntity(deathRespawnEntity, rootScene);
+        DeathRespawn = deathRespawnScript;
+
+        // Victory check script (detects m1_complete flag)
+        var victoryCheckEntity = new Entity("VictoryCheck");
+        var victoryCheckScript = new VictoryCheckScript
+        {
+            Overlay = gameOverOverlay,
+            WorldState = WorldState,
+            StateManager = gameStateManager,
+        };
+        victoryCheckEntity.Add(victoryCheckScript);
+        AddEntity(victoryCheckEntity, rootScene);
+        VictoryCheck = victoryCheckScript;
+
+        // Floating damage
+        var floatingDamageEntity = new Entity("FloatingDamage");
+        floatingDamageEntity.Add(new FloatingDamageScript
+        {
+            CameraEntity = cameraEntity, EventBus = eventBus, CombatScript = combatScript,
+            Font = Font,
+        });
+        AddEntity(floatingDamageEntity, rootScene);
+
+        // Quest evaluation script (evaluates active quests each frame)
+        if (QuestProcessor != null)
+        {
+            var questContext = new QuestContext(playerInventory, WorldState, playerLevel, QuestLog, eventBus);
+            var questEvalEntity = new Entity("QuestEval");
+            questEvalEntity.Add(new QuestEvalScript
+            {
+                Processor = QuestProcessor,
+                QuestLog = QuestLog,
+                Context = questContext,
+                StateManager = gameStateManager,
+            });
+            AddEntity(questEvalEntity, rootScene);
+        }
+
+        // Quest HUD tracker (top-right, shows active objective)
+        var questTrackerEntity = new Entity("QuestTracker");
+        var questTrackerScript = new QuestTrackerScript
+        {
+            QuestLog = QuestLog,
+            WorldState = WorldState,
+            StateManager = gameStateManager,
+            Font = Font,
+        };
+        questTrackerEntity.Add(questTrackerScript);
+        AddEntity(questTrackerEntity, rootScene);
+        QuestTracker = questTrackerScript;
+
+        // Quest journal overlay (J key)
+        var questJournalEntity = new Entity("QuestJournal");
+        var questJournalScript = new QuestJournalScript
+        {
+            QuestLog = QuestLog,
+            WorldState = WorldState,
+            StateManager = gameStateManager,
+            InputProvider = inputProvider,
+            Font = Font,
+        };
+        questJournalEntity.Add(questJournalScript);
+        AddEntity(questJournalEntity, rootScene);
+        QuestJournal = questJournalScript;
+
+        // Zone exit trigger at west gate (tile 0,17 → world -15.5, 0.5, 1.5)
+        var zoneExitEntity = new Entity("ZoneExitTrigger");
+        zoneExitEntity.Transform.Position = new Vector3(-15.5f, 0.5f, 1.5f);
+        var zoneExitScript = new ZoneExitTriggerScript
+        {
+            Player = playerEntity,
+            TargetZoneId = "town",
             TargetSpawnPosition = new Vector3(0f, 0.5f, 0f),
             TriggerRadius = 1.5f,
             StateManager = gameStateManager,

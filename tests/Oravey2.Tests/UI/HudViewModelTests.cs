@@ -81,4 +81,12 @@ public class HudViewModelTests
         Assert.Equal(0, vm.RadiationLevel);
         Assert.False(vm.SurvivalEnabled);
     }
+
+    [Fact]
+    public void DefaultPlayer_StartsAtLevel1()
+    {
+        var (health, combat, level, dayNight, quickSlots) = SetupDefaults();
+        var vm = HudViewModel.Create(health, combat, level, dayNight, null, null, null, quickSlots);
+        Assert.Equal(1, vm.Level);
+    }
 }

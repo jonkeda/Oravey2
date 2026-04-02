@@ -38,6 +38,7 @@ public sealed class SaveData
     public Dictionary<string, QuestStatus> QuestStates { get; set; } = new();
     public Dictionary<string, string> QuestStages { get; set; } = new();
     public Dictionary<string, bool> WorldFlags { get; set; } = new();
+    public Dictionary<string, int> WorldCounters { get; set; } = new();
 
     // Currency
     public int Caps { get; set; }

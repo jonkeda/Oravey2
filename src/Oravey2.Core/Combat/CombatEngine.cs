@@ -39,7 +39,7 @@ public sealed class CombatEngine
                 attackerSkills.AddXP(weaponSkillType.Value, 1);
 
             if (!targetHealth.IsAlive)
-                _eventBus.Publish(new EntityDiedEvent());
+                _eventBus.Publish(new EntityDiedEvent(string.Empty, null));
         }
 
         return result;

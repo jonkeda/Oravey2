@@ -11,13 +11,6 @@ public class NotificationFeedTests : IAsyncLifetime
     public async Task DisposeAsync() => await _fixture.DisposeAsync();
 
     [Fact]
-    public void NoNotifications_AtStart()
-    {
-        var feed = GameQueryHelpers.GetNotificationFeed(_fixture.Context);
-        Assert.Equal(0, feed.Count);
-    }
-
-    [Fact]
     public void LootPickup_ShowsNotification()
     {
         // Kill enemy near player to spawn loot, then walk over it
@@ -78,13 +71,5 @@ public class NotificationFeedTests : IAsyncLifetime
         }
     }
 
-    [Fact]
-    public void MaxFiveNotifications_Visible()
-    {
-        // NotificationService maxVisible=5. We can't easily force more than 5
-        // notifications in M0 without a dedicated test command. Verify the cap
-        // by reading the feed and confirming count <= 5.
-        var feed = GameQueryHelpers.GetNotificationFeed(_fixture.Context);
-        Assert.True(feed.Count <= 5, $"Expected max 5 visible notifications, got {feed.Count}");
-    }
+
 }

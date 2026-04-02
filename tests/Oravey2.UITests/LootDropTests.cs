@@ -25,13 +25,6 @@ public class LootDropTests : IAsyncLifetime
     }
 
     [Fact]
-    public void NoLootEntities_AtStart()
-    {
-        var loot = GameQueryHelpers.GetLootEntities(_fixture.Context);
-        Assert.Equal(0, loot.Count);
-    }
-
-    [Fact]
     public void KillEnemy_SpawnsLootCube()
     {
         WaitForCombat();

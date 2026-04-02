@@ -62,21 +62,5 @@ public class GameOverTests : IAsyncLifetime
         Assert.Equal("GAME OVER", overlay.Title);
     }
 
-    [Fact]
-    public void DamagePlayer_ReducesHp()
-    {
-        var before = GameQueryHelpers.GetHudState(_fixture.Context);
-        var result = GameQueryHelpers.DamagePlayer(_fixture.Context, 25);
-        Assert.Equal(before.Hp - 25, result.NewHp);
-        Assert.True(result.IsAlive);
-    }
 
-    [Fact]
-    public void DamagePlayer_ToZero_NotAlive()
-    {
-        var hud = GameQueryHelpers.GetHudState(_fixture.Context);
-        var result = GameQueryHelpers.DamagePlayer(_fixture.Context, hud.Hp);
-        Assert.Equal(0, result.NewHp);
-        Assert.False(result.IsAlive);
-    }
 }

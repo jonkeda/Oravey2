@@ -1,5 +1,4 @@
 using Brinell.Stride.Infrastructure;
-using Oravey2.Core.Automation;
 using Xunit;
 
 namespace Oravey2.UITests;
@@ -14,32 +13,6 @@ public class CombatTriggerTests : IAsyncLifetime
 
     public async Task InitializeAsync() => await _fixture.InitializeAsync();
     public async Task DisposeAsync() => await _fixture.DisposeAsync();
-
-    [Fact]
-    public void StartState_IsExploring()
-    {
-        var state = GameQueryHelpers.GetGameState(_fixture.Context);
-        Assert.Equal("Exploring", state);
-    }
-
-    [Fact]
-    public void ThreeEnemies_ExistAtStartup()
-    {
-        var combat = GameQueryHelpers.GetCombatState(_fixture.Context);
-        Assert.Equal(3, combat.EnemyCount);
-        Assert.All(combat.Enemies, e => Assert.True(e.IsAlive));
-    }
-
-    [Fact]
-    public void AllEnemies_InsideMapBounds()
-    {
-        var combat = GameQueryHelpers.GetCombatState(_fixture.Context);
-        foreach (var enemy in combat.Enemies)
-        {
-            Assert.InRange(enemy.X, -14.5, 14.5);
-            Assert.InRange(enemy.Z, -14.5, 14.5);
-        }
-    }
 
     [Fact]
     public void PlayerAtOrigin_NoCombat()
@@ -76,19 +49,5 @@ public class CombatTriggerTests : IAsyncLifetime
         Assert.Equal("Exploring", state);
     }
 
-    [Fact]
-    public void CombatState_ShowsInCombat()
-    {
-        GameQueryHelpers.TeleportPlayer(_fixture.Context, 4, 0.5, 8);
 
-        CombatStateResponse combat = null!;
-        for (int i = 0; i < 10; i++)
-        {
-            _fixture.Context.HoldKey(VirtualKey.Space, 50);
-            combat = GameQueryHelpers.GetCombatState(_fixture.Context);
-            if (combat.InCombat) break;
-        }
-
-        Assert.True(combat.InCombat);
-    }
 }

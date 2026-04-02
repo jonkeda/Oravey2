@@ -5,6 +5,29 @@ description: "Guidelines for writing and maintaining Oravey2 UI tests using Brin
 
 # Oravey2 UI Test Guidelines
 
+## When to write a UI test
+
+UI tests verify behavior that **requires a running game process**. If you can test it by constructing a component directly and calling methods on it, write a unit test in `tests/Oravey2.Tests/` instead.
+
+**Use UI tests ONLY for:**
+
+- Screen-space rendering — `WorldToScreen`, screenshots, `OnScreen` checks
+- Keyboard/mouse input processing — `HoldKey`/`PressKey` → observable state change
+- Game process lifecycle — startup, shutdown, automation pipe connectivity
+- Spatial/physics interactions — collision, proximity triggers, zone transitions
+- Cross-system integration that only fires in the live game loop (kill→loot→pickup→notification)
+
+**Never use UI tests for:**
+
+- Config constants (HP=105, Zoom=28, enemy count=3) — unit test the config/formula
+- Formulas or math (damage calculation, XP gain, weight) — unit test the component
+- Data model shapes (inventory contents, equipment slots) — unit test the component
+- State machines in isolation (Exploring→InCombat) — unit test `GameStateManager`
+
+**Decision rule:** Does the test need `_fixture.Context.HoldKey()`, `GameQueryHelpers.WorldToScreen()`, or a live game loop to trigger behavior? → UI test. Otherwise → unit test.
+
+**One canonical location per assertion:** Before adding a new assertion, grep for existing tests that already check the same behavior. Do not verify the same fact in multiple test classes.
+
 ## Always create a task list before running tests
 
 Before running any UI tests, create (or update) a task list document at `docs/tasks/uitests-tasklist.md`. The task list must:

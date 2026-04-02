@@ -85,6 +85,7 @@ public sealed class GameBootstrapper
 
         // --- Scenario loader ---
         var scenarioLoader = new ScenarioLoader { Font = font };
+        scenarioLoader.InitializeQuestSystem(eventBus);
         var zoneManager = new ZoneManager(scenarioLoader);
 
         // Helper: build SaveData from current scenario state
@@ -129,10 +130,12 @@ public sealed class GameBootstrapper
                     PerformSave();
                     zoneManager.TransitionTo(targetZoneId, rootScene, game,
                         cameraEntity, gameStateManager, eventBus, inputProvider, logger, spawnPos);
-                    // Re-wire death penalty for the new scenario
+                    WireDeathRespawn();
+                    // Re-wire death penalty for the new scenario (fallback when no DeathRespawnScript)
                     eventBus.Subscribe<GameStateChangedEvent>(e =>
                     {
-                        if (e.NewState == GameState.GameOver && scenarioLoader.PlayerInventory != null)
+                        if (e.NewState == GameState.GameOver && scenarioLoader.DeathRespawn == null
+                            && scenarioLoader.PlayerInventory != null)
                         {
                             var lost = scenarioLoader.PlayerInventory.ApplyDeathPenalty();
                             if (lost > 0)
@@ -142,10 +145,14 @@ public sealed class GameBootstrapper
                 };
             }
 
-            // Death penalty: lose 10% Caps on GameOver
+            // Wire death respawn script (timed death → respawn flow)
+            WireDeathRespawn();
+
+            // Death penalty fallback: lose 10% Caps on GameOver (only when no DeathRespawnScript)
             eventBus.Subscribe<GameStateChangedEvent>(e =>
             {
-                if (e.NewState == GameState.GameOver && scenarioLoader.PlayerInventory != null)
+                if (e.NewState == GameState.GameOver && scenarioLoader.DeathRespawn == null
+                    && scenarioLoader.PlayerInventory != null)
                 {
                     var lost = scenarioLoader.PlayerInventory.ApplyDeathPenalty();
                     if (lost > 0)
@@ -154,6 +161,31 @@ public sealed class GameBootstrapper
             });
 
             gameStateManager.TransitionTo(GameState.Exploring);
+        }
+
+        // Helper: wire DeathRespawnScript OnRespawn callback
+        void WireDeathRespawn()
+        {
+            if (scenarioLoader.DeathRespawn == null) return;
+            scenarioLoader.DeathRespawn.AutoSaveTracker = autoSaveTracker;
+            scenarioLoader.DeathRespawn.OnRespawn = (capsLost) =>
+            {
+                zoneManager.TransitionTo("town", rootScene, game,
+                    cameraEntity, gameStateManager, eventBus, inputProvider, logger,
+                    new Vector3(0, 0.5f, 0));
+                WireDeathRespawn();
+                // Heal the new player to max
+                if (scenarioLoader.PlayerHealth != null)
+                    scenarioLoader.PlayerHealth.HealToMax();
+                // Apply caps penalty to the new inventory
+                if (capsLost > 0 && scenarioLoader.PlayerInventory != null)
+                    scenarioLoader.PlayerInventory.Caps -= capsLost;
+                gameStateManager.ForceState(GameState.Exploring);
+                var msg = capsLost > 0
+                    ? $"You wake up in Haven. Lost {capsLost} caps."
+                    : "You wake up in Haven.";
+                scenarioLoader.NotificationService?.Add(msg, 5f);
+            };
         }
 
         // Helper: apply a save-file on top of the current scenario
@@ -171,7 +203,10 @@ public sealed class GameBootstrapper
             }
         }
 
-        // --- Menu entities (always present) ---
+        // --- Menu entities (child scene — persists across zone transitions) ---
+        var menuScene = new Scene();
+        rootScene.Children.Add(menuScene);
+
         var startMenuEntity = new Entity("StartMenu");
         var startMenuScript = new StartMenuScript
         {
@@ -193,7 +228,7 @@ public sealed class GameBootstrapper
             logger.LogInformation("Game loaded from save");
         };
         startMenuEntity.Add(startMenuScript);
-        rootScene.Entities.Add(startMenuEntity);
+        menuScene.Entities.Add(startMenuEntity);
 
         var pauseMenuEntity = new Entity("PauseMenu");
         var pauseMenuScript = new PauseMenuScript
@@ -219,7 +254,7 @@ public sealed class GameBootstrapper
             logger.LogInformation("Returned to main menu");
         };
         pauseMenuEntity.Add(pauseMenuScript);
-        rootScene.Entities.Add(pauseMenuEntity);
+        menuScene.Entities.Add(pauseMenuEntity);
 
         var settingsMenuEntity = new Entity("SettingsMenu");
         var settingsMenuScript = new SettingsMenuScript
@@ -232,7 +267,7 @@ public sealed class GameBootstrapper
         startMenuScript.OnSettings = () => settingsMenuScript.Show();
         pauseMenuScript.OnSettings = () => settingsMenuScript.Show();
         settingsMenuEntity.Add(settingsMenuScript);
-        rootScene.Entities.Add(settingsMenuEntity);
+        menuScene.Entities.Add(settingsMenuEntity);
 
         // --- SaveLoad script (QuickSave F5, QuickLoad F9, auto-save tick) ---
         var saveLoadEntity = new Entity("SaveLoadManager");
@@ -254,7 +289,7 @@ public sealed class GameBootstrapper
         };
         saveLoadScript.HasSave = () => saveService.HasSaveFile();
         saveLoadEntity.Add(saveLoadScript);
-        rootScene.Entities.Add(saveLoadEntity);
+        menuScene.Entities.Add(saveLoadEntity);
 
         // --- Automation server ---
         if (config.AutomationEnabled)
@@ -268,12 +303,24 @@ public sealed class GameBootstrapper
             oraveyHandler.SetScenarioLoader(scenarioLoader);
             oraveyHandler.SetZoneManager(zoneManager);
             oraveyHandler.SetM1(saveService, autoSaveTracker, startMenuScript, pauseMenuScript, settingsMenuScript);
-            game.UseAutomation(oraveyHandler,
-                options: new AutomationServerOptions { VerboseLogging = true });
+
+            // Parse --pipe arg for unique pipe names (prevents orphan conflicts in test runs)
+            var automationOptions = new AutomationServerOptions { VerboseLogging = true };
+            var args = config.Args;
+            for (int i = 0; i < args.Length - 1; i++)
+            {
+                if (args[i] == "--pipe")
+                {
+                    automationOptions.PipeName = args[i + 1];
+                    logger.LogInformation("Using custom pipe name: {Pipe}", automationOptions.PipeName);
+                    break;
+                }
+            }
+
+            game.UseAutomation(oraveyHandler, options: automationOptions);
 
             // Parse --scenario arg (default: m0_combat)
             var scenarioId = "m0_combat";
-            var args = config.Args;
             for (int i = 0; i < args.Length - 1; i++)
             {
                 if (args[i] == "--scenario")

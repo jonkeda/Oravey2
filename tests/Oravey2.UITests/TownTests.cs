@@ -47,26 +47,6 @@ public class TownTests : IAsyncLifetime
     }
 
     [Fact]
-    public void Town_HasFourNpcs()
-    {
-        var npcs = GameQueryHelpers.GetNpcList(_fixture.Context);
-        Assert.Equal(4, npcs.Count);
-    }
-
-    [Fact]
-    public void Town_ElderExists_AtCorrectPosition()
-    {
-        var npcs = GameQueryHelpers.GetNpcList(_fixture.Context);
-        var elder = npcs.Npcs.First(n => n.Id == "elder");
-
-        Assert.Equal("Elder Tomas", elder.DisplayName);
-        Assert.Equal("QuestGiver", elder.Role);
-        Assert.Equal(-4.0, elder.X, 0.5);
-        Assert.Equal(0.5, elder.Y, 0.5);
-        Assert.Equal(-4.5, elder.Z, 0.5);
-    }
-
-    [Fact]
     public void Town_TeleportToElder_ShowsInRange()
     {
         // Elder is at (-4, 0.5, -4.5) — teleport player nearby
@@ -124,7 +104,7 @@ public class TownTests : IAsyncLifetime
         var dialogue = GameQueryHelpers.GetDialogueState(_fixture.Context);
 
         Assert.True(dialogue.Choices.Count >= 2);
-        Assert.Contains(dialogue.Choices, c => c.Text.Contains("going on"));
+        Assert.Contains(dialogue.Choices, c => c.Text.Contains("Any work?"));
         Assert.Contains(dialogue.Choices, c => c.Text.Contains("Goodbye"));
     }
 
@@ -132,8 +112,11 @@ public class TownTests : IAsyncLifetime
     public void Town_SelectLeave_EndsDialogue()
     {
         GameQueryHelpers.InteractWithNpc(_fixture.Context, "elder");
-        // "Goodbye" is the second choice (index 1)
-        var result = GameQueryHelpers.SelectDialogueChoice(_fixture.Context, 1);
+        var dialogue = GameQueryHelpers.GetDialogueState(_fixture.Context);
+        // "Goodbye" is the last available choice
+        var goodbyeIdx = dialogue.Choices.FindIndex(c => c.Text == "Goodbye." && c.Available);
+        Assert.True(goodbyeIdx >= 0, "Expected 'Goodbye.' choice");
+        var result = GameQueryHelpers.SelectDialogueChoice(_fixture.Context, goodbyeIdx);
 
         Assert.True(result.Success);
         Assert.True(result.DialogueEnded);
@@ -219,14 +202,6 @@ public class TownTests : IAsyncLifetime
     }
 
     // --- Sub-Phase 2.6: Zone Transitions ---
-
-    [Fact]
-    public void Town_CurrentZone_IsTown()
-    {
-        var zone = GameQueryHelpers.GetCurrentZone(_fixture.Context);
-        Assert.Equal("town", zone.ZoneId);
-        Assert.Equal("Haven", zone.ZoneName);
-    }
 
     [Fact]
     public void Town_TeleportToGate_TransitionsZone()

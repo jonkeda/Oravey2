@@ -31,11 +31,8 @@ public class GameLifecycleTests : IAsyncLifetime
     [Fact]
     public void Game_IsInExploringState()
     {
-        var response = _fixture.Context.SendCommand(
-            AutomationCommand.GameQuery("GetGameState"));
-
-        Assert.True(response.Success);
-        Assert.Equal("Exploring", response.Result?.ToString());
+        var state = GameQueryHelpers.GetGameState(_fixture.Context);
+        Assert.Equal("Exploring", state);
     }
 
     [Fact]

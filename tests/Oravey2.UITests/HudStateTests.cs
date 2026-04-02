@@ -14,37 +14,6 @@ public class HudStateTests : IAsyncLifetime
     public async Task DisposeAsync() => await _fixture.DisposeAsync();
 
     [Fact]
-    [Trait("Category", "Smoke")]
-    public void HudState_HasFullHealth_AtStart()
-    {
-        var hud = GameQueryHelpers.GetHudState(_fixture.Context);
-        Assert.Equal(hud.MaxHp, hud.Hp);
-        Assert.True(hud.MaxHp > 0, "MaxHP should be positive");
-    }
-
-    [Fact]
-    public void HudState_ShowsExploring_AtStart()
-    {
-        var hud = GameQueryHelpers.GetHudState(_fixture.Context);
-        Assert.Equal("Exploring", hud.GameState);
-    }
-
-    [Fact]
-    public void HudState_ShowsLevel1_AtStart()
-    {
-        var hud = GameQueryHelpers.GetHudState(_fixture.Context);
-        Assert.Equal(1, hud.Level);
-    }
-
-    [Fact]
-    public void HudState_ApMatches_MaxAp()
-    {
-        var hud = GameQueryHelpers.GetHudState(_fixture.Context);
-        Assert.Equal(hud.MaxAp, hud.Ap);
-        Assert.True(hud.MaxAp > 0, "MaxAP should be positive");
-    }
-
-    [Fact]
     public void HudState_ShowsInCombat_WhenFighting()
     {
         GameQueryHelpers.TeleportPlayer(_fixture.Context, 4, 0.5, 8);

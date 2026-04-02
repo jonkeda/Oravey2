@@ -19,15 +19,6 @@ public class MenuSaveLoadTests : IAsyncLifetime
     public async Task DisposeAsync() => await _fixture.DisposeAsync();
 
     [Fact]
-    [Trait("Category", "Smoke")]
-    public void GameState_StartsAsExploring_InAutomation()
-    {
-        var state = GameQueryHelpers.GetGameState(_fixture.Context);
-        _output.WriteLine($"GameState: {state}");
-        Assert.Equal("Exploring", state);
-    }
-
-    [Fact]
     public void PauseMenu_NotVisible_Initially()
     {
         var menu = GameQueryHelpers.GetMenuState(_fixture.Context);
@@ -82,14 +73,6 @@ public class MenuSaveLoadTests : IAsyncLifetime
         _output.WriteLine($"After load: x={posAfter.X:F1}, z={posAfter.Z:F1}");
         Assert.Equal(5.0, posAfter.X, 0.5);
         Assert.Equal(-3.0, posAfter.Z, 0.5);
-    }
-
-    [Fact]
-    public void SaveExists_ReturnsTrue_AfterSave()
-    {
-        GameQueryHelpers.TriggerSave(_fixture.Context);
-        var result = GameQueryHelpers.GetSaveExists(_fixture.Context);
-        Assert.True(result.Exists);
     }
 
     [Fact]

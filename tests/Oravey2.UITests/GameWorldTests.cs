@@ -1,4 +1,3 @@
-using Oravey2.UITests.Pages;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -16,32 +15,6 @@ public class GameWorldTests : IAsyncLifetime
 
     public async Task InitializeAsync() => await _fixture.InitializeAsync();
     public async Task DisposeAsync() => await _fixture.DisposeAsync();
-
-    [Fact]
-    public void GameWorld_IsReady()
-    {
-        var page = new GameWorldPage(_fixture.Context);
-        Assert.True(page.IsLoaded());
-        Assert.True(page.IsReady());
-    }
-
-    [Fact]
-    public void GameWorld_PlayerStartsNearOrigin()
-    {
-        var pos = GameQueryHelpers.GetPlayerPosition(_fixture.Context);
-
-        // Player starts at (0, 0.5, 0) — allow some drift from earlier tests
-        // but should be within the tile map (16x16)
-        Assert.InRange(pos.X, -20, 20);
-        Assert.InRange(pos.Z, -20, 20);
-    }
-
-    [Fact]
-    public void GameWorld_StateIsExploring()
-    {
-        var state = GameQueryHelpers.GetGameState(_fixture.Context);
-        Assert.Equal("Exploring", state);
-    }
 
     [Fact]
     public void GameWorld_SceneHasRenderableEntities()

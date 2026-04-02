@@ -26,8 +26,8 @@ public class TownDialogueTreeTests
     public void ElderTree_QuestSetsFlag()
     {
         var tree = TownDialogueTrees.ElderDialogue();
-        var questNode = tree.Nodes["quest_offer"];
-        // "I'll help" is the first choice — has StartQuestAction
+        var questNode = tree.Nodes["quest_offer_1"];
+        // "I'll handle it." is the first choice — has StartQuestAction
         var helpChoice = questNode.Choices[0];
         Assert.Single(helpChoice.Consequences);
         Assert.IsType<StartQuestAction>(helpChoice.Consequences[0]);

@@ -11,54 +11,6 @@ public class CombatBalanceTests : IAsyncLifetime
     public async Task DisposeAsync() => await _fixture.DisposeAsync();
 
     [Fact]
-    public void PlayerWeapon_MatchesPipeWrench()
-    {
-        var config = GameQueryHelpers.GetCombatConfig(_fixture.Context);
-        Assert.Equal(14, config.Player.Damage);
-        Assert.Equal(0.80f, config.Player.Accuracy, 0.01f);
-        Assert.Equal(2.0f, config.Player.Range, 0.1f);
-        Assert.Equal(3, config.Player.ApCost);
-    }
-
-    [Fact]
-    public void EnemyWeapon_MatchesRustyShiv()
-    {
-        var config = GameQueryHelpers.GetCombatConfig(_fixture.Context);
-        Assert.Equal(4, config.Enemy.Damage);
-        Assert.Equal(0.50f, config.Enemy.Accuracy, 0.01f);
-        Assert.Equal(1.5f, config.Enemy.Range, 0.1f);
-        Assert.Equal(3, config.Enemy.ApCost);
-    }
-
-    [Fact]
-    public void EnemyWeapon_WeakerThanPlayer()
-    {
-        var config = GameQueryHelpers.GetCombatConfig(_fixture.Context);
-        Assert.True(config.Enemy.Damage < config.Player.Damage,
-            $"Enemy damage ({config.Enemy.Damage}) should be less than player ({config.Player.Damage})");
-        Assert.True(config.Enemy.Accuracy < config.Player.Accuracy,
-            $"Enemy accuracy ({config.Enemy.Accuracy}) should be less than player ({config.Player.Accuracy})");
-    }
-
-    [Fact]
-    public void MeleeDistance_IsZero()
-    {
-        var config = GameQueryHelpers.GetCombatConfig(_fixture.Context);
-        Assert.Equal(0f, config.MeleeDistance, 0.01f);
-    }
-
-    [Fact]
-    public void EnemyHp_IsRebalanced()
-    {
-        // Enemies should have 65 HP (Endurance=1) not 95 (Endurance=4)
-        var combat = GameQueryHelpers.GetCombatState(_fixture.Context);
-        foreach (var enemy in combat.Enemies)
-        {
-            Assert.Equal(65, enemy.MaxHp);
-        }
-    }
-
-    [Fact]
     public void FullCombat_PlayerSurvives()
     {
         // Trigger combat

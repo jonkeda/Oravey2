@@ -47,7 +47,7 @@ public class TileMapRendererScript : SyncScript
                     continue;
 
                 var entity = CreateTileEntity(x, y, tileType);
-                Entity.Scene?.Entities.Add(entity);
+                Entity.AddChild(entity);
                 _tileEntities.Add(entity);
             }
         }
@@ -103,11 +103,20 @@ public class TileMapRendererScript : SyncScript
         _ => new Color4(1f, 0f, 1f, 1f)                             // Magenta = missing
     };
 
+    public override void Cancel()
+    {
+        ClearMap();
+    }
+
     private void ClearMap()
     {
         foreach (var entity in _tileEntities)
         {
-            entity.Scene?.Entities.Remove(entity);
+            // Remove from parent (child entity model) or scene (legacy)
+            if (entity.Transform.Parent != null)
+                entity.Transform.Parent.Entity.RemoveChild(entity);
+            else
+                entity.Scene?.Entities.Remove(entity);
         }
         _tileEntities.Clear();
         _initialized = false;

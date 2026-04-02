@@ -29,6 +29,11 @@ public class GameOverOverlayScript : SyncScript
     public string? CurrentTitle => _titleText?.Text;
 
     /// <summary>
+    /// Exposes the current subtitle text for automation queries.
+    /// </summary>
+    public string? CurrentSubtitle => _subtitleText?.Text;
+
+    /// <summary>
     /// Whether the overlay is currently visible.
     /// </summary>
     public bool IsVisible => _overlay?.Visibility == Visibility.Visible;
@@ -94,17 +99,17 @@ public class GameOverOverlayScript : SyncScript
         {
             if (currentState == GameState.GameOver)
             {
-                ShowOverlay("GAME OVER", "You have been killed.");
+                Show("GAME OVER", "You have been killed.");
                 _dismissTimer = 0f; // Permanent
             }
             else if (_lastState == GameState.InCombat && currentState == GameState.Exploring)
             {
-                ShowOverlay("ENEMIES DEFEATED", "Returning to exploration...");
+                Show("ENEMIES DEFEATED", "Returning to exploration...");
                 _dismissTimer = 2f;
             }
             else if (_overlay.Visibility == Visibility.Visible && currentState != GameState.GameOver)
             {
-                HideOverlay();
+                Hide();
             }
 
             _lastState = currentState;
@@ -117,22 +122,27 @@ public class GameOverOverlayScript : SyncScript
             if (_dismissTimer <= 0f)
             {
                 _dismissTimer = 0f;
-                HideOverlay();
+                Hide();
             }
         }
     }
 
-    private void ShowOverlay(string title, string subtitle)
+    public void Show(string title, string subtitle)
     {
         _titleText!.Text = title;
         _subtitleText!.Text = subtitle;
         _overlay!.Visibility = Visibility.Visible;
     }
 
-    private void HideOverlay()
+    public void SetTitle(string title) => _titleText!.Text = title;
+
+    public void SetSubtitle(string subtitle) => _subtitleText!.Text = subtitle;
+
+    public void Hide()
     {
         _overlay!.Visibility = Visibility.Collapsed;
         _titleText!.Text = "";
         _subtitleText!.Text = "";
+        _dismissTimer = 0f;
     }
 }

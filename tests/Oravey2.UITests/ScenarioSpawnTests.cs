@@ -61,23 +61,6 @@ public class ScenarioSpawnTests : IAsyncLifetime
     }
 
     [Fact]
-    public void SetPlayerStats_UpdatesMaxHp()
-    {
-        var hudBefore = GameQueryHelpers.GetHudState(_fixture.Context);
-        var baselineMaxHp = hudBefore.MaxHp;
-
-        var result = GameQueryHelpers.SetPlayerStats(_fixture.Context, endurance: 8);
-
-        Assert.True(result.Success);
-        Assert.True(result.MaxHp > baselineMaxHp,
-            $"MaxHP should increase with Endurance 8: was {baselineMaxHp}, now {result.MaxHp}");
-
-        var hud = GameQueryHelpers.GetHudState(_fixture.Context);
-        Assert.Equal(result.MaxHp, hud.MaxHp);
-        Assert.Equal(result.Hp, hud.Hp);
-    }
-
-    [Fact]
     public void SetPlayerWeapon_EquipsCustomWeapon()
     {
         var result = GameQueryHelpers.SetPlayerWeapon(_fixture.Context,

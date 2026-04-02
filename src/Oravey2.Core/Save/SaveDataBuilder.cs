@@ -101,11 +101,15 @@ public sealed class SaveDataBuilder
     }
 
     public SaveDataBuilder WithQuestStates(Dictionary<string, QuestStatus> states,
-        Dictionary<string, string> stages, Dictionary<string, bool> worldFlags)
+        Dictionary<string, string> stages, Dictionary<string, bool> worldFlags,
+        Dictionary<string, int>? worldCounters = null)
     {
         _data.QuestStates = new Dictionary<string, QuestStatus>(states);
         _data.QuestStages = new Dictionary<string, string>(stages);
         _data.WorldFlags = new Dictionary<string, bool>(worldFlags);
+        _data.WorldCounters = worldCounters != null
+            ? new Dictionary<string, int>(worldCounters)
+            : new Dictionary<string, int>();
         return this;
     }
 

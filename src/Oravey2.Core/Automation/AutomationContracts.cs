@@ -116,9 +116,7 @@ public record EnemyStateDto(
 
 public record CombatStateResponse(
     bool InCombat, int EnemyCount,
-    List<EnemyStateDto> Enemies,
-    int PlayerHp, int PlayerMaxHp,
-    int PlayerAp, int PlayerMaxAp);
+    List<EnemyStateDto> Enemies);
 
 public record KillEnemyResponse(bool Killed, int RemainingAlive);
 
@@ -148,17 +146,15 @@ public record NotificationMessageDto(string Text, double TimeRemaining);
 
 public record NotificationFeedResponse(int Count, List<NotificationMessageDto> Messages);
 
-public record GameOverStateResponse(bool Visible, string Title);
-
-public record EnemyHpBarDto(string EnemyId, int Hp, int MaxHp);
-
-public record EnemyHpBarsResponse(bool Visible, List<EnemyHpBarDto> Bars);
+public record GameOverStateResponse(bool Visible, string Title, string Subtitle);
 
 public record DamagePlayerResponse(int NewHp, int MaxHp, bool IsAlive);
 
 // ---- M1 Phase 1: Menu / Save / Load commands ----
 
 public record MenuStateResponse(string Screen, List<string> Buttons, bool Visible);
+
+public record GetMenuStateRequest(string Screen);
 
 public record ClickMenuButtonRequest(string Screen, string Button);
 
@@ -203,3 +199,41 @@ public record GiveItemToPlayerResponse(bool Success);
 // ---- M1 Phase 2.6: Zone transitions ----
 
 public record CurrentZoneResponse(string ZoneId, string ZoneName);
+
+// ---- M1 Phase 3.3: Quest & World State ----
+
+public record QuestInfoDto(string Id, string Title, string Status, string? CurrentStage, string? StageDescription);
+
+public record ActiveQuestsResponse(int Count, List<QuestInfoDto> Quests);
+
+public record WorldFlagResponse(string Flag, bool Value);
+
+public record GetWorldFlagRequest(string Flag);
+
+public record SetWorldFlagRequest(string Flag, bool Value);
+
+public record SetWorldFlagResponse(bool Success);
+
+public record WorldCounterResponse(string Counter, int Value);
+
+public record GetWorldCounterRequest(string Counter);
+
+public record SetWorldCounterRequest(string Counter, int Value);
+
+public record SetWorldCounterResponse(bool Success);
+
+// ---- M1 Phase 3.4: Quest Tracker & Journal ----
+
+public record QuestTrackerStateResponse(bool Visible, string? QuestId, string? QuestTitle, string? Objective, string? Progress);
+
+// ---- M1 Phase 4: Death & Respawn ----
+
+public record DeathStateResponse(bool IsDead, float RespawnTimer, int CapsLost);
+
+public record ForcePlayerDeathResponse(bool Success);
+
+public record VictoryStateResponse(bool Achieved, string? Title);
+
+public record QuestJournalStateResponse(bool Visible, List<QuestJournalEntryDto> ActiveQuests, List<QuestJournalEntryDto> CompletedQuests);
+
+public record QuestJournalEntryDto(string Id, string Title, string Description, string? CurrentObjective, string? Progress, int XpReward);

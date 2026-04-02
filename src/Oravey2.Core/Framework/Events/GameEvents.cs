@@ -46,7 +46,7 @@ public readonly record struct CombatStartedEvent(string[] EnemyIds) : IGameEvent
 public readonly record struct CombatEndedEvent() : IGameEvent;
 public readonly record struct AttackResolvedEvent(
     bool Hit, int Damage, HitLocation Location, bool Critical) : IGameEvent;
-public readonly record struct EntityDiedEvent() : IGameEvent;
+public readonly record struct EntityDiedEvent(string EntityId, string? Tag) : IGameEvent;
 
 public readonly record struct AIStateChangedEvent(string EntityId, AIState OldState, AIState NewState) : IGameEvent;
 public readonly record struct AIDetectedTargetEvent(string EntityId, string TargetId) : IGameEvent;

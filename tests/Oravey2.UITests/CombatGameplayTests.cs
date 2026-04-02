@@ -71,7 +71,8 @@ public class CombatGameplayTests : IAsyncLifetime
             {
                 var mid = GameQueryHelpers.GetCombatState(_fixture.Context);
                 var e = mid.Enemies.FirstOrDefault(e => e.Id == target.Id);
-                _output.WriteLine($"After {i + 1}: HP={e?.Hp ?? -1} AP={mid.PlayerAp} InCombat={mid.InCombat}");
+                var midHud = GameQueryHelpers.GetHudState(_fixture.Context);
+                _output.WriteLine($"After {i + 1}: HP={e?.Hp ?? -1} AP={midHud.Ap} InCombat={mid.InCombat}");
                 if (e == null || e.Hp < initialHp) break;
             }
         }
@@ -91,13 +92,13 @@ public class CombatGameplayTests : IAsyncLifetime
         var combat = WaitForCombat();
         if (!combat.InCombat) return; // No enemies left
 
-        var initialPlayerHp = combat.PlayerHp;
+        var initialPlayerHp = GameQueryHelpers.GetHudState(_fixture.Context).Hp;
 
         // Idle for 4 seconds — enemies auto-attack
         _fixture.Context.HoldKey(VirtualKey.W, 4000);
 
-        combat = GameQueryHelpers.GetCombatState(_fixture.Context);
-        Assert.True(combat.PlayerHp < initialPlayerHp, "Player should have taken damage from enemy attacks");
+        var hud = GameQueryHelpers.GetHudState(_fixture.Context);
+        Assert.True(hud.Hp < initialPlayerHp, "Player should have taken damage from enemy attacks");
     }
 
     [Fact]
@@ -134,23 +135,6 @@ public class CombatGameplayTests : IAsyncLifetime
         var response = _fixture.Context.SendCommand(
             AutomationCommand.GameQuery("GetEntityPosition", alive.Id));
         Assert.False(response.Success, "Entity should have been removed from scene");
-    }
-
-    [Fact]
-    public void AllEnemiesDead_ReturnsToExploring()
-    {
-        var combat = WaitForCombat();
-        if (!combat.InCombat) return; // No enemies left
-
-        // Kill all remaining alive enemies
-        foreach (var enemy in combat.Enemies.Where(e => e.IsAlive))
-            GameQueryHelpers.KillEnemy(_fixture.Context, enemy.Id);
-
-        // Advance frames for cleanup
-        _fixture.Context.HoldKey(VirtualKey.Space, 200);
-
-        var state = GameQueryHelpers.GetGameState(_fixture.Context);
-        Assert.Equal("Exploring", state);
     }
 
     [Fact]

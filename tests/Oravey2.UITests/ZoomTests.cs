@@ -43,15 +43,6 @@ public class ZoomTests : IAsyncLifetime
     }
 
     [Fact]
-    public void ZoomState_IsQueryable()
-    {
-        var cam = GameQueryHelpers.GetCameraState(_fixture.Context);
-        _output.WriteLine($"Zoom: {cam.Zoom:F1}, Yaw: {cam.Yaw:F1}, Pitch: {cam.Pitch:F1}");
-
-        Assert.Equal(25.0, cam.Zoom, 5.0);
-    }
-
-    [Fact]
     public void ZoomOut_ShowsMoreWorld()
     {
         var camBefore = GameQueryHelpers.GetCameraState(_fixture.Context);

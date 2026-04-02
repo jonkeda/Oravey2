@@ -16,5 +16,6 @@ public enum GameAction
     DialogueChoice1,
     DialogueChoice2,
     DialogueChoice3,
-    DialogueChoice4
+    DialogueChoice4,
+    OpenJournal
 }

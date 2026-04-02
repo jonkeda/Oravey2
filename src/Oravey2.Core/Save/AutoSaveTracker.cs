@@ -27,6 +27,9 @@ public sealed class AutoSaveTracker
         }
     }
 
+    /// <summary>When true, Tick and TriggerNow are suppressed (e.g., during death/respawn).</summary>
+    public bool Paused { get; set; }
+
     /// <summary>Seconds elapsed since last save.</summary>
     public float Elapsed => _elapsed;
 
@@ -48,7 +51,7 @@ public sealed class AutoSaveTracker
     /// </summary>
     public void Tick(float deltaSec)
     {
-        if (!_enabled || deltaSec <= 0) return;
+        if (!_enabled || Paused || deltaSec <= 0) return;
 
         _elapsed += deltaSec;
         if (_elapsed >= _intervalSeconds)
@@ -63,7 +66,7 @@ public sealed class AutoSaveTracker
     /// </summary>
     public void TriggerNow()
     {
-        if (!_enabled) return;
+        if (!_enabled || Paused) return;
         _pendingSave = true;
         _eventBus.Publish(new AutoSaveTriggeredEvent());
     }

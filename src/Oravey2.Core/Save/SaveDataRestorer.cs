@@ -91,6 +91,9 @@ public sealed class SaveDataRestorer
     /// <summary>World flags.</summary>
     public Dictionary<string, bool> WorldFlags => _data.WorldFlags;
 
+    /// <summary>World counters (e.g., kill counts).</summary>
+    public Dictionary<string, int> WorldCounters => _data.WorldCounters;
+
     /// <summary>Inventory items to reconstruct.</summary>
     public IReadOnlyList<SerializedItem> InventoryItems => _data.Inventory;
 

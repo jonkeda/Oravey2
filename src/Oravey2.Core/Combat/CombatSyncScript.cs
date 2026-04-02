@@ -18,7 +18,7 @@ namespace Oravey2.Core.Combat;
 /// <summary>
 /// Holds pure-C# combat data associated with a Stride entity.
 /// </summary>
-internal sealed class EnemyInfo
+public sealed class EnemyInfo
 {
     public required Entity Entity { get; init; }
     public required string Id { get; init; }
@@ -26,6 +26,7 @@ internal sealed class EnemyInfo
     public required CombatComponent Combat { get; init; }
     public required StatsComponent Stats { get; init; }
     public WeaponData? Weapon { get; init; }
+    public string? Tag { get; init; }
 }
 
 public class CombatSyncScript : SyncScript
@@ -44,6 +45,7 @@ public class CombatSyncScript : SyncScript
     public CombatStateManager? CombatState { get; set; }
     public GameStateManager? StateManager { get; set; }
     public LootDropScript? LootDrop { get; set; }
+    public IEventBus? EventBus { get; set; }
 
     // --- Phase D: equipment/stats refs (set from Program.cs) ---
     public EquipmentComponent? PlayerEquipment { get; set; }
@@ -342,6 +344,9 @@ public class CombatSyncScript : SyncScript
 
             // Drop loot before removing the entity
             LootDrop?.QueueDrop(enemy.Entity.Transform.Position);
+
+            // Publish death event with entity context for kill tracking
+            EventBus?.Publish(new EntityDiedEvent(enemy.Id, enemy.Tag));
 
             // Remove the entity from the scene
             enemy.Entity.Scene?.Entities.Remove(enemy.Entity);

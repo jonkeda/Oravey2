@@ -9,6 +9,8 @@ using var game = new Game();
 
 game.Run(start: (Scene rootScene) =>
 {
+    game.Window.AllowUserResizing = true;
+
     using var loggerFactory = LoggerFactory.Create(builder =>
     {
         builder

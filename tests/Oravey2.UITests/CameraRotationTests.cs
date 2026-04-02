@@ -124,28 +124,4 @@ public class CameraRotationTests : IAsyncLifetime
             "Screenshots before and after Q rotation should differ");
     }
 
-    [Fact]
-    public void Rotation_LandmarkMovement()
-    {
-        double landmarkX = 5.0, landmarkY = 0.0, landmarkZ = -3.0;
-
-        var before = GameQueryHelpers.WorldToScreen(
-            _fixture.Context, landmarkX, landmarkY, landmarkZ);
-        _output.WriteLine($"Landmark before: screenX={before.ScreenX:F1}, screenY={before.ScreenY:F1}, onScreen={before.OnScreen}");
-
-        // Hold Q for 500ms → ~60° rotation
-        _fixture.Context.HoldKey(VirtualKey.Q, 500);
-
-        var after = GameQueryHelpers.WorldToScreen(
-            _fixture.Context, landmarkX, landmarkY, landmarkZ);
-        _output.WriteLine($"Landmark after: screenX={after.ScreenX:F1}, screenY={after.ScreenY:F1}, onScreen={after.OnScreen}");
-
-        var hasMoved = before.OnScreen != after.OnScreen ||
-                       Math.Abs(after.ScreenX - before.ScreenX) > 10 ||
-                       Math.Abs(after.ScreenY - before.ScreenY) > 10;
-
-        Assert.True(hasMoved,
-            $"Landmark should move after rotation. " +
-            $"Before: ({before.ScreenX:F1},{before.ScreenY:F1}), After: ({after.ScreenX:F1},{after.ScreenY:F1})");
-    }
 }

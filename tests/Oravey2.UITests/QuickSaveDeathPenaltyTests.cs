@@ -19,15 +19,6 @@ public class QuickSaveDeathPenaltyTests : IAsyncLifetime
     public async Task DisposeAsync() => await _fixture.DisposeAsync();
 
     [Fact]
-    [Trait("Category", "Smoke")]
-    public void Caps_DefaultsTo50()
-    {
-        var caps = GameQueryHelpers.GetCapsState(_fixture.Context);
-        _output.WriteLine($"Caps: {caps.Caps}");
-        Assert.Equal(50, caps.Caps);
-    }
-
-    [Fact]
     public void QuickSave_CreatesFile()
     {
         // Press F5 for quick save

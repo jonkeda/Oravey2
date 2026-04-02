@@ -1,20 +1,10 @@
 # UI Tests Task List
 
 Tracking pass/fail status for all UI tests in `tests/Oravey2.UITests/`.
+Last updated after Phase 4 test cleanup (56 redundant/converted tests removed, 3 files deleted).
 
-## GameLifecycleTests (5 tests) ✅
-- [x] Game_StartsAndConnects
-- [x] Game_IsNotBusy_AfterStartup
-- [x] Game_IsInExploringState
-- [x] Game_PlayerEntityExists
-- [x] Game_CameraEntityExists
-
-## GameWorldTests (5 tests) ✅
-- [x] GameWorld_IsReady
-- [x] GameWorld_PlayerStartsNearOrigin
-- [x] GameWorld_StateIsExploring
-- [x] GameWorld_SceneHasRenderableEntities
-- [x] GameWorld_ScreenshotIsNotSolidColor
+## CameraDefaultTests (1 test) ✅
+- [x] PlayerVisible_AtTunedZoom
 
 ## CameraFollowTests (5 tests) ✅
 - [x] PlayerOnScreen_AtStart
@@ -23,64 +13,74 @@ Tracking pass/fail status for all UI tests in `tests/Oravey2.UITests/`.
 - [x] CameraFollows_PositionDelta
 - [x] PlayerVisible_FromAllFourRotations
 
-## CameraRotationTests (5 tests) ✅
+## CameraRotationTests (4 tests) ✅
 - [x] QHold_WorldRotatesOnScreen
 - [x] EHold_WorldRotatesOpposite
 - [x] FullRotation_Returns360
 - [x] RotationChangesView_Visually
-- [x] Rotation_LandmarkMovement
 
-## ZoomTests (4 tests) ✅
-- [x] InitialZoom_WorldEdgesVisible
-- [x] ZoomState_IsQueryable
-- [x] ZoomOut_ShowsMoreWorld
-- [x] ZoomIn_ReducesZoom
+## CombatBalanceTests (1 test) ✅
+- [x] FullCombat_PlayerSurvives
 
-## SpatialMovementTests (6 tests) ✅
-- [x] MoveW_PlayerMovesToExpectedTile
-- [x] MoveS_PlayerMovesOpposite
-- [x] MoveA_PlayerMovesLeftOnScreen
-- [x] MoveD_PlayerMovesRightOnScreen
-- [x] MoveW_PlayerStaysOnMap
-- [x] WASD_AreOrthogonal
-
-## FullscreenTests (1 test — SKIPPED)
-- [ ] F11_TogglesFullscreen *(Skip: Requires GetWindowState automation query)*
-
-## CombatTriggerTests (7 tests) ✅
-- [x] StartState_IsExploring
-- [x] ThreeEnemies_ExistAtStartup
-- [x] AllEnemies_InsideMapBounds
-- [x] PlayerAtOrigin_NoCombat
-- [x] TeleportNearEnemy1_TriggersCombat
-- [x] TeleportFarFromEnemies_StaysExploring
-- [x] CombatState_ShowsInCombat
-
-## CombatGameplayTests (6 tests) ✅
+## CombatGameplayTests (5 tests) ✅
 - [x] PlayerCanAttack_DamagesEnemy
 - [x] EnemiesAttackPlayer_OverTime
 - [x] KillEnemy_RemovesFromList
 - [x] KillEnemy_EntityRemovedFromScene
-- [x] AllEnemiesDead_ReturnsToExploring
 - [x] AllEnemiesDead_CombatStateReset
 
-## WallCollisionTests (6 tests) ✅
-- [x] PlayerCannot_WalkPastNorthWall
-- [x] PlayerCannot_WalkPastSouthWall
-- [x] PlayerCannot_WalkPastEastWall
-- [x] PlayerCannot_WalkPastWestWall
-- [x] PlayerSlides_AlongWallDiagonal
-- [x] PlayerOnWalkableTile_AfterCollision
+## CombatTriggerTests (3 tests) ✅
+- [x] PlayerAtOrigin_NoCombat
+- [x] TeleportNearEnemy1_TriggersCombat
+- [x] TeleportFarFromEnemies_StaysExploring
 
-## StartingInventoryTests (5 tests) ✅
-- [x] PlayerHas_PipeWrenchEquipped
-- [x] PlayerHas_MedkitsInInventory
-- [x] StartingWeight_IsCorrect
-- [x] NotOverweight_AtStart
-- [x] EquipmentSlots_MostlyEmpty
+## DeterministicCombatTests (4 tests) ✅
+- [x] Player_Beats_SingleWeakEnemy
+- [x] Player_Dies_Against_OverpoweredEnemy
+- [x] ThreeEnemyFight_PlayerSurvives
+- [x] ArmorReducesDamage_InScenario
 
-## LootDropTests (5 tests) ✅
-- [x] NoLootEntities_AtStart
+## EnemyHpBarTests (5 tests) ✅
+- [x] EnemyBars_NotVisible_WhenExploring
+- [x] EnemyBars_Visible_WhenInCombat
+- [x] EnemyBars_ShowAllLivingEnemies
+- [x] EnemyBars_MatchCombatState_Hp
+- [x] EnemyBars_RemoveDeadEnemy
+
+## FullscreenTests (1 test — SKIPPED)
+- [ ] F11_TogglesFullscreen *(Skip: Requires GetWindowState automation query)*
+
+## GameLifecycleTests (5 tests) ✅
+- [x] Game_StartsAndConnects
+- [x] Game_IsNotBusy_AfterStartup
+- [x] Game_IsInExploringState
+- [x] Game_PlayerEntityExists
+- [x] Game_CameraEntityExists
+
+## GameOverTests (3 tests) ✅
+- [x] GameOverOverlay_NotVisible_AtStart
+- [x] PlayerDeath_TransitionsToGameOver
+- [x] PlayerDeath_ShowsGameOverOverlay
+
+## GameWorldTests (2 tests) ✅
+- [x] GameWorld_SceneHasRenderableEntities
+- [x] GameWorld_ScreenshotIsNotSolidColor
+
+## HudStateTests (2 tests) ✅
+- [x] HudState_ShowsInCombat_WhenFighting
+- [x] HudState_HealthDecreases_InCombat
+
+## InputFreezeTests (3 tests) ✅
+- [x] Movement_Blocked_DuringGameOver
+- [x] InventoryToggle_Blocked_DuringGameOver
+- [x] GameState_StaysGameOver_AfterInput
+
+## InventoryOverlayTests (3 tests) ✅
+- [x] Overlay_NotVisible_AtStart
+- [x] TabPress_OpensOverlay
+- [x] TabPress_ClosesOverlay
+
+## LootDropTests (4 tests) ✅
 - [x] KillEnemy_SpawnsLootCube
 - [x] LootCube_AtEnemyPosition
 - [x] LootCube_HasItems
@@ -92,55 +92,66 @@ Tracking pass/fail status for all UI tests in `tests/Oravey2.UITests/`.
 - [x] PickupAdds_ToExistingStacks
 - [x] Inventory_WeightIncreases_AfterPickup
 
-## HudStateTests (6 tests) ✅
-- [x] HudState_HasFullHealth_AtStart
-- [x] HudState_ShowsExploring_AtStart
-- [x] HudState_ShowsLevel1_AtStart
-- [x] HudState_ApMatches_MaxAp
-- [x] HudState_ShowsInCombat_WhenFighting
-- [x] HudState_HealthDecreases_InCombat
+## MenuSaveLoadTests (4 tests) ✅
+- [x] PauseMenu_NotVisible_Initially
+- [x] PauseMenu_EscapeOpens
+- [x] SaveLoad_RoundTrip_Position
+- [x] PauseMenu_SaveGame_ShowsNotification
 
-## InventoryOverlayTests (5 tests) ✅
-- [x] Overlay_NotVisible_AtStart
-- [x] TabPress_OpensOverlay
-- [x] TabPress_ClosesOverlay
-- [x] Overlay_ShowsStartingItems
-- [x] Overlay_ShowsCorrectWeight
-
----
-**Total: 75 tests (74 active + 1 skipped)**
-
-## HudBarTests (5 tests) ✅
-- [x] HudState_FullHealth_AtStart
-- [x] HudState_ReducedHp_AfterDamage
-- [x] HudState_FullAp_AtStart
-- [x] HudState_LevelOne_AtStart
-- [x] HudState_ShowsExploring_AtStart
-
-## EnemyHpBarTests (5 tests) ✅
-- [x] EnemyBars_NotVisible_WhenExploring
-- [x] EnemyBars_Visible_WhenInCombat
-- [x] EnemyBars_ShowAllLivingEnemies
-- [x] EnemyBars_MatchCombatState_Hp
-- [x] EnemyBars_RemoveDeadEnemy
-
-## NotificationFeedTests (4 tests) ✅
-- [x] NoNotifications_AtStart
+## NotificationFeedTests (2 tests) ✅
 - [x] LootPickup_ShowsNotification
 - [x] Notifications_HavePositiveTimeRemaining
-- [x] MaxFiveNotifications_Visible
 
-## GameOverTests (5 tests) ✅
-- [x] GameOverOverlay_NotVisible_AtStart
-- [x] PlayerDeath_TransitionsToGameOver
-- [x] PlayerDeath_ShowsGameOverOverlay
-- [x] DamagePlayer_ReducesHp
-- [x] DamagePlayer_ToZero_NotAlive
+## QuestChainTests (7 tests) ✅
+- [x] AcceptQuest1_FromElder
+- [x] KillCounter_Increments_ViaAutomation
+- [x] Quest1_Complete_After3Kills_SetsRatsCleared
+- [x] Quest1_Reward_OnReturn
+- [x] Quest2_Available_AfterQuest1
+- [x] Quest2_Accept_SetsActive
+- [x] Quest3_ReportToElder_Completes
 
-## InputFreezeTests (3 tests) ✅
-- [x] Movement_Blocked_DuringGameOver
-- [x] InventoryToggle_Blocked_DuringGameOver
-- [x] GameState_StaysGameOver_AfterInput
+## QuickSaveDeathPenaltyTests (4 tests) ✅
+- [x] QuickSave_CreatesFile
+- [x] QuickSaveLoad_RestoresPosition
+- [x] DeathPenalty_LosesCaps
+- [x] SaveLoad_PreservesCaps
+
+## ScenarioResetTests (4 tests) ✅
+- [x] ResetScenario_RemovesAllEnemies
+- [x] ResetScenario_HealsPlayerToMax
+- [x] ResetScenario_ExitsCombat
+- [x] ResetAfterGameOver_RestoresToExploring
+
+## ScenarioSpawnTests (4 tests) ✅
+- [x] SpawnEnemy_CreatesEnemyAtPosition
+- [x] SpawnEnemy_CustomWeaponStats
+- [x] SpawnEnemy_MultipleEnemies
+- [x] SetPlayerWeapon_EquipsCustomWeapon
+
+## SpatialMovementTests (6 tests) ✅
+- [x] MoveW_PlayerMovesToExpectedTile
+- [x] MoveS_PlayerMovesOpposite
+- [x] MoveA_PlayerMovesLeftOnScreen
+- [x] MoveD_PlayerMovesRightOnScreen
+- [x] MoveW_PlayerStaysOnMap
+- [x] WASD_AreOrthogonal
+
+## TownTests (14 tests) ✅
+- [x] Town_LoadsSuccessfully
+- [x] Town_TeleportToElder_ShowsInRange
+- [x] Town_FarFromNpc_NotInRange
+- [x] Town_InteractWithElder_FiresEvent
+- [x] Town_InteractWithElder_OpensDialogue
+- [x] Town_DialogueShows_SpeakerAndText
+- [x] Town_DialogueChoices_ArePresent
+- [x] Town_SelectLeave_EndsDialogue
+- [x] Town_CivilianDialogue_Works
+- [x] Town_BuyMedkit_DeductsCaps
+- [x] Town_BuyMedkit_AddsToInventory
+- [x] Town_SellScrap_AddsCaps
+- [x] Town_TeleportToGate_TransitionsZone
+- [x] Town_ZoneTransition_PlayerAtSpawn
 
 ## VictoryTests (4 tests) ✅
 - [x] KillAllEnemies_TransitionsToExploring
@@ -148,5 +159,21 @@ Tracking pass/fail status for all UI tests in `tests/Oravey2.UITests/`.
 - [x] VictoryOverlay_AutoDismisses
 - [x] VictoryOverlay_EnemyBarsHide
 
+## WallCollisionTests (6 tests) ✅
+- [x] PlayerCannot_WalkPastNorthWall
+- [x] PlayerCannot_WalkPastSouthWall
+- [x] PlayerCannot_WalkPastEastWall
+- [x] PlayerCannot_WalkPastWestWall
+- [x] PlayerSlides_AlongWallDiagonal
+- [x] PlayerOnWalkableTile_AfterCollision
+
+## WastelandTests (1 test) ✅
+- [x] Wasteland_GateReturnsToTown
+
+## ZoomTests (3 tests) ✅
+- [x] InitialZoom_WorldEdgesVisible
+- [x] ZoomOut_ShowsMoreWorld
+- [x] ZoomIn_ReducesZoom
+
 ---
-**Total: 101 tests (100 active + 1 skipped)**
+**Total: 114 tests (113 active + 1 skipped) across 29 files**

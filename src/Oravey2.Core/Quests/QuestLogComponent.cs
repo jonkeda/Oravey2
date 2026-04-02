@@ -40,4 +40,14 @@ public sealed class QuestLogComponent
         _quests[questId] = QuestStatus.Failed;
         _currentStages.Remove(questId);
     }
+
+    public void RestoreFromSave(Dictionary<string, QuestStatus> quests, Dictionary<string, string> stages)
+    {
+        _quests.Clear();
+        _currentStages.Clear();
+        foreach (var (id, status) in quests)
+            _quests[id] = status;
+        foreach (var (id, stage) in stages)
+            _currentStages[id] = stage;
+    }
 }

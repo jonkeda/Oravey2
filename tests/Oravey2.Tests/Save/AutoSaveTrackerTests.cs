@@ -123,4 +123,25 @@ public class AutoSaveTrackerTests
 
         Assert.Equal(55f, tracker.Elapsed, 1);
     }
+
+    [Fact]
+    public void PausedPreventsTick()
+    {
+        var tracker = new AutoSaveTracker(_bus, intervalSeconds: 10f);
+        tracker.Paused = true;
+        tracker.Tick(20f);
+
+        Assert.False(tracker.ShouldSave);
+        Assert.Equal(0f, tracker.Elapsed);
+    }
+
+    [Fact]
+    public void PausedPreventsTriggerNow()
+    {
+        var tracker = new AutoSaveTracker(_bus);
+        tracker.Paused = true;
+        tracker.TriggerNow();
+
+        Assert.False(tracker.ShouldSave);
+    }
 }

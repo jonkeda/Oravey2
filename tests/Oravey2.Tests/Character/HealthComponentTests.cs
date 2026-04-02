@@ -117,4 +117,15 @@ public class HealthComponentTests
 
         Assert.Empty(health.ActiveEffects);
     }
+
+    [Fact]
+    public void MaxHP_Endurance8_Is135()
+    {
+        var stats = new StatsComponent(new Dictionary<Stat, int> { { Stat.Endurance, 8 } });
+        var level = new LevelComponent(stats);
+        var health = new HealthComponent(stats, level);
+
+        // 50 + 8*10 + 1*5 = 135
+        Assert.Equal(135, health.MaxHP);
+    }
 }

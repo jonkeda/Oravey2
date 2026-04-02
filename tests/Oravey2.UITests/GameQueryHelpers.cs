@@ -7,6 +7,16 @@ using System.Text.Json.Serialization;
 namespace Oravey2.UITests;
 
 /// <summary>
+/// Client-side projection of enemy HP bar data (derived from CombatStateResponse).
+/// </summary>
+public record EnemyHpBarDto(string EnemyId, int Hp, int MaxHp);
+
+/// <summary>
+/// Client-side projection of enemy HP bars visibility and data.
+/// </summary>
+public record EnemyHpBarsResponse(bool Visible, List<EnemyHpBarDto> Bars);
+
+/// <summary>
 /// Helpers for querying Oravey2 game state through the automation pipe.
 /// </summary>
 public static class GameQueryHelpers
@@ -20,13 +30,7 @@ public static class GameQueryHelpers
         => SendQuery<CameraStateResponse>("GetCameraState", context);
 
     public static string GetGameState(IStrideTestContext context)
-    {
-        var response = context.SendCommand(AutomationCommand.GameQuery("GetGameState"));
-        if (!response.Success)
-            throw new InvalidOperationException($"GetGameState failed: {response.Error}");
-
-        return response.Result?.ToString() ?? "";
-    }
+        => GetHudState(context).GameState;
 
     public static SceneDiagnosticsResponse GetSceneDiagnostics(IStrideTestContext context)
         => SendQuery<SceneDiagnosticsResponse>("GetSceneDiagnostics", context);
@@ -89,7 +93,14 @@ public static class GameQueryHelpers
         => SendQuery<GameOverStateResponse>("GetGameOverState", context);
 
     public static EnemyHpBarsResponse GetEnemyHpBars(IStrideTestContext context)
-        => SendQuery<EnemyHpBarsResponse>("GetEnemyHpBars", context);
+    {
+        var combat = GetCombatState(context);
+        var bars = combat.Enemies
+            .Where(e => e.IsAlive)
+            .Select(e => new EnemyHpBarDto(e.Id, e.Hp, e.MaxHp))
+            .ToList();
+        return new EnemyHpBarsResponse(combat.InCombat, bars);
+    }
 
     public static DamagePlayerResponse DamagePlayer(IStrideTestContext context, int amount)
         => SendQuery<DamagePlayerResponse>("DamagePlayer", context, new DamagePlayerRequest(amount));
@@ -165,7 +176,7 @@ public static class GameQueryHelpers
     public static MenuStateResponse GetMenuState(IStrideTestContext context, string? screen = null)
         => screen == null
             ? SendQuery<MenuStateResponse>("GetMenuState", context)
-            : SendQuery<MenuStateResponse>("GetMenuState", context, new ClickMenuButtonRequest(screen, ""));
+            : SendQuery<MenuStateResponse>("GetMenuState", context, new GetMenuStateRequest(screen));
 
     public static ClickMenuButtonResponse ClickMenuButton(IStrideTestContext context, string screen, string button)
         => SendQuery<ClickMenuButtonResponse>("ClickMenuButton", context, new ClickMenuButtonRequest(screen, button));
@@ -206,4 +217,40 @@ public static class GameQueryHelpers
 
     public static CurrentZoneResponse GetCurrentZone(IStrideTestContext context)
         => SendQuery<CurrentZoneResponse>("GetCurrentZone", context);
+
+    // --- M1 Phase 3.3: Quest & World State helpers ---
+
+    public static ActiveQuestsResponse GetActiveQuests(IStrideTestContext context)
+        => SendQuery<ActiveQuestsResponse>("GetActiveQuests", context);
+
+    public static WorldFlagResponse GetWorldFlag(IStrideTestContext context, string flag)
+        => SendQuery<WorldFlagResponse>("GetWorldFlag", context, new GetWorldFlagRequest(flag));
+
+    public static SetWorldFlagResponse SetWorldFlag(IStrideTestContext context, string flag, bool value)
+        => SendQuery<SetWorldFlagResponse>("SetWorldFlag", context, new SetWorldFlagRequest(flag, value));
+
+    public static WorldCounterResponse GetWorldCounter(IStrideTestContext context, string counter)
+        => SendQuery<WorldCounterResponse>("GetWorldCounter", context, new GetWorldCounterRequest(counter));
+
+    public static SetWorldCounterResponse SetWorldCounter(IStrideTestContext context, string counter, int value)
+        => SendQuery<SetWorldCounterResponse>("SetWorldCounter", context, new SetWorldCounterRequest(counter, value));
+
+    // --- M1 Phase 3.4: Quest Tracker & Journal helpers ---
+
+    public static QuestTrackerStateResponse GetQuestTrackerState(IStrideTestContext context)
+        => SendQuery<QuestTrackerStateResponse>("GetQuestTrackerState", context);
+
+    public static QuestJournalStateResponse GetQuestJournalState(IStrideTestContext context)
+        => SendQuery<QuestJournalStateResponse>("GetQuestJournalState", context);
+
+    // --- M1 Phase 4: Death & Respawn helpers ---
+
+    public static DeathStateResponse GetDeathState(IStrideTestContext context)
+        => SendQuery<DeathStateResponse>("GetDeathState", context);
+
+    public static ForcePlayerDeathResponse ForcePlayerDeath(IStrideTestContext context)
+        => SendQuery<ForcePlayerDeathResponse>("ForcePlayerDeath", context);
+
+    public static VictoryStateResponse GetVictoryState(IStrideTestContext context)
+        => SendQuery<VictoryStateResponse>("GetVictoryState", context);
 }

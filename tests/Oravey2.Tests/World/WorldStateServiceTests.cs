@@ -52,4 +52,46 @@ public class WorldStateServiceTests
         var svc = new WorldStateService();
         Assert.False(svc.GetFlag("anything"));
     }
+
+    [Fact]
+    public void GetCounter_Unknown_ReturnsZero()
+    {
+        var svc = new WorldStateService();
+        Assert.Equal(0, svc.GetCounter("never_set"));
+    }
+
+    [Fact]
+    public void SetCounter_GetCounter_Roundtrip()
+    {
+        var svc = new WorldStateService();
+        svc.SetCounter("kills", 5);
+        Assert.Equal(5, svc.GetCounter("kills"));
+    }
+
+    [Fact]
+    public void IncrementCounter_FromZero()
+    {
+        var svc = new WorldStateService();
+        svc.IncrementCounter("kills");
+        Assert.Equal(1, svc.GetCounter("kills"));
+    }
+
+    [Fact]
+    public void IncrementCounter_Accumulates()
+    {
+        var svc = new WorldStateService();
+        svc.IncrementCounter("kills");
+        svc.IncrementCounter("kills");
+        svc.IncrementCounter("kills");
+        Assert.Equal(3, svc.GetCounter("kills"));
+    }
+
+    [Fact]
+    public void Counters_ReturnsAllEntries()
+    {
+        var svc = new WorldStateService();
+        svc.SetCounter("a", 1);
+        svc.SetCounter("b", 2);
+        Assert.Equal(2, svc.Counters.Count);
+    }
 }

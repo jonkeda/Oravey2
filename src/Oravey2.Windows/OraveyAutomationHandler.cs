@@ -7,6 +7,7 @@ using Oravey2.Core.Character.Health;
 using Oravey2.Core.Character.Level;
 using Oravey2.Core.Character.Stats;
 using Oravey2.Core.Combat;
+using Oravey2.Core.Dialogue;
 using Oravey2.Core.Framework.Events;
 using Oravey2.Core.Framework.Services;
 using Oravey2.Core.Framework.State;
@@ -14,6 +15,8 @@ using Oravey2.Core.Inventory.Core;
 using Oravey2.Core.Inventory.Equipment;
 using Oravey2.Core.Inventory.Items;
 using Oravey2.Core.Loot;
+using Oravey2.Core.NPC;
+using Oravey2.Core.Quests;
 using Oravey2.Core.Save;
 using Oravey2.Core.UI;
 using Oravey2.Core.UI.Stride;
@@ -61,6 +64,7 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
     private PauseMenuScript? _pauseMenu;
     private SettingsMenuScript? _settingsMenu;
     private ScenarioLoader? _scenarioLoader;
+    private ZoneManager? _zoneManager;
 
     public OraveyAutomationHandler(IAutomationHandler inner, Scene rootScene, Game game)
     {
@@ -124,6 +128,11 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
         _scenarioLoader = scenarioLoader;
     }
 
+    public void SetZoneManager(ZoneManager zoneManager)
+    {
+        _zoneManager = zoneManager;
+    }
+
     /// <summary>
     /// Refreshes Phase B/C refs from the current scenario loader state.
     /// Call after a scenario is loaded to ensure the handler uses the latest refs.
@@ -166,7 +175,6 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
         {
             "GetPlayerPosition" => GetPlayerPosition(),
             "GetCameraState" => GetCameraState(),
-            "GetGameState" => GetCurrentGameState(),
             "GetSceneDiagnostics" => GetSceneDiagnostics(),
             "GetEntityPosition" => GetEntityPosition(command),
             "WorldToScreen" => WorldToScreen(command),
@@ -182,7 +190,6 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
             "GetInventoryOverlayVisible" => GetInventoryOverlayVisible(),
             "GetNotificationFeed" => GetNotificationFeed(),
             "GetGameOverState" => GetGameOverState(),
-            "GetEnemyHpBars" => GetEnemyHpBars(),
             "DamagePlayer" => DamagePlayer(command),
             "GetCombatConfig" => GetCombatConfig(),
             "EquipItem" => EquipItem(command),
@@ -196,6 +203,23 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
             "TriggerLoad" => TriggerLoad(),
             "GetSaveExists" => GetSaveExists(),
             "GetCapsState" => GetCapsState(),
+            "GetNpcList" => GetNpcList(),
+            "GetNpcInRange" => GetNpcInRange(),
+            "InteractWithNpc" => InteractWithNpc(command),
+            "GetDialogueState" => GetDialogueState(),
+            "SelectDialogueChoice" => SelectDialogueChoice(command),
+            "GiveItemToPlayer" => GiveItemToPlayer(command),
+            "GetCurrentZone" => GetCurrentZone(),
+            "GetActiveQuests" => GetActiveQuests(),
+            "GetWorldFlag" => GetWorldFlag(command),
+            "SetWorldFlag" => SetWorldFlag(command),
+            "GetWorldCounter" => GetWorldCounter(command),
+            "SetWorldCounter" => SetWorldCounter(command),
+            "GetQuestTrackerState" => GetQuestTrackerState(),
+            "GetQuestJournalState" => GetQuestJournalState(),
+            "GetDeathState" => GetDeathState(),
+            "ForcePlayerDeath" => ForcePlayerDeath(),
+            "GetVictoryState" => GetVictoryState(),
             _ => null // Let inner handler deal with it
         };
     }
@@ -226,17 +250,9 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
             cameraScript?.CurrentFov ?? 0f));
     }
 
-    private AutomationResponse GetCurrentGameState()
-    {
-        if (ServiceLocator.Instance.TryGet<GameStateManager>(out var gsm) && gsm != null)
-            return AutomationResponse.Ok(gsm.CurrentState.ToString());
-
-        return AutomationResponse.Fail("GameStateManager not registered");
-    }
-
     private AutomationResponse GetSceneDiagnostics()
     {
-        var entities = _rootScene.Entities;
+        var entities = WorldEntities;
         var modelEntities = new List<ModelEntityDto>();
         foreach (var e in entities)
         {
@@ -285,7 +301,7 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
         }
 
         return Respond(new SceneDiagnosticsResponse(
-            entities.Count,
+            WorldEntities.Count(),
             modelEntities.Count,
             modelEntities.Take(5).ToList(),
             camDiag));
@@ -497,13 +513,19 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
 
     private Entity? FindEntity(string name)
     {
-        foreach (var entity in _rootScene.Entities)
+        var worldScene = _scenarioLoader?.WorldScene;
+        if (worldScene != null)
         {
-            if (entity.Name == name)
-                return entity;
+            foreach (var entity in worldScene.Entities)
+                if (entity.Name == name) return entity;
         }
+        foreach (var entity in _rootScene.Entities)
+            if (entity.Name == name) return entity;
         return null;
     }
+
+    private IEnumerable<Entity> WorldEntities
+        => (IEnumerable<Entity>?)_scenarioLoader?.WorldScene?.Entities ?? _rootScene.Entities;
 
     private static readonly JsonSerializerOptions _jsonOpts = new()
     {
@@ -541,11 +563,7 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
         return Respond(new CombatStateResponse(
             script.CombatState?.InCombat ?? false,
             script.Enemies.Count,
-            enemies,
-            script.PlayerHealth?.CurrentHP ?? 0,
-            script.PlayerHealth?.MaxHP ?? 0,
-            (int)(script.PlayerCombat?.CurrentAP ?? 0),
-            script.PlayerCombat?.MaxAP ?? 0));
+            enemies));
     }
 
     private AutomationResponse TeleportPlayer(AutomationCommand command)
@@ -638,7 +656,7 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
 
     private AutomationResponse GetLootEntities()
     {
-        var lootEntities = _rootScene.Entities
+        var lootEntities = WorldEntities
             .Where(e => LootDropScript.HasLoot(e))
             .Select(e =>
             {
@@ -686,23 +704,8 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
 
         return Respond(new GameOverStateResponse(
             _gameOverOverlay.IsVisible,
-            _gameOverOverlay.CurrentTitle ?? ""));
-    }
-
-    private AutomationResponse GetEnemyHpBars()
-    {
-        var combatManager = FindEntity("CombatManager");
-        var script = combatManager?.Get<CombatSyncScript>();
-        if (script == null)
-            return AutomationResponse.Fail("CombatSyncScript not found");
-
-        var inCombat = script.CombatState?.InCombat ?? false;
-        var bars = script.Enemies
-            .Where(e => e.Health.IsAlive)
-            .Select(e => new EnemyHpBarDto(e.Id, e.Health.CurrentHP, e.Health.MaxHP))
-            .ToList();
-
-        return Respond(new EnemyHpBarsResponse(inCombat, bars));
+            _gameOverOverlay.CurrentTitle ?? "",
+            _gameOverOverlay.CurrentSubtitle ?? ""));
     }
 
     private AutomationResponse DamagePlayer(AutomationCommand command)
@@ -800,7 +803,7 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
 
     // ---- Phase E: Scenario commands ----
 
-    private MaterialInstance? _cachedEnemyMaterial;
+    private EnemySpawner? _enemySpawner;
 
     private AutomationResponse ResetScenario()
     {
@@ -845,11 +848,11 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
             // Remove loot cubes (best-effort, collection may be modified concurrently)
             try
             {
-                var lootEntities = _rootScene.Entities
+                var lootEntities = WorldEntities
                     .Where(e => e != null && LootDropScript.HasLoot(e))
                     .ToList();
                 foreach (var loot in lootEntities)
-                    _rootScene.Entities.Remove(loot);
+                    loot.Scene?.Entities.Remove(loot);
             }
             catch { /* Loot cleanup is best-effort */ }
 
@@ -868,70 +871,26 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
             return AutomationResponse.Fail("SpawnEnemy requires JSON config argument");
 
         var id = req.Id ?? $"enemy_{Guid.NewGuid():N}";
-        var x = (float)req.X;
-        var z = (float)req.Z;
         var endurance = req.Endurance ?? 1;
         var luck = req.Luck ?? 3;
         var weaponDamage = req.WeaponDamage ?? 4;
         var weaponAccuracy = req.WeaponAccuracy ?? 0.50f;
 
-        // Create enemy entity with visual
-        var enemyEntity = new Entity(id);
-        enemyEntity.Transform.Position = new Vector3(x, 0.5f, z);
-
-        var enemyVisual = new Entity($"{id}_Visual");
-        var mesh = GeometricPrimitive.Capsule.New(_game.GraphicsDevice, 0.3f, 0.8f).ToMeshDraw();
-        var model = new Model();
-        model.Meshes.Add(new Mesh { Draw = mesh });
-        _cachedEnemyMaterial ??= _game.CreateMaterial(new Color(0.8f, 0.15f, 0.15f));
-        model.Materials.Add(_cachedEnemyMaterial);
-        enemyVisual.Add(new ModelComponent(model));
-        enemyEntity.AddChild(enemyVisual);
-
-        _rootScene.Entities.Add(enemyEntity);
-
-        // Stats
-        var stats = new StatsComponent(new Dictionary<Stat, int>
-        {
-            { Stat.Strength, 3 }, { Stat.Perception, 3 }, { Stat.Endurance, endurance },
-            { Stat.Charisma, 2 }, { Stat.Intelligence, 2 }, { Stat.Agility, 4 },
-            { Stat.Luck, luck },
-        });
-        var level = new LevelComponent(stats);
-
-        // Resolve IEventBus from ServiceLocator
         ServiceLocator.Instance.TryGet<IEventBus>(out var eventBus);
-        var health = new HealthComponent(stats, level, eventBus);
-        var combat = new CombatComponent { InCombat = false };
+        _enemySpawner ??= new EnemySpawner((Game)_game, eventBus!);
 
-        // Override HP if specified
-        if (req.Hp.HasValue && req.Hp.Value < health.MaxHP)
-            health.TakeDamage(health.MaxHP - req.Hp.Value);
-
-        // Weapon
-        var weapon = new WeaponData(
-            Damage: weaponDamage, Range: 1.5f, ApCost: 3,
-            Accuracy: weaponAccuracy, SkillType: "melee", CritMultiplier: 1.5f);
-
-        var enemyInfo = new EnemyInfo
-        {
-            Entity = enemyEntity,
-            Id = id,
-            Health = health,
-            Combat = combat,
-            Stats = stats,
-            Weapon = weapon,
-        };
+        var enemyInfo = _enemySpawner.Spawn(
+            _scenarioLoader?.WorldScene ?? _rootScene, id, (float)req.X, (float)req.Z,
+            endurance, luck, weaponDamage, weaponAccuracy,
+            overrideHp: req.Hp);
 
         // Add to combat + trigger systems
         var combatManager = FindEntity("CombatManager");
         var combatScript = combatManager?.Get<CombatSyncScript>();
-        var triggerScript = combatManager?.Get<EncounterTriggerScript>();
 
-        // Add to shared enemy list (combatScript.Enemies and triggerScript.Enemies are the same reference)
         combatScript?.Enemies.Add(enemyInfo);
 
-        return Respond(new SpawnEnemyResponse(true, id, health.CurrentHP, health.MaxHP));
+        return Respond(new SpawnEnemyResponse(true, id, enemyInfo.Health.CurrentHP, enemyInfo.Health.MaxHP));
     }
 
     private AutomationResponse SetPlayerStats(AutomationCommand command)
@@ -989,7 +948,7 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
 
     private AutomationResponse GetMenuState(AutomationCommand command)
     {
-        var req = DeserializeArg<ClickMenuButtonRequest>(command);
+        var req = DeserializeArg<GetMenuStateRequest>(command);
         var screenName = req?.Screen ?? "";
 
         return screenName switch
@@ -1073,6 +1032,11 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
                 playerEntity.Transform.Position.X,
                 playerEntity.Transform.Position.Y,
                 playerEntity.Transform.Position.Z)
+            .WithQuestStates(
+                _scenarioLoader?.QuestLog?.Quests is { } qs ? new Dictionary<string, QuestStatus>(qs) : [],
+                _scenarioLoader?.QuestLog?.CurrentStages is { } cs ? new Dictionary<string, string>(cs) : [],
+                _scenarioLoader?.WorldState?.Flags is { } wf ? new Dictionary<string, bool>(wf) : [],
+                _scenarioLoader?.WorldState?.Counters is { } wc ? new Dictionary<string, int>(wc) : [])
             .Build();
 
         _saveService.SaveGame(data);
@@ -1101,6 +1065,10 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
         if (_playerInventory != null)
             _playerInventory.Caps = restorer.Caps;
 
+        // Restore quest and world state
+        _scenarioLoader?.QuestLog?.RestoreFromSave(restorer.QuestStates, restorer.QuestStages);
+        _scenarioLoader?.WorldState?.RestoreFromSave(restorer.WorldFlags, restorer.WorldCounters);
+
         return Respond(new TriggerLoadResponse(true));
     }
 
@@ -1112,5 +1080,324 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
     private AutomationResponse GetCapsState()
     {
         return Respond(new CapsStateResponse(_playerInventory?.Caps ?? 0));
+    }
+
+    private AutomationResponse GetNpcList()
+    {
+        var npcs = WorldEntities
+            .Select(e => (Entity: e, Npc: e.Get<NpcComponent>()))
+            .Where(x => x.Npc?.Definition != null)
+            .Select(x =>
+            {
+                var pos = x.Entity.Transform.Position;
+                var def = x.Npc!.Definition!;
+                return new NpcDto(def.Id, def.DisplayName, def.Role.ToString(), pos.X, pos.Y, pos.Z);
+            })
+            .ToList();
+
+        return Respond(new NpcListResponse(npcs.Count, npcs));
+    }
+
+    private AutomationResponse GetNpcInRange()
+    {
+        var playerEntity = FindEntity("Player");
+        if (playerEntity == null)
+            return AutomationResponse.Fail("Player entity not found");
+
+        var playerPos = playerEntity.Transform.Position;
+        InteractionTriggerScript? closest = null;
+        float closestDist = float.MaxValue;
+
+        foreach (var entity in WorldEntities)
+        {
+            var trigger = entity.Get<InteractionTriggerScript>();
+            if (trigger?.NpcDef == null) continue;
+
+            var dist = (playerPos - entity.Transform.Position).Length();
+            if (dist <= trigger.InteractionRadius && dist < closestDist)
+            {
+                closest = trigger;
+                closestDist = dist;
+            }
+        }
+
+        if (closest == null)
+            return Respond(new NpcInRangeResponse(false, null, null, -1));
+
+        return Respond(new NpcInRangeResponse(true, closest.NpcDef!.Id, closest.NpcDef.DisplayName, closestDist));
+    }
+
+    private AutomationResponse InteractWithNpc(AutomationCommand command)
+    {
+        var req = DeserializeArg<InteractWithNpcRequest>(command);
+        var npcId = req?.NpcId;
+
+        foreach (var entity in WorldEntities)
+        {
+            var npc = entity.Get<NpcComponent>();
+            if (npc?.Definition?.Id != npcId) continue;
+
+            var trigger = entity.Get<InteractionTriggerScript>();
+            if (trigger?.EventBus == null || trigger.NpcDef == null)
+                return AutomationResponse.Fail($"NPC '{npcId}' has no interaction trigger");
+
+            trigger.EventBus.Publish(new NpcInteractionEvent(trigger.NpcDef.Id, trigger.NpcDef.DialogueTreeId));
+            return Respond(new InteractResponse(true, trigger.NpcDef.Id, trigger.NpcDef.DialogueTreeId));
+        }
+
+        return AutomationResponse.Fail($"NPC '{npcId}' not found");
+    }
+
+    private AutomationResponse GetDialogueState()
+    {
+        var proc = _scenarioLoader?.DialogueProcessor;
+        if (proc == null || !proc.IsActive)
+            return Respond(new DialogueStateResponse(false, null, null, null, null, []));
+
+        var ctx = _scenarioLoader!.DialogueContext;
+        var node = proc.CurrentNode;
+        var choices = ctx != null
+            ? proc.GetAvailableChoices(ctx)
+                .Select(c => new DialogueChoiceDto(c.Choice.Text, c.Available))
+                .ToList()
+            : new List<DialogueChoiceDto>();
+
+        return Respond(new DialogueStateResponse(
+            true,
+            node?.Speaker,
+            node?.Text,
+            proc.ActiveTree?.Id,
+            node?.Id,
+            choices));
+    }
+
+    private AutomationResponse SelectDialogueChoice(AutomationCommand command)
+    {
+        var proc = _scenarioLoader?.DialogueProcessor;
+        var ctx = _scenarioLoader?.DialogueContext;
+        if (proc == null || !proc.IsActive || ctx == null)
+            return AutomationResponse.Fail("No active dialogue");
+
+        var req = DeserializeArg<SelectDialogueChoiceRequest>(command);
+        if (req == null)
+            return AutomationResponse.Fail("SelectDialogueChoice requires index argument");
+
+        var selected = proc.SelectChoice(req.Index, ctx);
+        if (!selected)
+            return AutomationResponse.Fail($"Choice {req.Index} not available");
+
+        var ended = !proc.IsActive;
+        if (ended && _gameStateManager?.CurrentState == GameState.InDialogue)
+            _gameStateManager.TransitionTo(GameState.Exploring);
+
+        return Respond(new DialogueChoiceResponse(true, ended));
+    }
+
+    private AutomationResponse GiveItemToPlayer(AutomationCommand command)
+    {
+        if (_playerInventory == null)
+            return AutomationResponse.Fail("Player inventory not initialized");
+
+        var req = DeserializeArg<GiveItemToPlayerRequest>(command);
+        if (req == null)
+            return AutomationResponse.Fail("Invalid GiveItemToPlayer request");
+
+        var def = ItemResolver.Resolve(req.ItemId);
+        _playerInventory.Add(new ItemInstance(def, req.Count));
+        return Respond(new GiveItemToPlayerResponse(true));
+    }
+
+    private AutomationResponse GetCurrentZone()
+    {
+        if (_zoneManager == null)
+            return AutomationResponse.Fail("ZoneManager not initialized");
+
+        return Respond(new CurrentZoneResponse(
+            _zoneManager.CurrentZoneId ?? "unknown",
+            _zoneManager.CurrentZoneName));
+    }
+
+    private AutomationResponse GetActiveQuests()
+    {
+        var questLog = _scenarioLoader?.QuestLog;
+        if (questLog == null)
+            return AutomationResponse.Fail("QuestLog not initialized");
+
+        var quests = new List<QuestInfoDto>();
+        foreach (var (questId, status) in questLog.Quests)
+        {
+            var def = QuestChainDefinitions.GetQuest(questId);
+            var stage = questLog.GetCurrentStage(questId);
+            var stageDesc = stage != null && def?.Stages.TryGetValue(stage, out var s) == true
+                ? s.Description : null;
+
+            quests.Add(new QuestInfoDto(
+                questId,
+                def?.Title ?? questId,
+                status.ToString(),
+                stage,
+                stageDesc));
+        }
+
+        return Respond(new ActiveQuestsResponse(quests.Count, quests));
+    }
+
+    private AutomationResponse GetWorldFlag(AutomationCommand command)
+    {
+        var worldState = _scenarioLoader?.WorldState;
+        if (worldState == null)
+            return AutomationResponse.Fail("WorldState not initialized");
+
+        var req = DeserializeArg<GetWorldFlagRequest>(command);
+        if (req == null)
+            return AutomationResponse.Fail("GetWorldFlag requires flag name");
+
+        return Respond(new WorldFlagResponse(req.Flag, worldState.GetFlag(req.Flag)));
+    }
+
+    private AutomationResponse SetWorldFlag(AutomationCommand command)
+    {
+        var worldState = _scenarioLoader?.WorldState;
+        if (worldState == null)
+            return AutomationResponse.Fail("WorldState not initialized");
+
+        var req = DeserializeArg<SetWorldFlagRequest>(command);
+        if (req == null)
+            return AutomationResponse.Fail("SetWorldFlag requires flag and value");
+
+        worldState.SetFlag(req.Flag, req.Value);
+        return Respond(new SetWorldFlagResponse(true));
+    }
+
+    private AutomationResponse GetWorldCounter(AutomationCommand command)
+    {
+        var worldState = _scenarioLoader?.WorldState;
+        if (worldState == null)
+            return AutomationResponse.Fail("WorldState not initialized");
+
+        var req = DeserializeArg<GetWorldCounterRequest>(command);
+        if (req == null)
+            return AutomationResponse.Fail("GetWorldCounter requires counter name");
+
+        return Respond(new WorldCounterResponse(req.Counter, worldState.GetCounter(req.Counter)));
+    }
+
+    private AutomationResponse SetWorldCounter(AutomationCommand command)
+    {
+        var worldState = _scenarioLoader?.WorldState;
+        if (worldState == null)
+            return AutomationResponse.Fail("WorldState not initialized");
+
+        var req = DeserializeArg<SetWorldCounterRequest>(command);
+        if (req == null)
+            return AutomationResponse.Fail("SetWorldCounter requires counter and value");
+
+        worldState.SetCounter(req.Counter, req.Value);
+        return Respond(new SetWorldCounterResponse(true));
+    }
+
+    // ---- M1 Phase 3.4: Quest Tracker & Journal ----
+
+    private AutomationResponse GetQuestTrackerState()
+    {
+        var tracker = _scenarioLoader?.QuestTracker;
+        if (tracker == null)
+            return Respond(new QuestTrackerStateResponse(false, null, null, null, null));
+
+        var questId = tracker.TrackedQuestId;
+        string? title = null;
+        if (questId != null)
+        {
+            var def = QuestChainDefinitions.GetQuest(questId);
+            title = def?.Title;
+        }
+
+        return Respond(new QuestTrackerStateResponse(
+            tracker.IsVisible, questId, title, tracker.ObjectiveText, tracker.ProgressText));
+    }
+
+    private AutomationResponse GetQuestJournalState()
+    {
+        var journal = _scenarioLoader?.QuestJournal;
+        if (journal == null)
+            return Respond(new QuestJournalStateResponse(false, [], []));
+
+        var questLog = _scenarioLoader?.QuestLog;
+        var worldState = _scenarioLoader?.WorldState;
+
+        var active = new List<QuestJournalEntryDto>();
+        var completed = new List<QuestJournalEntryDto>();
+
+        foreach (var def in QuestChainDefinitions.All)
+        {
+            var status = questLog?.GetStatus(def.Id) ?? QuestStatus.NotStarted;
+            if (status == QuestStatus.Active)
+            {
+                var stageId = questLog!.GetCurrentStage(def.Id);
+                string? objective = null;
+                string? progress = null;
+                if (stageId != null && def.Stages.TryGetValue(stageId, out var stage))
+                {
+                    objective = stage.Description;
+                    progress = GetCounterProgress(stage, worldState);
+                }
+                active.Add(new QuestJournalEntryDto(def.Id, def.Title, def.Description, objective, progress, def.XPReward));
+            }
+            else if (status == QuestStatus.Completed)
+            {
+                completed.Add(new QuestJournalEntryDto(def.Id, def.Title, def.Description, null, null, def.XPReward));
+            }
+        }
+
+        return Respond(new QuestJournalStateResponse(journal.IsVisible, active, completed));
+    }
+
+    private static string? GetCounterProgress(QuestStage stage, WorldStateService? worldState)
+    {
+        if (worldState == null) return null;
+        foreach (var condition in stage.Conditions)
+        {
+            if (condition is QuestCounterCondition counter)
+                return $"({worldState.GetCounter(counter.CounterName)}/{counter.MinValue})";
+        }
+        return null;
+    }
+
+    // ---- M1 Phase 4: Death & Respawn ----
+
+    private AutomationResponse GetDeathState()
+    {
+        var deathRespawn = _scenarioLoader?.DeathRespawn;
+        if (deathRespawn == null)
+            return Respond(new DeathStateResponse(false, 0f, 0));
+
+        return Respond(new DeathStateResponse(
+            deathRespawn.IsDead,
+            deathRespawn.RespawnTimer,
+            deathRespawn.CapsLost));
+    }
+
+    private AutomationResponse ForcePlayerDeath()
+    {
+        if (_playerHealth == null)
+            return AutomationResponse.Fail("Player health not initialized");
+
+        if (!_playerHealth.IsAlive)
+            return Respond(new ForcePlayerDeathResponse(false));
+
+        _playerHealth.TakeDamage(_playerHealth.CurrentHP);
+
+        if (_gameStateManager != null && _gameStateManager.CurrentState != GameState.GameOver)
+            _gameStateManager.ForceState(GameState.GameOver);
+
+        return Respond(new ForcePlayerDeathResponse(true));
+    }
+
+    private AutomationResponse GetVictoryState()
+    {
+        var victoryCheck = _scenarioLoader?.VictoryCheck;
+        var achieved = victoryCheck?.VictoryAchieved ?? false;
+        string? title = achieved ? "HAVEN IS SAFE" : null;
+        return Respond(new VictoryStateResponse(achieved, title));
     }
 }

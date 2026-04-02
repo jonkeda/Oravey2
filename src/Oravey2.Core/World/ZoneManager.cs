@@ -44,7 +44,7 @@ public class ZoneManager
         var scenarioId = zoneId switch
         {
             "town" => "town",
-            "wasteland" => "m0_combat",
+            "wasteland" => "wasteland",
             _ => zoneId,
         };
 
