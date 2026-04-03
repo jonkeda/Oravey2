@@ -1,0 +1,24 @@
+[
+  {
+    "id": "shop_001",
+    "name": "Corner Shop",
+    "meshAsset": "meshes/shop.glb",
+    "size": "Small",
+    "footprint": [[2,2],[3,2],[2,3],[3,3]],
+    "floors": 1,
+    "condition": 0.8,
+    "interiorChunkId": null,
+    "placement": { "chunkX": 0, "chunkY": 0, "localTileX": 2, "localTileY": 2 }
+  },
+  {
+    "id": "warehouse_001",
+    "name": "Abandoned Warehouse",
+    "meshAsset": "meshes/warehouse.glb",
+    "size": "Large",
+    "footprint": [[8,8],[9,8],[10,8],[8,9],[9,9],[10,9],[8,10],[9,10],[10,10],[8,11],[9,11],[10,11]],
+    "floors": 2,
+    "condition": 0.5,
+    "interiorChunkId": "interior_warehouse_001",
+    "placement": { "chunkX": 0, "chunkY": 0, "localTileX": 8, "localTileY": 8 }
+  }
+]

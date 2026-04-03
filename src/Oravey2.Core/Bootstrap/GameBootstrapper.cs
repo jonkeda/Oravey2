@@ -214,11 +214,28 @@ public sealed class GameBootstrapper
             SaveService = saveService,
             Font = font,
         };
-        startMenuScript.OnNewGame = () =>
+
+        // Scenario selector overlay
+        var scenarioSelectorEntity = new Entity("ScenarioSelector");
+        var scenarioSelectorScript = new ScenarioSelectorScript { Font = font };
+        scenarioSelectorScript.OnBack = () =>
+        {
+            scenarioSelectorScript.Hide();
+            startMenuScript.Show();
+        };
+        scenarioSelectorScript.OnScenarioSelected = (scenarioId) =>
+        {
+            scenarioSelectorScript.Hide();
+            LoadAndWireScenario(scenarioId);
+            logger.LogInformation("New game started: scenario '{Id}'", scenarioId);
+        };
+        scenarioSelectorEntity.Add(scenarioSelectorScript);
+        menuScene.Entities.Add(scenarioSelectorEntity);
+
+        startMenuScript.OnNewScenario = () =>
         {
             startMenuScript.Hide();
-            LoadAndWireScenario("town");
-            logger.LogInformation("New game started");
+            scenarioSelectorScript.Show();
         };
         startMenuScript.OnContinue = () =>
         {

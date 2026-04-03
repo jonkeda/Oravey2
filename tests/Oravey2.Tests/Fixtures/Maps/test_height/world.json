@@ -1,0 +1,12 @@
+{
+  "chunksWide": 1,
+  "chunksHigh": 1,
+  "tileSize": 1.0,
+  "playerStart": {
+    "chunkX": 0,
+    "chunkY": 0,
+    "localTileX": 1,
+    "localTileY": 1
+  },
+  "defaultWeather": null
+}

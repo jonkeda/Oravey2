@@ -22,4 +22,9 @@
     <ProjectReference Include="..\..\src\Oravey2.Core\Oravey2.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="Fixtures\Maps\**\*" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Fixtures\Blueprints\**\*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

@@ -1102,7 +1102,7 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
             case "StartMenu":
                 switch (req.Button)
                 {
-                    case "New Game": _startMenu?.OnNewGame?.Invoke(); break;
+                    case "New Scenario": _startMenu?.OnNewScenario?.Invoke(); break;
                     case "Continue": _startMenu?.OnContinue?.Invoke(); break;
                     case "Settings": _startMenu?.OnSettings?.Invoke(); break;
                     default: return AutomationResponse.Fail($"Unknown button: {req.Button}");

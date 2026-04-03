@@ -1,0 +1,20 @@
+[
+  {
+    "id": "car_wreck_001",
+    "meshAsset": "meshes/car_wreck.glb",
+    "placement": { "chunkX": 0, "chunkY": 0, "localTileX": 5, "localTileY": 5 },
+    "rotation": 45.0,
+    "scale": 1.0,
+    "blocksWalkability": true,
+    "footprint": [[5,5],[6,5]]
+  },
+  {
+    "id": "barrel_001",
+    "meshAsset": "meshes/barrel.glb",
+    "placement": { "chunkX": 0, "chunkY": 0, "localTileX": 12, "localTileY": 3 },
+    "rotation": 0.0,
+    "scale": 1.0,
+    "blocksWalkability": false,
+    "footprint": null
+  }
+]

@@ -20,6 +20,7 @@ using Oravey2.Core.Quests;
 using Oravey2.Core.UI;
 using Oravey2.Core.UI.Stride;
 using Oravey2.Core.World;
+using Oravey2.Core.World.Serialization;
 using Stride.CommunityToolkit.Engine;
 using Stride.Core.Mathematics;
 using Stride.Engine;
@@ -127,6 +128,9 @@ public sealed class ScenarioLoader
                 break;
             case "wasteland":
                 LoadWasteland(WorldScene, game, cameraEntity, gameStateManager, eventBus, inputProvider, logger);
+                break;
+            case "portland":
+                LoadPortland(WorldScene, game, cameraEntity, gameStateManager, eventBus, inputProvider, logger);
                 break;
             default:
                 logger.LogWarning("Unknown scenario: {Id}, falling back to m0_combat", scenarioId);
@@ -875,6 +879,86 @@ public sealed class ScenarioLoader
         zoneExitEntity.Add(zoneExitScript);
         AddEntity(zoneExitEntity, rootScene);
         ZoneExitTrigger = zoneExitScript;
+    }
+
+    private void LoadPortland(Scene rootScene, Game game, Entity cameraEntity,
+        GameStateManager gameStateManager, IEventBus eventBus, IInputProvider inputProvider, ILogger logger)
+    {
+        var (playerEntity, playerMovement, playerStats, playerLevel, playerHealth,
+            playerCombat, playerInventory, playerEquipment, inventoryProcessor)
+            = CreatePlayer(rootScene, game, cameraEntity, gameStateManager, eventBus);
+
+        // Load compiled Portland map from disk
+        var mapDir = Path.Combine(AppContext.BaseDirectory, "Maps", "portland");
+        var world = MapLoader.LoadWorldFull(mapDir);
+
+        // Use chunk (0,0) as the initial view
+        var chunk = world.GetChunk(0, 0);
+        var mapData = chunk?.Tiles ?? new TileMapData(ChunkData.Size, ChunkData.Size);
+
+        // Load buildings
+        var buildingJsons = BuildingSerializer.LoadBuildings(mapDir);
+        var buildings = buildingJsons.Select(BuildingSerializer.FromBuildingJson).ToArray();
+        var buildingRegistry = new BuildingRegistry();
+        foreach (var bj in buildingJsons)
+        {
+            var building = BuildingSerializer.FromBuildingJson(bj);
+            buildingRegistry.RegisterForChunk(building, bj.Placement.ChunkX, bj.Placement.ChunkY);
+        }
+
+        // Load props
+        var propJsons = BuildingSerializer.LoadProps(mapDir);
+        var props = propJsons.Select(BuildingSerializer.FromPropJson).ToArray();
+
+        // Apply footprints to walkability
+        foreach (var b in buildings)
+            BuildingPlacer.ApplyFootprint(mapData, b);
+        foreach (var p in props)
+            BuildingPlacer.ApplyPropFootprint(mapData, p);
+
+        // Tile map renderer with all features
+        var tileMapEntity = new Entity("TileMap");
+        var tileMapRenderer = new TileMapRendererScript
+        {
+            MapData = mapData,
+            Buildings = buildingRegistry,
+            Props = props,
+        };
+        tileMapEntity.Add(tileMapRenderer);
+        AddEntity(tileMapEntity, rootScene);
+
+        playerMovement.MapData = mapData;
+        playerMovement.TileSize = tileMapRenderer.TileSize;
+
+        // Notification feed
+        var notificationService = new NotificationService();
+        eventBus.Subscribe<NotificationEvent>(e => notificationService.Add(e.Message, e.DurationSeconds));
+        NotificationService = notificationService;
+
+        var notificationEntity = new Entity("NotificationFeed");
+        notificationEntity.Add(new NotificationFeedScript { Notifications = notificationService, Font = Font });
+        AddEntity(notificationEntity, rootScene);
+
+        // HUD
+        var hudEntity = new Entity("HUD");
+        hudEntity.Add(new HudSyncScript
+        {
+            Health = playerHealth, Combat = playerCombat,
+            Level = playerLevel, Inventory = playerInventory,
+            StateManager = gameStateManager,
+            Font = Font,
+        });
+        AddEntity(hudEntity, rootScene);
+
+        // Inventory overlay
+        var inventoryOverlayEntity = new Entity("InventoryOverlay");
+        inventoryOverlayEntity.Add(new InventoryOverlayScript
+        {
+            Inventory = playerInventory, StateManager = gameStateManager,
+            InputProvider = inputProvider,
+            Font = Font,
+        });
+        AddEntity(inventoryOverlayEntity, rootScene);
     }
 
     private void SpawnNpcs(Scene rootScene, Game game,

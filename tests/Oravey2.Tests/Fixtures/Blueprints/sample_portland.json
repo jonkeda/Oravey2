@@ -1,0 +1,134 @@
+{
+  "name": "Portland",
+  "description": "Small Portland, Oregon sector map",
+  "source": {
+    "realWorldLocation": "Portland, OR",
+    "notes": "Sample test fixture for end-to-end blueprint compilation"
+  },
+  "dimensions": {
+    "chunksWide": 2,
+    "chunksHigh": 2
+  },
+  "terrain": {
+    "baseElevation": 3,
+    "regions": [
+      {
+        "name": "hill",
+        "type": "elevation",
+        "polygon": [[20,20],[28,20],[28,28],[20,28]],
+        "minHeight": 5,
+        "maxHeight": 8
+      }
+    ],
+    "surfaces": [
+      {
+        "regionId": "hill",
+        "allocations": [
+          { "surface": "Rock", "percent": 100 }
+        ]
+      }
+    ]
+  },
+  "water": {
+    "rivers": [
+      {
+        "id": "willamette",
+        "path": [[5,0],[5,31]],
+        "width": 3,
+        "waterLevel": 4,
+        "bridges": null
+      }
+    ],
+    "lakes": [
+      {
+        "id": "pond1",
+        "centerX": 25,
+        "centerY": 10,
+        "radius": 3,
+        "waterLevel": 5,
+        "depthAtCenter": 3
+      }
+    ]
+  },
+  "roads": [
+    {
+      "id": "burnside",
+      "path": [[0,15],[31,15]],
+      "width": 2,
+      "surfaceType": "Asphalt",
+      "condition": 0.9
+    },
+    {
+      "id": "mlk",
+      "path": [[15,0],[15,31]],
+      "width": 2,
+      "surfaceType": "Concrete",
+      "condition": 1.0
+    }
+  ],
+  "buildings": [
+    {
+      "id": "shop1",
+      "name": "Corner Shop",
+      "meshAsset": "meshes/shop.glb",
+      "size": "Small",
+      "tileX": 10,
+      "tileY": 10,
+      "footprintWidth": 2,
+      "footprintHeight": 2,
+      "floors": 1,
+      "condition": 0.8,
+      "interiorChunkId": null
+    }
+  ],
+  "props": [
+    {
+      "id": "car1",
+      "meshAsset": "meshes/car.glb",
+      "tileX": 8,
+      "tileY": 8,
+      "rotation": 45.0,
+      "scale": 1.0,
+      "blocksWalkability": true,
+      "footprintWidth": 2,
+      "footprintHeight": 1
+    },
+    {
+      "id": "barrel1",
+      "meshAsset": "meshes/barrel.glb",
+      "tileX": 12,
+      "tileY": 5,
+      "rotation": 0.0,
+      "scale": 1.0,
+      "blocksWalkability": false,
+      "footprintWidth": 0,
+      "footprintHeight": 0
+    }
+  ],
+  "zones": [
+    {
+      "id": "downtown",
+      "name": "Downtown",
+      "biome": "RuinedCity",
+      "radiationLevel": 0.1,
+      "enemyDifficultyTier": 2,
+      "isFastTravelTarget": true,
+      "chunkStartX": 0,
+      "chunkStartY": 0,
+      "chunkEndX": 0,
+      "chunkEndY": 0
+    },
+    {
+      "id": "outskirts",
+      "name": "Outskirts",
+      "biome": "Wasteland",
+      "radiationLevel": 0.3,
+      "enemyDifficultyTier": 3,
+      "isFastTravelTarget": false,
+      "chunkStartX": 1,
+      "chunkStartY": 0,
+      "chunkEndX": 1,
+      "chunkEndY": 1
+    }
+  ]
+}

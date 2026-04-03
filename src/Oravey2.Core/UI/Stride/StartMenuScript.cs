@@ -18,8 +18,8 @@ public class StartMenuScript : SyncScript
     public SaveService? SaveService { get; set; }
     public SpriteFont? Font { get; set; }
 
-    /// <summary>Called when user clicks New Game.</summary>
-    public Action? OnNewGame { get; set; }
+    /// <summary>Called when user clicks New Scenario.</summary>
+    public Action? OnNewScenario { get; set; }
 
     /// <summary>Called when user clicks Continue.</summary>
     public Action? OnContinue { get; set; }
@@ -61,10 +61,10 @@ public class StartMenuScript : SyncScript
             Margin = new Thickness(0, 8, 0, 40),
         };
 
-        var newGameButton = CreateMenuButton("New Game");
+        var newGameButton = CreateMenuButton("New Scenario");
         newGameButton.Click += (_, _) =>
         {
-            OnNewGame?.Invoke();
+            OnNewScenario?.Invoke();
         };
 
         _continueButton = CreateMenuButton("Continue");
@@ -85,7 +85,7 @@ public class StartMenuScript : SyncScript
             Environment.Exit(0);
         };
 
-        ButtonLabels.AddRange(["New Game", "Continue", "Settings", "Quit"]);
+        ButtonLabels.AddRange(["New Scenario", "Continue", "Settings", "Quit"]);
 
         var buttonStack = new StackPanel
         {

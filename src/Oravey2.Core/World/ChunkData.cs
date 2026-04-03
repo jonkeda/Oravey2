@@ -45,6 +45,16 @@ public sealed class ChunkData
     }
 
     /// <summary>
+    /// Gets rich tile data using world-space coordinates. Returns TileData.Empty if out of chunk bounds.
+    /// </summary>
+    public TileData GetWorldTileData(int worldX, int worldY)
+    {
+        int localX = worldX - WorldTileX;
+        int localY = worldY - WorldTileY;
+        return Tiles.GetTileData(localX, localY);
+    }
+
+    /// <summary>
     /// Marks an entity or container as modified (looted/destroyed).
     /// </summary>
     public void MarkModified(string entityId)
@@ -64,7 +74,7 @@ public sealed class ChunkData
         var tiles = new TileMapData(Size, Size);
         for (int x = 0; x < Size; x++)
             for (int y = 0; y < Size; y++)
-                tiles.SetTile(x, y, TileType.Ground);
+                tiles.SetTileData(x, y, TileDataFactory.Ground());
         return new ChunkData(chunkX, chunkY, tiles);
     }
 }

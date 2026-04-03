@@ -54,9 +54,17 @@ public sealed class TileGridPathfinder : IPathfinder
                         continue;
                 }
 
+                // Height-based passability check
+                var heightDelta = HeightHelper.GetHeightDelta(map, current.X, current.Y, nx, ny);
+                if (!HeightHelper.IsPassable(heightDelta))
+                    continue;
+
                 var moveCost = cost;
                 if (map.GetTile(nx, ny) == TileType.Rubble)
                     moveCost *= 2f;
+
+                // Apply slope movement cost
+                moveCost *= HeightHelper.GetSlopeMovementCost(heightDelta);
 
                 var tentativeG = currentG + moveCost;
                 var neighbor = (nx, ny);

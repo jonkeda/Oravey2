@@ -21,4 +21,8 @@
     <ProjectReference Include="..\..\Brinell\srcnew\Brinell.Automation\Brinell.Automation.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="Maps\**\*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

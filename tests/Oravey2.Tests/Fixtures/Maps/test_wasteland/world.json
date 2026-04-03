@@ -1,0 +1,11 @@
+{
+  "chunksWide": 1,
+  "chunksHigh": 1,
+  "tileSize": 1,
+  "playerStart": {
+    "chunkX": 0,
+    "chunkY": 0,
+    "localTileX": 8,
+    "localTileY": 17
+  }
+}

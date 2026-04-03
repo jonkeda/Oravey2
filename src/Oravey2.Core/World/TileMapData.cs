@@ -4,12 +4,23 @@ public sealed class TileMapData
 {
     public int Width { get; }
     public int Height { get; }
+
+    /// <summary>
+    /// Rich tile data grid — the primary storage for per-tile data.
+    /// </summary>
+    public TileData[,] TileDataGrid { get; }
+
+    /// <summary>
+    /// Legacy compatibility shim. Reads return LegacyTileType from TileDataGrid.
+    /// Writes are not supported — use SetTile or SetTileData instead.
+    /// </summary>
     public TileType[,] Tiles { get; }
 
     public TileMapData(int width, int height)
     {
         Width = width;
         Height = height;
+        TileDataGrid = new TileData[width, height];
         Tiles = new TileType[width, height];
     }
 
@@ -17,23 +28,43 @@ public sealed class TileMapData
     {
         if (x < 0 || x >= Width || y < 0 || y >= Height)
             return TileType.Empty;
-        return Tiles[x, y];
+        return TileDataGrid[x, y].LegacyTileType;
     }
 
     public void SetTile(int x, int y, TileType type)
     {
         if (x >= 0 && x < Width && y >= 0 && y < Height)
-            Tiles[x, y] = type;
+            SetTileDataInternal(x, y, TileDataFactory.FromLegacy(type));
+    }
+
+    public TileData GetTileData(int x, int y)
+    {
+        if (x < 0 || x >= Width || y < 0 || y >= Height)
+            return TileData.Empty;
+        return TileDataGrid[x, y];
+    }
+
+    public void SetTileData(int x, int y, TileData data)
+    {
+        if (x >= 0 && x < Width && y >= 0 && y < Height)
+            SetTileDataInternal(x, y, data);
+    }
+
+    private void SetTileDataInternal(int x, int y, TileData data)
+    {
+        TileDataGrid[x, y] = data;
+        Tiles[x, y] = data.LegacyTileType;
     }
 
     /// <summary>
     /// Returns true if the tile at (x, y) can be walked on.
-    /// Out-of-bounds, Empty, Wall, and Water are not walkable.
+    /// Out-of-bounds tiles are not walkable.
     /// </summary>
     public bool IsWalkable(int x, int y)
     {
-        var tile = GetTile(x, y);
-        return tile is TileType.Ground or TileType.Road or TileType.Rubble;
+        if (x < 0 || x >= Width || y < 0 || y >= Height)
+            return false;
+        return TileDataGrid[x, y].IsWalkable;
     }
 
     /// <summary>
@@ -82,25 +113,25 @@ public sealed class TileMapData
                 // Border walls
                 if (x == 0 || y == 0 || x == width - 1 || y == height - 1)
                 {
-                    map.Tiles[x, y] = TileType.Wall;
+                    map.SetTile(x, y, TileType.Wall);
                     continue;
                 }
 
                 // Road running through the middle
                 if (x == width / 2 || y == height / 2)
                 {
-                    map.Tiles[x, y] = TileType.Road;
+                    map.SetTile(x, y, TileType.Road);
                     continue;
                 }
 
                 // Random rubble and water patches
                 var roll = rng.NextDouble();
                 if (roll < 0.1)
-                    map.Tiles[x, y] = TileType.Rubble;
+                    map.SetTile(x, y, TileType.Rubble);
                 else if (roll < 0.13)
-                    map.Tiles[x, y] = TileType.Water;
+                    map.SetTile(x, y, TileType.Water);
                 else
-                    map.Tiles[x, y] = TileType.Ground;
+                    map.SetTile(x, y, TileType.Ground);
             }
         }
 
