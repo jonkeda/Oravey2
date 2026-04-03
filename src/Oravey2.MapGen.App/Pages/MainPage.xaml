@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TabbedPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+            xmlns:views="clr-namespace:Oravey2.MapGen.App.Views"
+            x:Class="Oravey2.MapGen.App.Pages.MainPage"
+            Title="Oravey2 Map Generator">
+
+    <views:GeneratorView Title="Generate" />
+    <views:BlueprintPreviewView Title="Preview" />
+    <views:SettingsView Title="Settings" />
+
+</TabbedPage>

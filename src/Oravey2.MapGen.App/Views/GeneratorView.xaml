@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Oravey2.MapGen.App.ViewModels"
+             x:Class="Oravey2.MapGen.App.Views.GeneratorView"
+             x:DataType="vm:GeneratorViewModel"
+             Title="Generate">
+
+    <ScrollView Padding="16">
+        <VerticalStackLayout Spacing="10">
+
+            <Label Text="Location" FontAttributes="Bold" />
+            <Entry Text="{Binding LocationName}" Placeholder="e.g. Portland, Oregon" />
+
+            <Label Text="Geography" FontAttributes="Bold" />
+            <Editor Text="{Binding GeographyDescription}" Placeholder="Describe the terrain..." HeightRequest="80" />
+
+            <Label Text="Post-Apocalyptic Context" FontAttributes="Bold" />
+            <Editor Text="{Binding PostApocContext}" Placeholder="Describe the destruction..." HeightRequest="80" />
+
+            <HorizontalStackLayout Spacing="10">
+                <VerticalStackLayout>
+                    <Label Text="Chunks Wide" />
+                    <Entry Text="{Binding ChunksWide}" Keyboard="Numeric" WidthRequest="80" />
+                </VerticalStackLayout>
+                <VerticalStackLayout>
+                    <Label Text="Chunks High" />
+                    <Entry Text="{Binding ChunksHigh}" Keyboard="Numeric" WidthRequest="80" />
+                </VerticalStackLayout>
+                <VerticalStackLayout>
+                    <Label Text="Min Level" />
+                    <Entry Text="{Binding MinLevel}" Keyboard="Numeric" WidthRequest="80" />
+                </VerticalStackLayout>
+                <VerticalStackLayout>
+                    <Label Text="Max Level" />
+                    <Entry Text="{Binding MaxLevel}" Keyboard="Numeric" WidthRequest="80" />
+                </VerticalStackLayout>
+            </HorizontalStackLayout>
+
+            <Label Text="Difficulty" FontAttributes="Bold" />
+            <Entry Text="{Binding DifficultyDescription}" Placeholder="e.g. Moderate" />
+
+            <Label Text="Factions (comma-separated)" FontAttributes="Bold" />
+            <Entry Text="{Binding Factions}" Placeholder="e.g. Settlers, Raiders, Tech Cult" />
+
+            <HorizontalStackLayout Spacing="10">
+                <VerticalStackLayout>
+                    <Label Text="Time of Day" />
+                    <Picker SelectedItem="{Binding TimeOfDay}" WidthRequest="120">
+                        <Picker.ItemsSource>
+                            <x:Array Type="{x:Type x:String}">
+                                <x:String>Dawn</x:String>
+                                <x:String>Morning</x:String>
+                                <x:String>Noon</x:String>
+                                <x:String>Afternoon</x:String>
+                                <x:String>Dusk</x:String>
+                                <x:String>Night</x:String>
+                            </x:Array>
+                        </Picker.ItemsSource>
+                    </Picker>
+                </VerticalStackLayout>
+                <VerticalStackLayout>
+                    <Label Text="Weather" />
+                    <Picker SelectedItem="{Binding WeatherDefault}" WidthRequest="120">
+                        <Picker.ItemsSource>
+                            <x:Array Type="{x:Type x:String}">
+                                <x:String>clear</x:String>
+                                <x:String>overcast</x:String>
+                                <x:String>rain</x:String>
+                                <x:String>fog</x:String>
+                                <x:String>storm</x:String>
+                            </x:Array>
+                        </Picker.ItemsSource>
+                    </Picker>
+                </VerticalStackLayout>
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout Spacing="10" Margin="0,10,0,0">
+                <Button Text="Generate" Command="{Binding GenerateCommand}" />
+                <Button Text="Cancel" Command="{Binding CancelCommand}" BackgroundColor="DarkRed" />
+            </HorizontalStackLayout>
+
+            <Label Text="Streaming Log" FontAttributes="Bold" Margin="0,10,0,0" />
+            <Frame BorderColor="Gray" Padding="8" HeightRequest="200">
+                <ScrollView>
+                    <Label Text="{Binding StreamingLog}" FontFamily="Consolas" FontSize="12" />
+                </ScrollView>
+            </Frame>
+
+            <Label Text="{Binding StatusMessage}" FontAttributes="Italic" />
+
+            <HorizontalStackLayout Spacing="10">
+                <Button Text="Save Blueprint" Command="{Binding SaveBlueprintCommand}" />
+                <Button Text="Copy JSON" Command="{Binding CopyJsonCommand}" />
+            </HorizontalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

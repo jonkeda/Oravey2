@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Oravey2.MapGen.App.ViewModels"
+             x:Class="Oravey2.MapGen.App.Views.BlueprintPreviewView"
+             x:DataType="vm:BlueprintPreviewViewModel"
+             Title="Preview">
+
+    <ScrollView Padding="16">
+        <VerticalStackLayout Spacing="10">
+
+            <Label Text="{Binding MapName}" FontSize="18" FontAttributes="Bold" />
+            <Label Text="{Binding MapDescription}" FontSize="14" />
+            <Label Text="{Binding Dimensions}" FontSize="14" TextColor="Gray" />
+
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="20" RowSpacing="5" Margin="0,10,0,0">
+                <Label Grid.Row="0" Grid.Column="0" Text="{Binding TerrainRegionCount, StringFormat='Terrain Regions: {0}'}" />
+                <Label Grid.Row="0" Grid.Column="1" Text="{Binding RoadCount, StringFormat='Roads: {0}'}" />
+                <Label Grid.Row="1" Grid.Column="0" Text="{Binding BuildingCount, StringFormat='Buildings: {0}'}" />
+                <Label Grid.Row="1" Grid.Column="1" Text="{Binding ZoneCount, StringFormat='Zones: {0}'}" />
+            </Grid>
+
+            <Button Text="Revalidate" Command="{Binding RevalidateCommand}" Margin="0,10,0,0" />
+
+            <Label Text="Validation" FontAttributes="Bold" Margin="0,10,0,0" />
+            <CollectionView ItemsSource="{Binding ValidationErrors}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="x:String">
+                        <Label Text="{Binding .}" FontSize="12" Padding="4" />
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Label Text="Raw JSON" FontAttributes="Bold" Margin="0,10,0,0" />
+            <Frame BorderColor="Gray" Padding="8" HeightRequest="300">
+                <ScrollView>
+                    <Label Text="{Binding BlueprintJson}" FontFamily="Consolas" FontSize="11" />
+                </ScrollView>
+            </Frame>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Oravey2.Core\Oravey2.Core.csproj" />
+    <ProjectReference Include="..\..\src\Oravey2.MapGen\Oravey2.MapGen.csproj" />
   </ItemGroup>
 
   <ItemGroup>

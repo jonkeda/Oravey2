@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Oravey2.MapGen.App.App">
+    <Application.Resources>
+        <ResourceDictionary>
+            <Color x:Key="Primary">#512BD4</Color>
+            <Color x:Key="Secondary">#DFD8F7</Color>
+            <Color x:Key="Tertiary">#2B0B98</Color>
+            <Color x:Key="Background">#1E1E2E</Color>
+            <Color x:Key="Surface">#2D2D3D</Color>
+            <Color x:Key="OnSurface">#CDD6F4</Color>
+            <Color x:Key="Error">#F38BA8</Color>
+            <Color x:Key="Success">#A6E3A1</Color>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
