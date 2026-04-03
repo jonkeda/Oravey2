@@ -1,0 +1,19 @@
+{
+  "id": "civilian_dialogue",
+  "startNodeId": "greeting",
+  "nodes": {
+    "greeting": {
+      "speaker": "Settler",
+      "text": "Stay safe out there, stranger.",
+      "portrait": "gray",
+      "choices": [
+        {
+          "text": "Thanks.",
+          "nextNodeId": null,
+          "condition": null,
+          "consequences": []
+        }
+      ]
+    }
+  }
+}

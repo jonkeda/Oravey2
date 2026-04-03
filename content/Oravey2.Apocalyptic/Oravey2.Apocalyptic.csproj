@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>true</IsPackable>
+    <PackageId>Oravey2.Apocalyptic</PackageId>
+    <Version>0.1.0</Version>
+    <Description>Post-apocalyptic content pack for Oravey2</Description>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <ContentTargetFolders>contentFiles</ContentTargetFolders>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="manifest.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="catalog.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="blueprints\**\*" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="maps\**\*" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="data\**\*" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="assets\**\*" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="scenarios\**\*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

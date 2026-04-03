@@ -1,0 +1,160 @@
+{
+  "id": "elder_dialogue",
+  "startNodeId": "greeting",
+  "nodes": {
+    "greeting": {
+      "speaker": "Elder Tomas",
+      "text": "I'm Elder Tomas, leader of this settlement. We've been holding on, but times are tough.",
+      "portrait": "green",
+      "choices": [
+        {
+          "text": "Any work?",
+          "nextNodeId": "quest_offer_1",
+          "condition": { "type": "and", "conditions": [
+            { "type": "flag", "flag": "q_rat_hunt_active", "expected": false },
+            { "type": "flag", "flag": "q_rat_hunt_done", "expected": false }
+          ]},
+          "consequences": []
+        },
+        {
+          "text": "The rats are dead.",
+          "nextNodeId": "quest_1_complete",
+          "condition": { "type": "and", "conditions": [
+            { "type": "flag", "flag": "q_rat_hunt_active", "expected": true },
+            { "type": "flag", "flag": "rats_cleared", "expected": true }
+          ]},
+          "consequences": []
+        },
+        {
+          "text": "Still working on it.",
+          "nextNodeId": null,
+          "condition": { "type": "and", "conditions": [
+            { "type": "flag", "flag": "q_rat_hunt_active", "expected": true },
+            { "type": "flag", "flag": "rats_cleared", "expected": false }
+          ]},
+          "consequences": []
+        },
+        {
+          "text": "Got another job?",
+          "nextNodeId": "quest_offer_2",
+          "condition": { "type": "and", "conditions": [
+            { "type": "flag", "flag": "q_rat_hunt_done", "expected": true },
+            { "type": "flag", "flag": "q_raider_camp_active", "expected": false },
+            { "type": "flag", "flag": "q_raider_camp_done", "expected": false }
+          ]},
+          "consequences": []
+        },
+        {
+          "text": "Working on the camp.",
+          "nextNodeId": null,
+          "condition": { "type": "and", "conditions": [
+            { "type": "flag", "flag": "q_raider_camp_active", "expected": true },
+            { "type": "flag", "flag": "scar_killed", "expected": false }
+          ]},
+          "consequences": []
+        },
+        {
+          "text": "The camp is clear.",
+          "nextNodeId": "quest_3_complete",
+          "condition": { "type": "flag", "flag": "q_safe_passage_active", "expected": true },
+          "consequences": []
+        },
+        {
+          "text": "How are things?",
+          "nextNodeId": "post_complete",
+          "condition": { "type": "flag", "flag": "m1_complete", "expected": true },
+          "consequences": []
+        },
+        {
+          "text": "Goodbye.",
+          "nextNodeId": null,
+          "condition": null,
+          "consequences": []
+        }
+      ]
+    },
+    "quest_offer_1": {
+      "speaker": "Elder Tomas",
+      "text": "Radrats have been attacking scavengers near the road. Kill three of them and I'll make it worth your while.",
+      "portrait": "green",
+      "choices": [
+        {
+          "text": "I'll handle it.",
+          "nextNodeId": null,
+          "condition": null,
+          "consequences": [{ "type": "startQuest", "questId": "q_rat_hunt" }]
+        },
+        {
+          "text": "Not now.",
+          "nextNodeId": null,
+          "condition": null,
+          "consequences": []
+        }
+      ]
+    },
+    "quest_1_complete": {
+      "speaker": "Elder Tomas",
+      "text": "Excellent. The road should be safer now. Here's your reward.",
+      "portrait": "green",
+      "choices": [
+        {
+          "text": "Thanks.",
+          "nextNodeId": null,
+          "condition": null,
+          "consequences": [
+            { "type": "setFlag", "flag": "q_rat_hunt_reported" },
+            { "type": "giveCaps", "amount": 15 }
+          ]
+        }
+      ]
+    },
+    "quest_offer_2": {
+      "speaker": "Elder Tomas",
+      "text": "Good work with the rats. But there's a bigger problem. Raiders set up camp in the eastern ruins. Their leader is a nasty piece of work called Scar. Take him out.",
+      "portrait": "green",
+      "choices": [
+        {
+          "text": "Consider it done.",
+          "nextNodeId": null,
+          "condition": null,
+          "consequences": [{ "type": "startQuest", "questId": "q_raider_camp" }]
+        },
+        {
+          "text": "I need to prepare first.",
+          "nextNodeId": null,
+          "condition": null,
+          "consequences": []
+        }
+      ]
+    },
+    "quest_3_complete": {
+      "speaker": "Elder Tomas",
+      "text": "You've done it. Haven is safer because of you. We won't forget this.",
+      "portrait": "green",
+      "choices": [
+        {
+          "text": "Glad to help.",
+          "nextNodeId": null,
+          "condition": null,
+          "consequences": [
+            { "type": "setFlag", "flag": "reported_to_elder" },
+            { "type": "giveCaps", "amount": 50 }
+          ]
+        }
+      ]
+    },
+    "post_complete": {
+      "speaker": "Elder Tomas",
+      "text": "Haven is thriving thanks to you, stranger. You're always welcome here.",
+      "portrait": "green",
+      "choices": [
+        {
+          "text": "Take care.",
+          "nextNodeId": null,
+          "condition": null,
+          "consequences": []
+        }
+      ]
+    }
+  }
+}

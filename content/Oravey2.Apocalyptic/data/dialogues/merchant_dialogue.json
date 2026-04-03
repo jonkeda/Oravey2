@@ -1,0 +1,37 @@
+{
+  "id": "merchant_dialogue",
+  "startNodeId": "greeting",
+  "nodes": {
+    "greeting": {
+      "speaker": "Mara",
+      "text": "Welcome to my stall. I've got supplies if you've got caps.",
+      "portrait": "blue",
+      "choices": [
+        {
+          "text": "Buy Medkit (10 caps)",
+          "nextNodeId": "greeting",
+          "condition": null,
+          "consequences": [{ "type": "buyItem", "itemId": "medkit", "price": 10 }]
+        },
+        {
+          "text": "Buy Leather Jacket (25 caps)",
+          "nextNodeId": "greeting",
+          "condition": null,
+          "consequences": [{ "type": "buyItem", "itemId": "leather_jacket", "price": 25 }]
+        },
+        {
+          "text": "Sell Scrap Metal (5 caps)",
+          "nextNodeId": "greeting",
+          "condition": null,
+          "consequences": [{ "type": "sellItem", "itemId": "scrap_metal", "price": 5 }]
+        },
+        {
+          "text": "Never mind.",
+          "nextNodeId": null,
+          "condition": null,
+          "consequences": []
+        }
+      ]
+    }
+  }
+}

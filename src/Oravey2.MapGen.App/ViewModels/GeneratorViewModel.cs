@@ -1,4 +1,5 @@
 using System.Windows.Input;
+using Oravey2.Core.World.Blueprint;
 using Oravey2.MapGen.Models;
 using Oravey2.MapGen.Services;
 
@@ -64,6 +65,11 @@ public sealed class GeneratorViewModel : BaseViewModel
     public Command CancelCommand { get; }
     public Command SaveBlueprintCommand { get; }
     public Command CopyJsonCommand { get; }
+    public Command CompileBlueprintCommand { get; }
+    public Command InstallToGameCommand { get; }
+
+    private string? _lastCompileOutputDir;
+    public string? LastCompileOutputDir { get => _lastCompileOutputDir; private set => SetProperty(ref _lastCompileOutputDir, value); }
 
     public GeneratorViewModel(MapGeneratorService service)
     {
@@ -74,6 +80,8 @@ public sealed class GeneratorViewModel : BaseViewModel
         CancelCommand = new Command(Cancel, () => IsGenerating);
         SaveBlueprintCommand = new Command(async () => await SaveBlueprintAsync(), () => LastGeneratedJson is not null);
         CopyJsonCommand = new Command(async () => await CopyJsonAsync(), () => LastGeneratedJson is not null);
+        CompileBlueprintCommand = new Command(CompileBlueprint, () => LastGeneratedJson is not null);
+        InstallToGameCommand = new Command(InstallToGame, () => LastCompileOutputDir is not null);
     }
 
     private async Task GenerateAsync()
@@ -89,6 +97,24 @@ public sealed class GeneratorViewModel : BaseViewModel
         _service.ProviderType = Preferences.Get("ProviderType", string.Empty);
         _service.BaseUrl = Preferences.Get("BaseUrl", string.Empty);
         try { _service.ApiKey = await SecureStorage.GetAsync("ApiKey"); } catch { }
+
+        // Load content pack asset catalog if configured
+        var catalogPath = Preferences.Get("ContentPackCatalogPath", string.Empty);
+        if (!string.IsNullOrWhiteSpace(catalogPath) && File.Exists(catalogPath))
+        {
+            try
+            {
+                _service.AssetRegistryOverride = Oravey2.MapGen.Assets.AssetRegistry.LoadFromFile(catalogPath);
+            }
+            catch
+            {
+                _service.AssetRegistryOverride = null;
+            }
+        }
+        else
+        {
+            _service.AssetRegistryOverride = null;
+        }
 
         try
         {
@@ -134,6 +160,8 @@ public sealed class GeneratorViewModel : BaseViewModel
             CancelCommand.ChangeCanExecute();
             SaveBlueprintCommand.ChangeCanExecute();
             CopyJsonCommand.ChangeCanExecute();
+            CompileBlueprintCommand.ChangeCanExecute();
+            InstallToGameCommand.ChangeCanExecute();
         }
     }
 
@@ -167,6 +195,84 @@ public sealed class GeneratorViewModel : BaseViewModel
         if (LastGeneratedJson is null) return;
         await Clipboard.SetTextAsync(LastGeneratedJson);
         StatusMessage = "JSON copied to clipboard";
+    }
+
+    private void CompileBlueprint()
+    {
+        if (LastGeneratedJson is null) return;
+
+        try
+        {
+            var blueprint = BlueprintLoader.LoadFromString(LastGeneratedJson);
+
+            var exportPath = Preferences.Get("ExportPath",
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Oravey2", "Blueprints"));
+
+            var safeName = string.IsNullOrWhiteSpace(LocationName)
+                ? "blueprint"
+                : string.Join("_", LocationName.Split(Path.GetInvalidFileNameChars()));
+
+            var outputDir = Path.Combine(exportPath, "compiled", safeName);
+            var result = MapCompiler.Compile(blueprint, outputDir);
+
+            if (result.Success)
+            {
+                LastCompileOutputDir = outputDir;
+                StatusMessage = $"Compiled {result.ChunksGenerated} chunks, {result.BuildingsPlaced} buildings, {result.PropsPlaced} props → {outputDir}";
+                InstallToGameCommand.ChangeCanExecute();
+            }
+            else
+            {
+                StatusMessage = $"Compile failed: {string.Join("; ", result.Warnings.Select(w => w.Message))}";
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Compile error: {ex.Message}";
+        }
+    }
+
+    private void InstallToGame()
+    {
+        if (LastCompileOutputDir is null) return;
+
+        var gameInstallPath = Preferences.Get("GameInstallPath", string.Empty);
+        if (string.IsNullOrWhiteSpace(gameInstallPath))
+        {
+            StatusMessage = "Set Game Install Path in Settings first.";
+            return;
+        }
+
+        try
+        {
+            var mapName = Path.GetFileName(LastCompileOutputDir);
+            var destDir = Path.Combine(gameInstallPath, "Maps", mapName);
+
+            CopyDirectory(LastCompileOutputDir, destDir);
+
+            StatusMessage = $"Installed to {destDir} — launch with --scenario {mapName}";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Install error: {ex.Message}";
+        }
+    }
+
+    private static void CopyDirectory(string sourceDir, string destDir)
+    {
+        Directory.CreateDirectory(destDir);
+
+        foreach (var file in Directory.GetFiles(sourceDir))
+        {
+            var destFile = Path.Combine(destDir, Path.GetFileName(file));
+            File.Copy(file, destFile, overwrite: true);
+        }
+
+        foreach (var dir in Directory.GetDirectories(sourceDir))
+        {
+            var destSubDir = Path.Combine(destDir, Path.GetFileName(dir));
+            CopyDirectory(dir, destSubDir);
+        }
     }
 
     private void OnProgress(GenerationProgress progress)

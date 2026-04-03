@@ -28,6 +28,14 @@ public sealed class MapGeneratorService : IAsyncDisposable
     public string? ApiKey { get; set; }
     public bool UseBYOK { get; set; }
 
+    /// <summary>
+    /// Optional override for the asset registry. When set, this is used instead
+    /// of the default embedded catalog. Set from content pack catalog path.
+    /// </summary>
+    public IAssetRegistry? AssetRegistryOverride { get; set; }
+
+    private IAssetRegistry EffectiveAssets => AssetRegistryOverride ?? _assets;
+
     public MapGeneratorService(IAssetRegistry assets, IBlueprintValidator validator)
     {
         _assets = assets;
@@ -304,10 +312,11 @@ public sealed class MapGeneratorService : IAsyncDisposable
 
     private List<AIFunction> BuildTools(WriteBlueprintTool writeTool)
     {
+        var assets = EffectiveAssets;
         var validateTool = new ValidateBlueprintTool(_validator);
-        var lookupTool = new LookupAssetTool(_assets);
+        var lookupTool = new LookupAssetTool(assets);
         var overlapTool = new CheckOverlapTool();
-        var listPrefabsTool = new ListPrefabsTool(_assets);
+        var listPrefabsTool = new ListPrefabsTool(assets);
 
         var skipPerm = new ReadOnlyDictionary<string, object?>(
             new Dictionary<string, object?> { ["skip_permission"] = true });

@@ -1,0 +1,10 @@
+{
+  "id": "briarhollow",
+  "name": "Briarhollow Village",
+  "description": "A peaceful village on the edge of the Thornwood, threatened by goblins and a nesting wyrm in the nearby caverns.",
+  "map": "maps/briarhollow",
+  "playerStart": { "chunkX": 0, "chunkY": 0, "tileX": 5, "tileY": 5 },
+  "features": ["combat", "quests", "loot", "dialogue"],
+  "difficulty": 1,
+  "tags": ["fantasy", "village", "combat", "story"]
+}

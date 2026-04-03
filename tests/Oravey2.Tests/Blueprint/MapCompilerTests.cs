@@ -140,4 +140,26 @@ public class MapCompilerTests : IDisposable
         Assert.False(File.Exists(Path.Combine(_outputDir, "props.json")));
         Assert.False(File.Exists(Path.Combine(_outputDir, "zones.json")));
     }
+
+    [Fact]
+    public void Compile_WorldJson_IncludesMetadata()
+    {
+        MapCompiler.Compile(TestBlueprints.Full2x2(), _outputDir);
+
+        var worldJson = MapLoader.LoadWorldJson(_outputDir);
+        Assert.Equal("Portland", worldJson.Name);
+        Assert.Equal("Small Portland map", worldJson.Description);
+        Assert.Equal("Portland, OR", worldJson.Source);
+    }
+
+    [Fact]
+    public void Compile_Minimal_WorldJson_IncludesMetadata()
+    {
+        MapCompiler.Compile(TestBlueprints.Minimal(), _outputDir);
+
+        var worldJson = MapLoader.LoadWorldJson(_outputDir);
+        Assert.Equal("Test", worldJson.Name);
+        Assert.Equal("Test map", worldJson.Description);
+        Assert.Equal("Testville", worldJson.Source);
+    }
 }

@@ -1,0 +1,160 @@
+{
+  "id": "elder_miriel_dialogue",
+  "startNodeId": "greeting",
+  "nodes": {
+    "greeting": {
+      "speaker": "Elder Miriel",
+      "text": "Welcome, traveller. I am Miriel, keeper of Briarhollow. Dark days have come upon our village.",
+      "portrait": "gold",
+      "choices": [
+        {
+          "text": "What troubles you?",
+          "nextNodeId": "quest_offer_1",
+          "condition": { "type": "and", "conditions": [
+            { "type": "flag", "flag": "q_goblin_hunt_active", "expected": false },
+            { "type": "flag", "flag": "q_goblin_hunt_done", "expected": false }
+          ]},
+          "consequences": []
+        },
+        {
+          "text": "The goblins are slain.",
+          "nextNodeId": "quest_1_complete",
+          "condition": { "type": "and", "conditions": [
+            { "type": "flag", "flag": "q_goblin_hunt_active", "expected": true },
+            { "type": "flag", "flag": "goblins_cleared", "expected": true }
+          ]},
+          "consequences": []
+        },
+        {
+          "text": "Still hunting goblins.",
+          "nextNodeId": null,
+          "condition": { "type": "and", "conditions": [
+            { "type": "flag", "flag": "q_goblin_hunt_active", "expected": true },
+            { "type": "flag", "flag": "goblins_cleared", "expected": false }
+          ]},
+          "consequences": []
+        },
+        {
+          "text": "Is there more I can do?",
+          "nextNodeId": "quest_offer_2",
+          "condition": { "type": "and", "conditions": [
+            { "type": "flag", "flag": "q_goblin_hunt_done", "expected": true },
+            { "type": "flag", "flag": "q_wyrm_lair_active", "expected": false },
+            { "type": "flag", "flag": "q_wyrm_lair_done", "expected": false }
+          ]},
+          "consequences": []
+        },
+        {
+          "text": "Working on the wyrm.",
+          "nextNodeId": null,
+          "condition": { "type": "and", "conditions": [
+            { "type": "flag", "flag": "q_wyrm_lair_active", "expected": true },
+            { "type": "flag", "flag": "wyrm_killed", "expected": false }
+          ]},
+          "consequences": []
+        },
+        {
+          "text": "The wyrm is dead.",
+          "nextNodeId": "quest_3_complete",
+          "condition": { "type": "flag", "flag": "q_kings_peace_active", "expected": true },
+          "consequences": []
+        },
+        {
+          "text": "How fares the village?",
+          "nextNodeId": "post_complete",
+          "condition": { "type": "flag", "flag": "m1_complete", "expected": true },
+          "consequences": []
+        },
+        {
+          "text": "Farewell.",
+          "nextNodeId": null,
+          "condition": null,
+          "consequences": []
+        }
+      ]
+    },
+    "quest_offer_1": {
+      "speaker": "Elder Miriel",
+      "text": "Goblins have crept down from the Thornwood. They raid our farms at night. Slay three of them and I shall reward you from the village coffers.",
+      "portrait": "gold",
+      "choices": [
+        {
+          "text": "I'll deal with them.",
+          "nextNodeId": null,
+          "condition": null,
+          "consequences": [{ "type": "startQuest", "questId": "q_goblin_hunt" }]
+        },
+        {
+          "text": "Not yet.",
+          "nextNodeId": null,
+          "condition": null,
+          "consequences": []
+        }
+      ]
+    },
+    "quest_1_complete": {
+      "speaker": "Elder Miriel",
+      "text": "The village thanks you. Our farmers can rest easy again. Take this gold — you have earned it.",
+      "portrait": "gold",
+      "choices": [
+        {
+          "text": "Glad to help.",
+          "nextNodeId": null,
+          "condition": null,
+          "consequences": [
+            { "type": "setFlag", "flag": "q_goblin_hunt_reported" },
+            { "type": "giveCaps", "amount": 20 }
+          ]
+        }
+      ]
+    },
+    "quest_offer_2": {
+      "speaker": "Elder Miriel",
+      "text": "Your bravery gives me hope. But the goblins are merely scouts. A young wyrm has made its lair in the Shattered Cavern to the east. While it lives, the raids will never stop.",
+      "portrait": "gold",
+      "choices": [
+        {
+          "text": "I'll end the beast.",
+          "nextNodeId": null,
+          "condition": null,
+          "consequences": [{ "type": "startQuest", "questId": "q_wyrm_lair" }]
+        },
+        {
+          "text": "I need to prepare.",
+          "nextNodeId": null,
+          "condition": null,
+          "consequences": []
+        }
+      ]
+    },
+    "quest_3_complete": {
+      "speaker": "Elder Miriel",
+      "text": "You have done what even the king's soldiers could not. Briarhollow is safe because of you. May the gods remember your name.",
+      "portrait": "gold",
+      "choices": [
+        {
+          "text": "The honor was mine.",
+          "nextNodeId": null,
+          "condition": null,
+          "consequences": [
+            { "type": "setFlag", "flag": "reported_to_elder" },
+            { "type": "giveCaps", "amount": 60 }
+          ]
+        }
+      ]
+    },
+    "post_complete": {
+      "speaker": "Elder Miriel",
+      "text": "Briarhollow prospers once more. You are a hero of this village, always welcome at our hearth.",
+      "portrait": "gold",
+      "choices": [
+        {
+          "text": "Be well, Elder.",
+          "nextNodeId": null,
+          "condition": null,
+          "consequences": []
+        }
+      ]
+    }
+  }
+}

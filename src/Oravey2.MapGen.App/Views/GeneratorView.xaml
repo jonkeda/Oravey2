@@ -92,6 +92,8 @@
             <HorizontalStackLayout Spacing="10">
                 <Button Text="Save Blueprint" Command="{Binding SaveBlueprintCommand}" />
                 <Button Text="Copy JSON" Command="{Binding CopyJsonCommand}" />
+                <Button Text="Compile Blueprint" Command="{Binding CompileBlueprintCommand}" BackgroundColor="#238636" TextColor="White" />
+                <Button Text="Install to Game" Command="{Binding InstallToGameCommand}" BackgroundColor="#1F6FEB" TextColor="White" />
             </HorizontalStackLayout>
 
         </VerticalStackLayout>

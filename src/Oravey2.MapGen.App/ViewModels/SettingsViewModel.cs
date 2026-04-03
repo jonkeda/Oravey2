@@ -37,6 +37,12 @@ public sealed class SettingsViewModel : BaseViewModel
         Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Oravey2", "Blueprints");
     public string ExportPath { get => _exportPath; set => SetProperty(ref _exportPath, value); }
 
+    private string _gameInstallPath = string.Empty;
+    public string GameInstallPath { get => _gameInstallPath; set => SetProperty(ref _gameInstallPath, value); }
+
+    private string _contentPackCatalogPath = string.Empty;
+    public string ContentPackCatalogPath { get => _contentPackCatalogPath; set => SetProperty(ref _contentPackCatalogPath, value); }
+
     private string? _statusMessage;
     public string? StatusMessage { get => _statusMessage; set => SetProperty(ref _statusMessage, value); }
 
@@ -48,6 +54,8 @@ public sealed class SettingsViewModel : BaseViewModel
     public ICommand InstallCopilotCommand { get; }
     public ICommand LoginCopilotCommand { get; }
     public ICommand BrowseExportPathCommand { get; }
+    public ICommand BrowseGameInstallPathCommand { get; }
+    public ICommand BrowseContentPackCommand { get; }
 
     public SettingsViewModel()
     {
@@ -56,6 +64,8 @@ public sealed class SettingsViewModel : BaseViewModel
         InstallCopilotCommand = new Command(InstallCopilot);
         LoginCopilotCommand = new Command(LoginCopilot);
         BrowseExportPathCommand = new Command(async () => await BrowseExportPathAsync());
+        BrowseGameInstallPathCommand = new Command(async () => await BrowseGameInstallPathAsync());
+        BrowseContentPackCommand = new Command(async () => await BrowseContentPackAsync());
         LoadSettings();
     }
 
@@ -67,6 +77,8 @@ public sealed class SettingsViewModel : BaseViewModel
         Preferences.Set("BaseUrl", BaseUrl ?? string.Empty);
         Preferences.Set("CliPath", CliPath ?? string.Empty);
         Preferences.Set("ExportPath", ExportPath);
+        Preferences.Set("GameInstallPath", GameInstallPath);
+        Preferences.Set("ContentPackCatalogPath", ContentPackCatalogPath);
         // API key stored securely
         if (ApiKey is not null)
             SecureStorage.SetAsync("ApiKey", ApiKey).ConfigureAwait(false);
@@ -83,6 +95,8 @@ public sealed class SettingsViewModel : BaseViewModel
         CliPath = Preferences.Get("CliPath", string.Empty);
         ExportPath = Preferences.Get("ExportPath",
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Oravey2", "Blueprints"));
+        GameInstallPath = Preferences.Get("GameInstallPath", string.Empty);
+        ContentPackCatalogPath = Preferences.Get("ContentPackCatalogPath", string.Empty);
     }
 
     private async Task TestConnectionAsync()
@@ -178,6 +192,32 @@ public sealed class SettingsViewModel : BaseViewModel
         }
     }
 
+    private async Task BrowseGameInstallPathAsync()
+    {
+        try
+        {
+#if WINDOWS
+            var picker = new Windows.Storage.Pickers.FolderPicker();
+            picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.Desktop;
+            picker.FileTypeFilter.Add("*");
+
+            var hwnd = ((MauiWinUIWindow)Application.Current!.Windows[0].Handler!.PlatformView!).WindowHandle;
+            WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
+
+            var folder = await picker.PickSingleFolderAsync();
+            if (folder is not null)
+            {
+                GameInstallPath = folder.Path;
+                StatusMessage = $"Game install path set to {GameInstallPath}";
+            }
+#endif
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Browse failed: {ex.Message}";
+        }
+    }
+
     private void LoginCopilot()
     {
         var cliName = string.IsNullOrWhiteSpace(CliPath) ? "copilot" : CliPath;
@@ -189,4 +229,39 @@ public sealed class SettingsViewModel : BaseViewModel
         };
         Process.Start(psi);
         StatusMessage = "PowerShell launched \u2014 complete the login in the browser to select your GitHub account.";
-    }}
+    }
+
+    private async Task BrowseContentPackAsync()
+    {
+        try
+        {
+#if WINDOWS
+            var picker = new Windows.Storage.Pickers.FolderPicker();
+            picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.Desktop;
+            picker.FileTypeFilter.Add("*");
+
+            var hwnd = ((MauiWinUIWindow)Application.Current!.Windows[0].Handler!.PlatformView!).WindowHandle;
+            WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
+
+            var folder = await picker.PickSingleFolderAsync();
+            if (folder is not null)
+            {
+                var catalogPath = Path.Combine(folder.Path, "catalog.json");
+                if (File.Exists(catalogPath))
+                {
+                    ContentPackCatalogPath = catalogPath;
+                    StatusMessage = $"Content pack catalog: {catalogPath}";
+                }
+                else
+                {
+                    StatusMessage = $"No catalog.json found in {folder.Path}";
+                }
+            }
+#endif
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Browse failed: {ex.Message}";
+        }
+    }
+}

@@ -1,0 +1,26 @@
+[
+  {
+    "id": "downtown",
+    "name": "Downtown",
+    "biome": 0,
+    "radiationLevel": 0.1,
+    "enemyDifficultyTier": 2,
+    "isFastTravelTarget": true,
+    "chunkStartX": 0,
+    "chunkStartY": 0,
+    "chunkEndX": 0,
+    "chunkEndY": 0
+  },
+  {
+    "id": "outskirts",
+    "name": "Outskirts",
+    "biome": 1,
+    "radiationLevel": 0.3,
+    "enemyDifficultyTier": 3,
+    "isFastTravelTarget": false,
+    "chunkStartX": 1,
+    "chunkStartY": 0,
+    "chunkEndX": 1,
+    "chunkEndY": 1
+  }
+]

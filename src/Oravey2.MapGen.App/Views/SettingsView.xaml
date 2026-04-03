@@ -45,6 +45,18 @@
                 <Button Text="Browse..." Command="{Binding BrowseExportPathCommand}" />
             </HorizontalStackLayout>
 
+            <Label Text="Game Install Path" FontAttributes="Bold" Margin="0,10,0,0" />
+            <HorizontalStackLayout Spacing="10">
+                <Entry Text="{Binding GameInstallPath}" Placeholder="Path to Oravey2.Windows output dir (e.g. bin/Debug/.../)" WidthRequest="400" />
+                <Button Text="Browse..." Command="{Binding BrowseGameInstallPathCommand}" />
+            </HorizontalStackLayout>
+
+            <Label Text="Content Pack Catalog" FontAttributes="Bold" Margin="0,10,0,0" />
+            <HorizontalStackLayout Spacing="10">
+                <Entry Text="{Binding ContentPackCatalogPath}" Placeholder="catalog.json from a content pack (optional)" WidthRequest="400" />
+                <Button Text="Browse..." Command="{Binding BrowseContentPackCommand}" />
+            </HorizontalStackLayout>
+
             <BoxView HeightRequest="1" Color="Gray" Margin="0,10" />
 
             <Label Text="Copilot CLI Path (optional)" FontAttributes="Bold" />

@@ -1,0 +1,78 @@
+{
+  "items": [
+    {
+      "id": "pipe_wrench",
+      "name": "Pipe Wrench",
+      "description": "A heavy pipe wrench. Better than bare fists.",
+      "category": "WeaponMelee",
+      "weight": 2.5,
+      "stackable": false,
+      "value": 15,
+      "slot": "PrimaryWeapon",
+      "weapon": {
+        "damage": 14,
+        "range": 2.0,
+        "apCost": 3,
+        "accuracy": 0.80,
+        "skillType": "melee",
+        "critMultiplier": 1.5
+      }
+    },
+    {
+      "id": "medkit",
+      "name": "Medkit",
+      "description": "Restores 30 HP. A salvaged first-aid kit.",
+      "category": "Consumable",
+      "weight": 0.5,
+      "stackable": true,
+      "value": 25,
+      "maxStack": 5,
+      "effects": { "heal": "30" }
+    },
+    {
+      "id": "scrap_metal",
+      "name": "Scrap Metal",
+      "description": "Twisted metal fragments. Useful for crafting.",
+      "category": "CraftingMaterial",
+      "weight": 1.0,
+      "stackable": true,
+      "value": 3,
+      "maxStack": 20
+    },
+    {
+      "id": "leather_jacket",
+      "name": "Leather Jacket",
+      "description": "Worn but sturdy. Offers some protection.",
+      "category": "Armor",
+      "weight": 3.0,
+      "stackable": false,
+      "value": 20,
+      "slot": "Torso",
+      "armor": {
+        "damageReduction": 3,
+        "coverageZones": {
+          "torso": 0.8,
+          "arms": 0.5
+        }
+      }
+    },
+    {
+      "id": "rusty_shiv",
+      "name": "Rusty Shiv",
+      "description": "A crude blade. Barely functional.",
+      "category": "WeaponMelee",
+      "weight": 0.5,
+      "stackable": false,
+      "value": 3,
+      "slot": "PrimaryWeapon",
+      "weapon": {
+        "damage": 4,
+        "range": 1.5,
+        "apCost": 3,
+        "accuracy": 0.50,
+        "skillType": "melee",
+        "critMultiplier": 1.5
+      }
+    }
+  ]
+}

@@ -3,6 +3,7 @@ using Oravey2.Core.Camera;
 using Oravey2.Core.Character.Health;
 using Oravey2.Core.Character.Level;
 using Oravey2.Core.Character.Skills;
+using Oravey2.Core.Content;
 using Oravey2.Core.Dialogue;
 using Oravey2.Core.NPC;
 using Oravey2.Core.Character.Stats;
@@ -75,6 +76,11 @@ public sealed class ScenarioLoader
 
     private bool _questSystemInitialized;
 
+    // Content pack support: optional data-driven content
+    private ContentPackLoader? _contentPack;
+    private Dictionary<string, DialogueTree>? _loadedDialogues;
+    private Dictionary<string, QuestDefinition>? _loadedQuests;
+
     /// <summary>
     /// Initializes the quest system (subscriptions). Call once from GameBootstrapper.
     /// </summary>
@@ -87,7 +93,7 @@ public sealed class ScenarioLoader
 
         eventBus.Subscribe<QuestStartRequestedEvent>(e =>
         {
-            var quest = QuestChainDefinitions.GetQuest(e.QuestId);
+            var quest = ResolveQuest(e.QuestId);
             if (quest != null)
             {
                 QuestProcessor.StartQuest(QuestLog, quest);
@@ -111,6 +117,9 @@ public sealed class ScenarioLoader
 
         CurrentScenarioId = scenarioId;
 
+        // Try to discover an active content pack
+        TryLoadContentPack(logger);
+
         // Create a fresh child scene for this zone
         WorldScene = new Scene();
         rootScene.Children.Add(WorldScene);
@@ -133,8 +142,17 @@ public sealed class ScenarioLoader
                 LoadPortland(WorldScene, game, cameraEntity, gameStateManager, eventBus, inputProvider, logger);
                 break;
             default:
-                logger.LogWarning("Unknown scenario: {Id}, falling back to m0_combat", scenarioId);
-                LoadM0Combat(WorldScene, game, cameraEntity, gameStateManager, eventBus, inputProvider, logger);
+                var customMapDir = Path.Combine(AppContext.BaseDirectory, "Maps", scenarioId);
+                if (Directory.Exists(customMapDir))
+                {
+                    logger.LogInformation("Loading custom compiled map: {Id} from {Dir}", scenarioId, customMapDir);
+                    LoadFromCompiledMap(scenarioId, customMapDir, WorldScene, game, cameraEntity, gameStateManager, eventBus, inputProvider, logger);
+                }
+                else
+                {
+                    logger.LogWarning("Unknown scenario: {Id}, falling back to m0_combat", scenarioId);
+                    LoadM0Combat(WorldScene, game, cameraEntity, gameStateManager, eventBus, inputProvider, logger);
+                }
                 break;
         }
 
@@ -558,7 +576,7 @@ public sealed class ScenarioLoader
         eventBus.Subscribe<NpcInteractionEvent>(e =>
         {
             if (dialogueProcessor.IsActive) return;
-            var tree = TownDialogueTrees.GetTree(e.DialogueTreeId);
+            var tree = ResolveDialogue(e.DialogueTreeId);
             if (tree != null)
             {
                 dialogueProcessor.StartDialogue(tree);
@@ -680,22 +698,8 @@ public sealed class ScenarioLoader
         notificationEntity.Add(new NotificationFeedScript { Notifications = notificationService, Font = Font });
         AddEntity(notificationEntity, rootScene);
 
-        // Enemies — spawn radrats at configured positions
-        var spawnPoints = new List<EnemySpawnPoint>
-        {
-            new("radrat_south", -2f, -2f, Count: 1, Endurance: 1, Luck: 3, WeaponDamage: 4, WeaponAccuracy: 0.50f, Tag: "radrat"),
-            new("radrat_east",   2f, -2f, Count: 1, Endurance: 1, Luck: 3, WeaponDamage: 4, WeaponAccuracy: 0.50f, Tag: "radrat"),
-            new("radrat_road",  -2f,  0f, Count: 1, Endurance: 1, Luck: 3, WeaponDamage: 4, WeaponAccuracy: 0.50f, Tag: "radrat"),
-        };
-
-        // Scar boss: only spawns when q_raider_camp quest is active
-        if (QuestLog.GetStatus("q_raider_camp") == QuestStatus.Active)
-        {
-            spawnPoints.Add(new EnemySpawnPoint(
-                "scar_boss", 10f, 0f, Count: 1,
-                Endurance: 3, Luck: 5, WeaponDamage: 8, WeaponAccuracy: 0.65f,
-                Tag: "scar"));
-        }
+        // Enemies — spawn from content pack or hardcoded defaults
+        var spawnPoints = ResolveEnemySpawnPoints();
 
         var enemySpawner = new EnemySpawner(game, eventBus);
 
@@ -884,12 +888,18 @@ public sealed class ScenarioLoader
     private void LoadPortland(Scene rootScene, Game game, Entity cameraEntity,
         GameStateManager gameStateManager, IEventBus eventBus, IInputProvider inputProvider, ILogger logger)
     {
+        var mapDir = Path.Combine(AppContext.BaseDirectory, "Maps", "portland");
+        LoadFromCompiledMap("portland", mapDir, rootScene, game, cameraEntity, gameStateManager, eventBus, inputProvider, logger);
+    }
+
+    private void LoadFromCompiledMap(string scenarioId, string mapDir, Scene rootScene, Game game, Entity cameraEntity,
+        GameStateManager gameStateManager, IEventBus eventBus, IInputProvider inputProvider, ILogger logger)
+    {
         var (playerEntity, playerMovement, playerStats, playerLevel, playerHealth,
             playerCombat, playerInventory, playerEquipment, inventoryProcessor)
             = CreatePlayer(rootScene, game, cameraEntity, gameStateManager, eventBus);
 
-        // Load compiled Portland map from disk
-        var mapDir = Path.Combine(AppContext.BaseDirectory, "Maps", "portland");
+        // Load compiled map from disk
         var world = MapLoader.LoadWorldFull(mapDir);
 
         // Use chunk (0,0) as the initial view
@@ -959,22 +969,19 @@ public sealed class ScenarioLoader
             Font = Font,
         });
         AddEntity(inventoryOverlayEntity, rootScene);
+
+        // Game over overlay
+        var gameOverEntity = new Entity("GameOverOverlay");
+        var gameOverOverlay = new GameOverOverlayScript { StateManager = gameStateManager, Font = Font };
+        gameOverEntity.Add(gameOverOverlay);
+        AddEntity(gameOverEntity, rootScene);
+        GameOverOverlay = gameOverOverlay;
     }
 
     private void SpawnNpcs(Scene rootScene, Game game,
         Entity playerEntity, IInputProvider inputProvider, IEventBus eventBus, GameStateManager gameStateManager)
     {
-        var npcs = new (NpcDefinition def, Vector3 pos, Color color)[]
-        {
-            (new NpcDefinition("elder", "Elder Tomas", NpcRole.QuestGiver, "elder_dialogue"),
-                new Vector3(-4f, 0.5f, -4.5f), new Color(0.9f, 0.8f, 0.2f)),
-            (new NpcDefinition("merchant", "Mara", NpcRole.Merchant, "merchant_dialogue"),
-                new Vector3(1f, 0.5f, -3.5f), new Color(0.2f, 0.3f, 0.9f)),
-            (new NpcDefinition("civilian_1", "Settler", NpcRole.Civilian, "civilian_dialogue"),
-                new Vector3(-4f, 0.5f, 3.5f), new Color(0.6f, 0.6f, 0.6f)),
-            (new NpcDefinition("civilian_2", "Settler", NpcRole.Civilian, "civilian_dialogue"),
-                new Vector3(13f, 0.5f, 3.5f), new Color(0.6f, 0.6f, 0.6f)),
-        };
+        var npcs = ResolveNpcs();
 
         foreach (var (def, pos, color) in npcs)
         {
@@ -1016,5 +1023,117 @@ public sealed class ScenarioLoader
 
             AddEntity(npcEntity, rootScene);
         }
+    }
+
+    // ---- Content pack resolution helpers ----
+
+    private void TryLoadContentPack(ILogger logger)
+    {
+        if (_contentPack != null) return; // already loaded
+
+        var contentPacksDir = Path.Combine(AppContext.BaseDirectory, "ContentPacks");
+        if (!Directory.Exists(contentPacksDir)) return;
+
+        // Pick first content pack that has a manifest
+        foreach (var dir in Directory.GetDirectories(contentPacksDir))
+        {
+            var manifestPath = Path.Combine(dir, "manifest.json");
+            if (File.Exists(manifestPath))
+            {
+                _contentPack = new ContentPackLoader(dir);
+                logger.LogInformation("Loaded content pack from {Dir}", dir);
+
+                // Cache dialogues and quests for lookup
+                _loadedDialogues = _contentPack.LoadDialogues()
+                    .ToDictionary(d => d.Id, d => d);
+                _loadedQuests = _contentPack.LoadQuests()
+                    .ToDictionary(q => q.Id, q => q);
+                return;
+            }
+        }
+    }
+
+    private DialogueTree? ResolveDialogue(string treeId)
+    {
+        if (_loadedDialogues != null && _loadedDialogues.TryGetValue(treeId, out var loaded))
+            return loaded;
+        return TownDialogueTrees.GetTree(treeId);
+    }
+
+    private QuestDefinition? ResolveQuest(string questId)
+    {
+        if (_loadedQuests != null && _loadedQuests.TryGetValue(questId, out var loaded))
+            return loaded;
+        return QuestChainDefinitions.GetQuest(questId);
+    }
+
+    private (NpcDefinition def, Vector3 pos, Color color)[] ResolveNpcs()
+    {
+        if (_contentPack != null)
+        {
+            var loaded = _contentPack.LoadNpcs();
+            if (loaded.Length > 0)
+            {
+                return loaded.Select(n => (
+                    new NpcDefinition(n.Id, n.DisplayName,
+                        Enum.Parse<NpcRole>(n.Role, ignoreCase: true),
+                        n.DialogueTreeId),
+                    new Vector3(n.Position?.X ?? 0f, n.Position?.Y ?? 0.5f, n.Position?.Z ?? 0f),
+                    new Color(n.Color?.R ?? 0.6f, n.Color?.G ?? 0.6f, n.Color?.B ?? 0.6f)
+                )).ToArray();
+            }
+        }
+
+        // Hardcoded fallback
+        return
+        [
+            (new NpcDefinition("elder", "Elder Tomas", NpcRole.QuestGiver, "elder_dialogue"),
+                new Vector3(-4f, 0.5f, -4.5f), new Color(0.9f, 0.8f, 0.2f)),
+            (new NpcDefinition("merchant", "Mara", NpcRole.Merchant, "merchant_dialogue"),
+                new Vector3(1f, 0.5f, -3.5f), new Color(0.2f, 0.3f, 0.9f)),
+            (new NpcDefinition("civilian_1", "Settler", NpcRole.Civilian, "civilian_dialogue"),
+                new Vector3(-4f, 0.5f, 3.5f), new Color(0.6f, 0.6f, 0.6f)),
+            (new NpcDefinition("civilian_2", "Settler", NpcRole.Civilian, "civilian_dialogue"),
+                new Vector3(13f, 0.5f, 3.5f), new Color(0.6f, 0.6f, 0.6f)),
+        ];
+    }
+
+    private List<EnemySpawnPoint> ResolveEnemySpawnPoints()
+    {
+        if (_contentPack != null)
+        {
+            var loaded = _contentPack.LoadEnemies();
+            if (loaded.Length > 0)
+            {
+                var points = new List<EnemySpawnPoint>();
+                foreach (var sp in loaded)
+                {
+                    // Filter conditionals: skip spawn points requiring a quest that isn't active
+                    if (sp.RequiredQuestId != null &&
+                        QuestLog.GetStatus(sp.RequiredQuestId) != QuestStatus.Active)
+                        continue;
+                    points.Add(sp);
+                }
+                return points;
+            }
+        }
+
+        // Hardcoded fallback
+        var spawnPoints = new List<EnemySpawnPoint>
+        {
+            new("radrat_south", -2f, -2f, Count: 1, Endurance: 1, Luck: 3, WeaponDamage: 4, WeaponAccuracy: 0.50f, Tag: "radrat"),
+            new("radrat_east",   2f, -2f, Count: 1, Endurance: 1, Luck: 3, WeaponDamage: 4, WeaponAccuracy: 0.50f, Tag: "radrat"),
+            new("radrat_road",  -2f,  0f, Count: 1, Endurance: 1, Luck: 3, WeaponDamage: 4, WeaponAccuracy: 0.50f, Tag: "radrat"),
+        };
+
+        if (QuestLog.GetStatus("q_raider_camp") == QuestStatus.Active)
+        {
+            spawnPoints.Add(new EnemySpawnPoint(
+                "scar_boss", 10f, 0f, Count: 1,
+                Endurance: 3, Luck: 5, WeaponDamage: 8, WeaponAccuracy: 0.65f,
+                Tag: "scar"));
+        }
+
+        return spawnPoints;
     }
 }

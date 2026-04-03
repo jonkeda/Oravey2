@@ -1,0 +1,123 @@
+{
+  "items": [
+    {
+      "id": "iron_sword",
+      "name": "Iron Sword",
+      "description": "A sturdy iron longsword. Standard issue for the kingdom's guards.",
+      "category": "WeaponMelee",
+      "weight": 3.0,
+      "stackable": false,
+      "value": 20,
+      "slot": "PrimaryWeapon",
+      "weapon": {
+        "damage": 16,
+        "range": 2.0,
+        "apCost": 3,
+        "accuracy": 0.80,
+        "skillType": "melee",
+        "critMultiplier": 1.5
+      }
+    },
+    {
+      "id": "hunting_bow",
+      "name": "Hunting Bow",
+      "description": "A simple yew bow. Deadly at range.",
+      "category": "WeaponRanged",
+      "weight": 1.5,
+      "stackable": false,
+      "value": 30,
+      "slot": "PrimaryWeapon",
+      "weapon": {
+        "damage": 12,
+        "range": 8.0,
+        "apCost": 4,
+        "accuracy": 0.70,
+        "skillType": "firearms",
+        "critMultiplier": 2.0
+      }
+    },
+    {
+      "id": "healing_potion",
+      "name": "Healing Potion",
+      "description": "A vial of crimson liquid. Restores 30 HP.",
+      "category": "Consumable",
+      "weight": 0.3,
+      "stackable": true,
+      "value": 20,
+      "maxStack": 5,
+      "effects": { "heal": "30" }
+    },
+    {
+      "id": "iron_shield",
+      "name": "Iron Shield",
+      "description": "A battered but reliable round shield.",
+      "category": "Armor",
+      "weight": 4.0,
+      "stackable": false,
+      "value": 25,
+      "slot": "SecondaryWeapon",
+      "armor": {
+        "damageReduction": 4,
+        "coverageZones": {
+          "torso": 0.6,
+          "arms": 0.4
+        }
+      }
+    },
+    {
+      "id": "chainmail",
+      "name": "Chainmail Shirt",
+      "description": "Interlocking iron rings. Good protection against slashes.",
+      "category": "Armor",
+      "weight": 5.0,
+      "stackable": false,
+      "value": 40,
+      "slot": "Torso",
+      "armor": {
+        "damageReduction": 5,
+        "coverageZones": {
+          "torso": 0.9,
+          "arms": 0.6
+        }
+      }
+    },
+    {
+      "id": "goblin_ear",
+      "name": "Goblin Ear",
+      "description": "A severed goblin ear. Proof of a kill.",
+      "category": "QuestItem",
+      "weight": 0.1,
+      "stackable": true,
+      "value": 2,
+      "maxStack": 20
+    },
+    {
+      "id": "dragon_scale",
+      "name": "Dragon Scale",
+      "description": "A shimmering scale from a wyrm. Radiates warmth.",
+      "category": "CraftingMaterial",
+      "weight": 2.0,
+      "stackable": true,
+      "value": 50,
+      "maxStack": 10
+    },
+    {
+      "id": "rusty_dagger",
+      "name": "Rusty Dagger",
+      "description": "A crude goblin blade. Barely sharp.",
+      "category": "WeaponMelee",
+      "weight": 0.5,
+      "stackable": false,
+      "value": 3,
+      "slot": "PrimaryWeapon",
+      "weapon": {
+        "damage": 4,
+        "range": 1.5,
+        "apCost": 2,
+        "accuracy": 0.55,
+        "skillType": "melee",
+        "critMultiplier": 1.5
+      }
+    }
+  ]
+}

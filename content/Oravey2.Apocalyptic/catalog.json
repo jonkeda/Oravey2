@@ -1,0 +1,76 @@
+{
+  "building": [
+    { "id": "buildings/ruined_office.glb", "description": "Multi-story ruined office block", "tags": ["large", "ruin"] },
+    { "id": "buildings/radio_tower.glb", "description": "Small communication tower", "tags": ["small", "infrastructure"] },
+    { "id": "buildings/elder_house.glb", "description": "Two-story residential building", "tags": ["large", "residential"] },
+    { "id": "buildings/gas_station.glb", "description": "Abandoned gas station with awning", "tags": ["medium", "commercial"] },
+    { "id": "buildings/warehouse.glb", "description": "Large industrial warehouse", "tags": ["large", "industrial"] },
+    { "id": "buildings/church.glb", "description": "Small damaged church with steeple", "tags": ["medium", "landmark"] },
+    { "id": "buildings/apartment_block.glb", "description": "Collapsed apartment building", "tags": ["large", "residential", "ruin"] },
+    { "id": "buildings/bunker.glb", "description": "Reinforced military bunker", "tags": ["small", "military"] },
+    { "id": "buildings/hospital.glb", "description": "Partially intact hospital wing", "tags": ["large", "medical"] },
+    { "id": "buildings/police_station.glb", "description": "Police station with parking lot", "tags": ["medium", "government"] }
+  ],
+  "prop": [
+    { "id": "props/car_wreck.glb", "description": "Rusted car wreck", "tags": ["vehicle", "obstacle"] },
+    { "id": "props/barrel.glb", "description": "Metal barrel", "tags": ["container", "small"] },
+    { "id": "props/dumpster.glb", "description": "Overturned dumpster", "tags": ["container", "obstacle"] },
+    { "id": "props/streetlight.glb", "description": "Bent streetlight", "tags": ["urban", "landmark"] },
+    { "id": "props/sandbag_wall.glb", "description": "Sandbag barricade", "tags": ["cover", "military"] },
+    { "id": "props/mailbox.glb", "description": "Rusty mailbox", "tags": ["urban", "small"] }
+  ],
+  "surface": [
+    { "id": "Asphalt", "description": "Cracked road surface", "tags": ["road"] },
+    { "id": "Concrete", "description": "Broken concrete", "tags": ["urban"] },
+    { "id": "Dirt", "description": "Packed dirt ground", "tags": ["natural"] },
+    { "id": "Grass", "description": "Overgrown grass", "tags": ["natural"] },
+    { "id": "Rock", "description": "Exposed rock", "tags": ["natural"] },
+    { "id": "Rubble", "description": "Debris and rubble", "tags": ["urban", "damaged"] },
+    { "id": "Sand", "description": "Sandy ground", "tags": ["natural"] },
+    { "id": "Mud", "description": "Wet muddy terrain", "tags": ["natural", "water"] },
+    { "id": "Tile", "description": "Broken floor tiles", "tags": ["urban", "interior"] },
+    { "id": "Metal", "description": "Rusted metal plating", "tags": ["industrial"] }
+  ],
+  "terrain_mesh": [
+    { "id": "terrain/cliff_face.glb", "description": "Vertical cliff face segment", "tags": ["elevation", "natural"] },
+    { "id": "terrain/boulder_large.glb", "description": "Large weathered boulder", "tags": ["natural", "obstacle"] },
+    { "id": "terrain/boulder_small.glb", "description": "Small rock formation", "tags": ["natural"] },
+    { "id": "terrain/fallen_tree.glb", "description": "Fallen tree trunk", "tags": ["natural", "obstacle"] },
+    { "id": "terrain/crater.glb", "description": "Impact crater", "tags": ["damaged", "landmark"] },
+    { "id": "terrain/rubble_pile.glb", "description": "Large rubble pile from collapsed structure", "tags": ["urban", "obstacle"] }
+  ]
+}
+{
+  "building": [
+    { "id": "buildings/ruined_office.glb", "description": "Multi-story ruined office block", "tags": ["large", "ruin"] },
+    { "id": "buildings/radio_tower.glb", "description": "Small communication tower", "tags": ["small", "infrastructure"] },
+    { "id": "buildings/elder_house.glb", "description": "Two-story residential building", "tags": ["large", "residential"] },
+    { "id": "buildings/gas_station.glb", "description": "Abandoned gas station with awning", "tags": ["medium", "commercial"] },
+    { "id": "buildings/warehouse.glb", "description": "Large industrial warehouse", "tags": ["large", "industrial"] },
+    { "id": "buildings/church.glb", "description": "Small damaged church with steeple", "tags": ["medium", "landmark"] },
+    { "id": "buildings/apartment_block.glb", "description": "Collapsed apartment building", "tags": ["large", "residential", "ruin"] },
+    { "id": "buildings/bunker.glb", "description": "Reinforced military bunker", "tags": ["small", "military"] },
+    { "id": "buildings/hospital.glb", "description": "Partially intact hospital wing", "tags": ["large", "medical"] },
+    { "id": "buildings/police_station.glb", "description": "Police station with parking lot", "tags": ["medium", "government"] }
+  ],
+  "surface": [
+    { "id": "Asphalt", "description": "Cracked road surface", "tags": ["road"] },
+    { "id": "Concrete", "description": "Broken concrete", "tags": ["urban"] },
+    { "id": "Dirt", "description": "Packed dirt ground", "tags": ["natural"] },
+    { "id": "Grass", "description": "Overgrown grass", "tags": ["natural"] },
+    { "id": "Rock", "description": "Exposed rock", "tags": ["natural"] },
+    { "id": "Rubble", "description": "Debris and rubble", "tags": ["urban", "damaged"] },
+    { "id": "Sand", "description": "Sandy ground", "tags": ["natural"] },
+    { "id": "Mud", "description": "Wet muddy terrain", "tags": ["natural", "water"] },
+    { "id": "Tile", "description": "Broken floor tiles", "tags": ["urban", "interior"] },
+    { "id": "Metal", "description": "Rusted metal plating", "tags": ["industrial"] }
+  ],
+  "terrain_mesh": [
+    { "id": "terrain/cliff_face.glb", "description": "Vertical cliff face segment", "tags": ["elevation", "natural"] },
+    { "id": "terrain/boulder_large.glb", "description": "Large weathered boulder", "tags": ["natural", "obstacle"] },
+    { "id": "terrain/boulder_small.glb", "description": "Small rock formation", "tags": ["natural"] },
+    { "id": "terrain/fallen_tree.glb", "description": "Fallen tree trunk", "tags": ["natural", "obstacle"] },
+    { "id": "terrain/crater.glb", "description": "Impact crater", "tags": ["damaged", "landmark"] },
+    { "id": "terrain/rubble_pile.glb", "description": "Large rubble pile from collapsed structure", "tags": ["urban", "obstacle"] }
+  ]
+}

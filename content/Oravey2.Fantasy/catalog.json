@@ -1,0 +1,39 @@
+{
+  "building": [
+    { "id": "buildings/tavern.glb", "description": "Stone tavern with thatched roof", "tags": ["medium", "commercial"] },
+    { "id": "buildings/castle_keep.glb", "description": "Fortified castle keep", "tags": ["large", "military", "landmark"] },
+    { "id": "buildings/wizard_tower.glb", "description": "Tall spire tower with arcane markings", "tags": ["medium", "magical"] },
+    { "id": "buildings/blacksmith.glb", "description": "Smithy with forge and anvil", "tags": ["small", "commercial"] },
+    { "id": "buildings/temple.glb", "description": "Ornate temple with stained glass", "tags": ["large", "religious"] },
+    { "id": "buildings/farmhouse.glb", "description": "Rustic farmhouse with barn", "tags": ["medium", "residential"] },
+    { "id": "buildings/guard_tower.glb", "description": "Wooden watchtower", "tags": ["small", "military"] },
+    { "id": "buildings/market_stall.glb", "description": "Open-air market stall with awning", "tags": ["small", "commercial"] }
+  ],
+  "prop": [
+    { "id": "props/barrel_wood.glb", "description": "Wooden barrel", "tags": ["container", "small"] },
+    { "id": "props/crate.glb", "description": "Wooden crate", "tags": ["container", "small"] },
+    { "id": "props/torch_stand.glb", "description": "Iron torch stand", "tags": ["light", "small"] },
+    { "id": "props/well.glb", "description": "Stone well with bucket", "tags": ["water", "landmark"] },
+    { "id": "props/cart.glb", "description": "Wooden horse cart", "tags": ["vehicle", "obstacle"] },
+    { "id": "props/statue.glb", "description": "Weathered stone statue", "tags": ["landmark", "decorative"] }
+  ],
+  "surface": [
+    { "id": "Cobblestone", "description": "Fitted cobblestone road", "tags": ["road"] },
+    { "id": "Flagstone", "description": "Cut stone flooring", "tags": ["urban", "interior"] },
+    { "id": "Dirt", "description": "Packed dirt path", "tags": ["natural"] },
+    { "id": "Grass", "description": "Green meadow grass", "tags": ["natural"] },
+    { "id": "Rock", "description": "Mountain rock face", "tags": ["natural"] },
+    { "id": "Sand", "description": "Beach or desert sand", "tags": ["natural"] },
+    { "id": "Snow", "description": "Snow-covered ground", "tags": ["natural", "cold"] },
+    { "id": "Mud", "description": "Wet muddy terrain", "tags": ["natural", "water"] },
+    { "id": "Marble", "description": "Polished marble floor", "tags": ["urban", "interior"] },
+    { "id": "Wood", "description": "Wooden planks", "tags": ["interior", "structure"] }
+  ],
+  "terrain_mesh": [
+    { "id": "terrain/cliff_face.glb", "description": "Mossy cliff face", "tags": ["elevation", "natural"] },
+    { "id": "terrain/boulder_large.glb", "description": "Moss-covered boulder", "tags": ["natural", "obstacle"] },
+    { "id": "terrain/fallen_tree.glb", "description": "Ancient fallen tree", "tags": ["natural", "obstacle"] },
+    { "id": "terrain/mushroom_giant.glb", "description": "Giant glowing mushroom", "tags": ["magical", "landmark"] },
+    { "id": "terrain/crystal_formation.glb", "description": "Arcane crystal cluster", "tags": ["magical", "landmark"] }
+  ]
+}

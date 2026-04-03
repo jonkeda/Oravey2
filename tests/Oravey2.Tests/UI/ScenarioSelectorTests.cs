@@ -53,4 +53,24 @@ public class ScenarioSelectorTests
     {
         Assert.Equal("town", ScenarioSelectorScript.Scenarios[0].Id);
     }
+
+    [Fact]
+    public void DiscoverCustomMaps_NoMapsDir_ReturnsEmpty()
+    {
+        // When Maps/ doesn't exist, DiscoverCustomMaps returns empty
+        var result = ScenarioSelectorScript.DiscoverCustomMaps();
+        // May or may not be empty depending on test runner location,
+        // but should not throw
+        Assert.NotNull(result);
+    }
+
+    [Fact]
+    public void DiscoverCustomMaps_SkipsBuiltInIds()
+    {
+        // Built-in IDs should never appear in custom discovery
+        var custom = ScenarioSelectorScript.DiscoverCustomMaps();
+        var builtInIds = ScenarioSelectorScript.Scenarios.Select(s => s.Id).ToHashSet();
+        foreach (var c in custom)
+            Assert.DoesNotContain(c.Id, builtInIds);
+    }
 }

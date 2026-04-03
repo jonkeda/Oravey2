@@ -1,0 +1,36 @@
+{
+  "npcs": [
+    {
+      "id": "elder",
+      "displayName": "Elder Tomas",
+      "role": "QuestGiver",
+      "dialogueTreeId": "elder_dialogue",
+      "position": { "x": -4.0, "y": 0.5, "z": -4.5 },
+      "color": { "r": 0.9, "g": 0.8, "b": 0.2 }
+    },
+    {
+      "id": "merchant",
+      "displayName": "Mara",
+      "role": "Merchant",
+      "dialogueTreeId": "merchant_dialogue",
+      "position": { "x": 1.0, "y": 0.5, "z": -3.5 },
+      "color": { "r": 0.2, "g": 0.3, "b": 0.9 }
+    },
+    {
+      "id": "civilian_1",
+      "displayName": "Settler",
+      "role": "Civilian",
+      "dialogueTreeId": "civilian_dialogue",
+      "position": { "x": -4.0, "y": 0.5, "z": 3.5 },
+      "color": { "r": 0.6, "g": 0.6, "b": 0.6 }
+    },
+    {
+      "id": "civilian_2",
+      "displayName": "Settler",
+      "role": "Civilian",
+      "dialogueTreeId": "civilian_dialogue",
+      "position": { "x": 13.0, "y": 0.5, "z": 3.5 },
+      "color": { "r": 0.6, "g": 0.6, "b": 0.6 }
+    }
+  ]
+}

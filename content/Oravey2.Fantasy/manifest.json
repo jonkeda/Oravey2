@@ -1,0 +1,15 @@
+{
+  "id": "oravey2.fantasy",
+  "name": "Fantasy",
+  "version": "0.1.0",
+  "description": "Swords and sorcery in a realm of magic. Explore enchanted forests, storm dark dungeons, and forge your legend.",
+  "author": "Oravey2 Team",
+  "engineVersion": ">=0.1.0",
+  "tags": ["fantasy", "medieval", "magic"],
+  "defaultScenario": "briarhollow",
+  "palette": {
+    "primary": "#2E4057",
+    "accent": "#D4AF37",
+    "danger": "#8B0000"
+  }
+}

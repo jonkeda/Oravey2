@@ -1,0 +1,69 @@
+{
+  "quests": [
+    {
+      "id": "q_rat_hunt",
+      "title": "Rat Problem",
+      "description": "Kill 3 radrats in the Scorched Outskirts.",
+      "type": "Side",
+      "firstStageId": "kill_rats",
+      "xpReward": 50,
+      "stages": {
+        "kill_rats": {
+          "description": "Kill 3 radrats (0/3)",
+          "conditions": [{ "type": "counter", "counter": "rats_killed", "target": 3 }],
+          "onCompleteActions": [{ "type": "setFlag", "flag": "rats_cleared" }],
+          "nextStageId": "report_1",
+          "failConditions": [],
+          "onFailActions": []
+        },
+        "report_1": {
+          "description": "Report to Elder Tomas in Haven",
+          "conditions": [{ "type": "flag", "flag": "q_rat_hunt_reported" }],
+          "onCompleteActions": [{ "type": "setFlag", "flag": "q_rat_hunt_done" }],
+          "nextStageId": null,
+          "failConditions": [],
+          "onFailActions": []
+        }
+      }
+    },
+    {
+      "id": "q_raider_camp",
+      "title": "Clear the Camp",
+      "description": "Kill the raider leader Scar at the eastern ruins.",
+      "type": "Side",
+      "firstStageId": "kill_scar",
+      "xpReward": 100,
+      "stages": {
+        "kill_scar": {
+          "description": "Kill the raider leader Scar",
+          "conditions": [{ "type": "flag", "flag": "scar_killed" }],
+          "onCompleteActions": [
+            { "type": "setFlag", "flag": "q_raider_camp_done" },
+            { "type": "startQuest", "questId": "q_safe_passage" }
+          ],
+          "nextStageId": null,
+          "failConditions": [],
+          "onFailActions": []
+        }
+      }
+    },
+    {
+      "id": "q_safe_passage",
+      "title": "Safe Passage",
+      "description": "Return to Elder Tomas and report your success.",
+      "type": "Main",
+      "firstStageId": "report_back",
+      "xpReward": 150,
+      "stages": {
+        "report_back": {
+          "description": "Report to Elder Tomas in Haven",
+          "conditions": [{ "type": "flag", "flag": "reported_to_elder" }],
+          "onCompleteActions": [{ "type": "setFlag", "flag": "m1_complete" }],
+          "nextStageId": null,
+          "failConditions": [],
+          "onFailActions": []
+        }
+      }
+    }
+  ]
+}

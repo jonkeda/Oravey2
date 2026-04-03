@@ -1,0 +1,10 @@
+{
+  "id": "portland",
+  "name": "Portland Ruins",
+  "description": "Explore the shattered remains of Portland, Oregon. Navigate ruined city blocks, cross the Willamette River, and discover what survives in the shadow of collapsed skyscrapers.",
+  "map": "maps/portland",
+  "playerStart": { "chunkX": 0, "chunkY": 0, "tileX": 5, "tileY": 5 },
+  "features": ["exploration", "buildings", "props", "zones"],
+  "difficulty": 2,
+  "tags": ["exploration", "urban", "river"]
+}

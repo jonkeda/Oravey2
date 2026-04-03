@@ -1,0 +1,43 @@
+{
+  "id": "blacksmith_dialogue",
+  "startNodeId": "greeting",
+  "nodes": {
+    "greeting": {
+      "speaker": "Torvin the Smith",
+      "text": "Need steel? You've come to the right forge. What can I do for you?",
+      "portrait": "orange",
+      "choices": [
+        {
+          "text": "Buy Healing Potion (10 gold)",
+          "nextNodeId": "greeting",
+          "condition": null,
+          "consequences": [{ "type": "buyItem", "itemId": "healing_potion", "price": 10 }]
+        },
+        {
+          "text": "Buy Chainmail (40 gold)",
+          "nextNodeId": "greeting",
+          "condition": null,
+          "consequences": [{ "type": "buyItem", "itemId": "chainmail", "price": 40 }]
+        },
+        {
+          "text": "Sell Goblin Ear (3 gold)",
+          "nextNodeId": "greeting",
+          "condition": null,
+          "consequences": [{ "type": "sellItem", "itemId": "goblin_ear", "price": 3 }]
+        },
+        {
+          "text": "Sell Dragon Scale (50 gold)",
+          "nextNodeId": "greeting",
+          "condition": null,
+          "consequences": [{ "type": "sellItem", "itemId": "dragon_scale", "price": 50 }]
+        },
+        {
+          "text": "Just browsing.",
+          "nextNodeId": null,
+          "condition": null,
+          "consequences": []
+        }
+      ]
+    }
+  }
+}

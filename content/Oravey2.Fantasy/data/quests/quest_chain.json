@@ -1,0 +1,69 @@
+{
+  "quests": [
+    {
+      "id": "q_goblin_hunt",
+      "title": "Goblin Menace",
+      "description": "Slay 3 goblins raiding the farms near Briarhollow.",
+      "type": "Side",
+      "firstStageId": "kill_goblins",
+      "xpReward": 50,
+      "stages": {
+        "kill_goblins": {
+          "description": "Kill 3 goblins (0/3)",
+          "conditions": [{ "type": "counter", "counter": "goblins_killed", "target": 3 }],
+          "onCompleteActions": [{ "type": "setFlag", "flag": "goblins_cleared" }],
+          "nextStageId": "report_1",
+          "failConditions": [],
+          "onFailActions": []
+        },
+        "report_1": {
+          "description": "Report to Elder Miriel in Briarhollow",
+          "conditions": [{ "type": "flag", "flag": "q_goblin_hunt_reported" }],
+          "onCompleteActions": [{ "type": "setFlag", "flag": "q_goblin_hunt_done" }],
+          "nextStageId": null,
+          "failConditions": [],
+          "onFailActions": []
+        }
+      }
+    },
+    {
+      "id": "q_wyrm_lair",
+      "title": "The Wyrm's Lair",
+      "description": "Slay the young wyrm nesting in the Shattered Cavern.",
+      "type": "Side",
+      "firstStageId": "kill_wyrm",
+      "xpReward": 100,
+      "stages": {
+        "kill_wyrm": {
+          "description": "Slay the young wyrm",
+          "conditions": [{ "type": "flag", "flag": "wyrm_killed" }],
+          "onCompleteActions": [
+            { "type": "setFlag", "flag": "q_wyrm_lair_done" },
+            { "type": "startQuest", "questId": "q_kings_peace" }
+          ],
+          "nextStageId": null,
+          "failConditions": [],
+          "onFailActions": []
+        }
+      }
+    },
+    {
+      "id": "q_kings_peace",
+      "title": "The King's Peace",
+      "description": "Return to Elder Miriel and report your victory.",
+      "type": "Main",
+      "firstStageId": "report_back",
+      "xpReward": 150,
+      "stages": {
+        "report_back": {
+          "description": "Report to Elder Miriel in Briarhollow",
+          "conditions": [{ "type": "flag", "flag": "reported_to_elder" }],
+          "onCompleteActions": [{ "type": "setFlag", "flag": "m1_complete" }],
+          "nextStageId": null,
+          "failConditions": [],
+          "onFailActions": []
+        }
+      }
+    }
+  ]
+}

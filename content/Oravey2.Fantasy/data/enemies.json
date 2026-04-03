@@ -1,0 +1,49 @@
+{
+  "enemies": [
+    {
+      "groupId": "goblin_south",
+      "x": -2.0,
+      "z": -2.0,
+      "count": 1,
+      "endurance": 1,
+      "luck": 2,
+      "weaponDamage": 4,
+      "weaponAccuracy": 0.45,
+      "tag": "goblin"
+    },
+    {
+      "groupId": "goblin_east",
+      "x": 2.0,
+      "z": -2.0,
+      "count": 1,
+      "endurance": 1,
+      "luck": 2,
+      "weaponDamage": 4,
+      "weaponAccuracy": 0.45,
+      "tag": "goblin"
+    },
+    {
+      "groupId": "goblin_road",
+      "x": -2.0,
+      "z": 0.0,
+      "count": 1,
+      "endurance": 1,
+      "luck": 2,
+      "weaponDamage": 5,
+      "weaponAccuracy": 0.50,
+      "tag": "goblin"
+    },
+    {
+      "groupId": "wyrm_boss",
+      "x": 10.0,
+      "z": 0.0,
+      "count": 1,
+      "endurance": 4,
+      "luck": 5,
+      "weaponDamage": 10,
+      "weaponAccuracy": 0.65,
+      "tag": "wyrm",
+      "requiredQuestId": "q_wyrm_lair"
+    }
+  ]
+}

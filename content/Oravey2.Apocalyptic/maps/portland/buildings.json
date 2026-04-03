@@ -1,0 +1,34 @@
+[
+  {
+    "id": "shop1",
+    "name": "Corner Shop",
+    "meshAsset": "meshes/shop.glb",
+    "size": "Small",
+    "footprint": [
+      [
+        10,
+        10
+      ],
+      [
+        10,
+        11
+      ],
+      [
+        11,
+        10
+      ],
+      [
+        11,
+        11
+      ]
+    ],
+    "floors": 1,
+    "condition": 0.8,
+    "placement": {
+      "chunkX": 0,
+      "chunkY": 0,
+      "localTileX": 10,
+      "localTileY": 10
+    }
+  }
+]

@@ -5,7 +5,10 @@ public sealed record WorldJson(
     int ChunksHigh,
     float TileSize,
     PlayerStartJson PlayerStart,
-    string? DefaultWeather
+    string? DefaultWeather,
+    string? Name = null,
+    string? Description = null,
+    string? Source = null
 );
 
 public sealed record PlayerStartJson(

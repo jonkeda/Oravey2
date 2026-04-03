@@ -1,0 +1,15 @@
+{
+  "id": "oravey2.apocalyptic",
+  "name": "Post-Apocalyptic",
+  "version": "0.1.0",
+  "description": "Wasteland survival in a ruined civilization. Explore shattered cities, fight mutants and raiders, and build alliances among the survivors.",
+  "author": "Oravey2 Team",
+  "engineVersion": ">=0.1.0",
+  "tags": ["apocalyptic", "survival", "wasteland"],
+  "defaultScenario": "portland",
+  "palette": {
+    "primary": "#4A6741",
+    "accent": "#C17817",
+    "danger": "#8B2500"
+  }
+}

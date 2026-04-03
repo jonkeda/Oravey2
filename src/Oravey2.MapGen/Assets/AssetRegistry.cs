@@ -17,6 +17,15 @@ public sealed class AssetRegistry : IAssetRegistry
         _catalog = catalog;
     }
 
+    /// <summary>
+    /// Creates an AssetRegistry from an external catalog JSON file (e.g. from a content pack).
+    /// </summary>
+    public static AssetRegistry LoadFromFile(string catalogPath)
+    {
+        using var stream = File.OpenRead(catalogPath);
+        return new AssetRegistry(ParseCatalogStream(stream));
+    }
+
     public IReadOnlyList<AssetEntry> Search(string assetType, string query)
     {
         if (!_catalog.TryGetValue(assetType, out var entries))
@@ -59,6 +68,11 @@ public sealed class AssetRegistry : IAssetRegistry
             throw new InvalidOperationException("Embedded resource 'asset-catalog.json' not found.");
 
         using var stream = assembly.GetManifestResourceStream(resourceName)!;
+        return ParseCatalogStream(stream);
+    }
+
+    private static Dictionary<string, List<AssetEntry>> ParseCatalogStream(Stream stream)
+    {
         var doc = JsonDocument.Parse(stream);
         var catalog = new Dictionary<string, List<AssetEntry>>();
 

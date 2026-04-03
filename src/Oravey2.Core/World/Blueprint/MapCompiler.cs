@@ -78,7 +78,10 @@ public static class MapCompiler
 
         // 8. Write world.json
         var worldJson = new WorldJson(chunksWide, chunksHigh, 1f,
-            new PlayerStartJson(0, 0, 0, 0), null);
+            new PlayerStartJson(0, 0, 0, 0), null,
+            Name: blueprint.Name,
+            Description: blueprint.Description,
+            Source: blueprint.Source?.RealWorldLocation);
         var worldJsonStr = JsonSerializer.Serialize(worldJson, BlueprintLoader.WriteOptions);
         File.WriteAllText(Path.Combine(outputDirectory, "world.json"), worldJsonStr);
 

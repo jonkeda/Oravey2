@@ -1,3 +1,6 @@
+using System.Text.Json;
+using Oravey2.Core.Content;
+using Oravey2.Core.World.Serialization;
 using Stride.Engine;
 using Stride.Graphics;
 using Stride.UI;
@@ -21,6 +24,9 @@ public class ScenarioSelectorScript : SyncScript
 {
     public SpriteFont? Font { get; set; }
 
+    /// <summary>Content pack service for sourcing pack-specific scenarios.</summary>
+    public ContentPackService? ContentPacks { get; set; }
+
     /// <summary>Fires with the chosen scenario ID when Start is clicked.</summary>
     public Action<string>? OnScenarioSelected { get; set; }
 
@@ -34,7 +40,9 @@ public class ScenarioSelectorScript : SyncScript
     private TextBlock? _detailDescription;
     private TextBlock? _detailNotes;
     private Button? _startButton;
+    private StackPanel? _listPanel;
     private readonly List<(string Id, Button Button)> _listButtons = [];
+    private ScenarioInfo[] _allScenarios = [];
 
     /// <summary>Whether the selector overlay is currently visible.</summary>
     public bool IsVisible => _overlay?.Visibility == Visibility.Visible;
@@ -76,6 +84,59 @@ public class ScenarioSelectorScript : SyncScript
     private static readonly Color UnselectedColor = new(50, 50, 70, 200);
     private static readonly Color AccentColor = new(60, 120, 80, 255);
 
+    /// <summary>
+    /// Discovers custom compiled maps in the Maps/ directory and returns ScenarioInfo for each.
+    /// </summary>
+    public static ScenarioInfo[] DiscoverCustomMaps()
+    {
+        var mapsDir = Path.Combine(AppContext.BaseDirectory, "Maps");
+        if (!Directory.Exists(mapsDir))
+            return [];
+
+        var builtInIds = new HashSet<string>(Scenarios.Select(s => s.Id));
+        var custom = new List<ScenarioInfo>();
+
+        foreach (var dir in Directory.GetDirectories(mapsDir))
+        {
+            var worldJsonPath = Path.Combine(dir, "world.json");
+            if (!File.Exists(worldJsonPath)) continue;
+
+            var dirName = Path.GetFileName(dir);
+            if (builtInIds.Contains(dirName)) continue;
+
+            var name = dirName;
+            var description = "Custom compiled map.";
+            var notes = "";
+
+            try
+            {
+                var json = File.ReadAllText(worldJsonPath);
+                var worldJson = JsonSerializer.Deserialize<WorldJson>(json, new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
+                if (worldJson != null)
+                {
+                    if (!string.IsNullOrWhiteSpace(worldJson.Name))
+                        name = worldJson.Name;
+                    if (!string.IsNullOrWhiteSpace(worldJson.Description))
+                        description = worldJson.Description;
+                    notes = $"Map: {worldJson.ChunksWide}×{worldJson.ChunksHigh} chunks";
+                    if (!string.IsNullOrWhiteSpace(worldJson.Source))
+                        notes += $"\nSource: {worldJson.Source}";
+                }
+            }
+            catch
+            {
+                // If world.json is malformed, still show the map with directory name
+            }
+
+            custom.Add(new ScenarioInfo(dirName, name, description, notes));
+        }
+
+        return custom.ToArray();
+    }
+
     public override void Start()
     {
         base.Start();
@@ -98,8 +159,12 @@ public class ScenarioSelectorScript : SyncScript
             MinimumWidth = 220,
             Margin = new Thickness(0, 0, 20, 0),
         };
+        _listPanel = listPanel;
 
-        foreach (var scenario in Scenarios)
+        // Combine built-in + content pack scenarios + discovered custom maps
+        _allScenarios = BuildScenarioList();
+
+        foreach (var scenario in _allScenarios)
         {
             var btn = CreateListButton(scenario.Name);
             var id = scenario.Id;
@@ -228,16 +293,22 @@ public class ScenarioSelectorScript : SyncScript
         Entity.Add(_uiComponent);
 
         // Pre-select first scenario
-        SelectScenario(Scenarios[0].Id);
+        if (_allScenarios.Length > 0)
+            SelectScenario(_allScenarios[0].Id);
     }
 
     public override void Update() { }
 
     public void Show()
     {
+        // Rebuild list in case content pack changed
+        RebuildScenarioList();
+
         if (_overlay != null)
             _overlay.Visibility = Visibility.Visible;
-        SelectScenario(Scenarios[0].Id);
+
+        if (_allScenarios.Length > 0)
+            SelectScenario(_allScenarios[0].Id);
     }
 
     public void Hide()
@@ -258,7 +329,7 @@ public class ScenarioSelectorScript : SyncScript
             btn.BackgroundColor = id == scenarioId ? SelectedColor : UnselectedColor;
 
         // Update detail panel
-        var info = Array.Find(Scenarios, s => s.Id == scenarioId);
+        var info = Array.Find(_allScenarios, s => s.Id == scenarioId);
         if (info != null)
         {
             if (_detailTitle != null) _detailTitle.Text = info.Name;
@@ -285,5 +356,61 @@ public class ScenarioSelectorScript : SyncScript
             MinimumHeight = 42,
             Margin = new Thickness(0, 3, 0, 3),
         };
+    }
+
+    private ScenarioInfo[] BuildScenarioList()
+    {
+        var list = new List<ScenarioInfo>();
+
+        // Add built-in scenarios
+        list.AddRange(Scenarios);
+
+        // Add content pack scenarios
+        if (ContentPacks?.ActivePack != null)
+        {
+            var packScenarios = ContentPacks.LoadScenarios();
+            foreach (var s in packScenarios)
+            {
+                // Skip if already a built-in ID
+                if (list.Any(e => e.Id == s.Id)) continue;
+
+                var notes = $"Pack: {ContentPacks.ActivePack.Manifest.Name}";
+                if (s.Features?.Length > 0)
+                    notes += $"\nFeatures: {string.Join(", ", s.Features)}";
+                if (s.Difficulty > 0)
+                    notes += $"\nDifficulty: {s.Difficulty}";
+
+                list.Add(new ScenarioInfo(s.Id, s.Name, s.Description, notes));
+            }
+        }
+
+        // Add custom compiled maps discovered on disk
+        list.AddRange(DiscoverCustomMaps());
+
+        return list.ToArray();
+    }
+
+    private void RebuildScenarioList()
+    {
+        if (_listPanel == null) return;
+
+        // Clear existing buttons
+        _listPanel.Children.Clear();
+        _listButtons.Clear();
+
+        // Remove old scenario button labels (keep Start, Cancel)
+        ButtonLabels.RemoveAll(l => l != "Start" && l != "Cancel");
+
+        // Rebuild
+        _allScenarios = BuildScenarioList();
+        foreach (var scenario in _allScenarios)
+        {
+            var btn = CreateListButton(scenario.Name);
+            var id = scenario.Id;
+            btn.Click += (_, _) => SelectScenario(id);
+            _listButtons.Add((id, btn));
+            _listPanel.Children.Add(btn);
+            ButtonLabels.Add(scenario.Name);
+        }
     }
 }

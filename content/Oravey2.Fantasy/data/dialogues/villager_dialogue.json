@@ -1,0 +1,19 @@
+{
+  "id": "villager_dialogue",
+  "startNodeId": "greeting",
+  "nodes": {
+    "greeting": {
+      "speaker": "Villager",
+      "text": "Mind the roads, stranger. These are troubled times.",
+      "portrait": "green",
+      "choices": [
+        {
+          "text": "Stay safe.",
+          "nextNodeId": null,
+          "condition": null,
+          "consequences": []
+        }
+      ]
+    }
+  }
+}

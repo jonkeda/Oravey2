@@ -25,4 +25,21 @@
     <Content Include="Maps\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <!-- Content packs: copy to output as ContentPacks/{PackName}/ -->
+  <PropertyGroup>
+    <ApocalypticContentDir>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)\..\..\content\Oravey2.Apocalyptic'))</ApocalypticContentDir>
+    <FantasyContentDir>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)\..\..\content\Oravey2.Fantasy'))</FantasyContentDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="$(ApocalypticContentDir)\**\*"
+             Exclude="$(ApocalypticContentDir)\**\bin\**;$(ApocalypticContentDir)\**\obj\**;$(ApocalypticContentDir)\*.csproj"
+             Link="ContentPacks\Oravey2.Apocalyptic\%(RecursiveDir)%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(FantasyContentDir)\**\*"
+             Exclude="$(FantasyContentDir)\**\bin\**;$(FantasyContentDir)\**\obj\**;$(FantasyContentDir)\*.csproj"
+             Link="ContentPacks\Oravey2.Fantasy\%(RecursiveDir)%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

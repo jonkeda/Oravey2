@@ -1,3 +1,4 @@
+using Oravey2.Core.Content;
 using Oravey2.Core.Framework.State;
 using Oravey2.Core.Save;
 using Stride.Engine;
@@ -16,6 +17,7 @@ public class StartMenuScript : SyncScript
 {
     public GameStateManager? StateManager { get; set; }
     public SaveService? SaveService { get; set; }
+    public ContentPackService? ContentPacks { get; set; }
     public SpriteFont? Font { get; set; }
 
     /// <summary>Called when user clicks New Scenario.</summary>
@@ -30,6 +32,8 @@ public class StartMenuScript : SyncScript
     private UIComponent? _uiComponent;
     private Border? _overlay;
     private Button? _continueButton;
+    private TextBlock? _subtitleText;
+    private TextBlock? _packButtonText;
     private bool _pendingHide;
 
     /// <summary>Whether the start menu overlay is currently visible.</summary>
@@ -53,13 +57,39 @@ public class StartMenuScript : SyncScript
 
         var subtitleText = new TextBlock
         {
-            Text = "Post-Apocalyptic RPG",
+            Text = ContentPacks?.ActivePack?.Manifest.Name ?? "Post-Apocalyptic RPG",
             Font = Font,
             TextSize = 20,
             TextColor = Color.LightGray,
             HorizontalAlignment = HorizontalAlignment.Center,
-            Margin = new Thickness(0, 8, 0, 40),
+            Margin = new Thickness(0, 8, 0, 12),
         };
+        _subtitleText = subtitleText;
+
+        // Content pack cycle button (only if multiple packs installed)
+        Button? packButton = null;
+        if (ContentPacks != null && ContentPacks.Packs.Count > 1)
+        {
+            _packButtonText = new TextBlock
+            {
+                Text = $"Content Pack: {ContentPacks.ActivePack?.Manifest.Name ?? "None"}",
+                Font = Font,
+                TextSize = 18,
+                TextColor = Color.White,
+                HorizontalAlignment = HorizontalAlignment.Center,
+            };
+            packButton = new Button
+            {
+                Content = _packButtonText,
+                BackgroundColor = new Color(40, 80, 60, 200),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                MinimumWidth = 250,
+                MinimumHeight = 40,
+                Margin = new Thickness(0, 0, 0, 20),
+            };
+            packButton.Click += (_, _) => CycleContentPack();
+            ButtonLabels.Add("Content Pack");
+        }
 
         var newGameButton = CreateMenuButton("New Scenario");
         newGameButton.Click += (_, _) =>
@@ -92,8 +122,14 @@ public class StartMenuScript : SyncScript
             Orientation = Orientation.Vertical,
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
-            Children = { titleText, subtitleText, newGameButton, _continueButton, settingsButton, quitButton },
+            Children = { titleText, subtitleText },
         };
+        if (packButton != null)
+            buttonStack.Children.Add(packButton);
+        buttonStack.Children.Add(newGameButton);
+        buttonStack.Children.Add(_continueButton);
+        buttonStack.Children.Add(settingsButton);
+        buttonStack.Children.Add(quitButton);
 
         _overlay = new Border
         {
@@ -156,5 +192,32 @@ public class StartMenuScript : SyncScript
             MinimumHeight = 50,
             Margin = new Thickness(0, 8, 0, 8),
         };
+    }
+
+    private void CycleContentPack()
+    {
+        if (ContentPacks == null || ContentPacks.Packs.Count == 0) return;
+
+        var packs = ContentPacks.Packs;
+        var currentIndex = -1;
+        if (ContentPacks.ActivePack != null)
+        {
+            for (int i = 0; i < packs.Count; i++)
+            {
+                if (packs[i].Manifest.Id == ContentPacks.ActivePack.Manifest.Id)
+                {
+                    currentIndex = i;
+                    break;
+                }
+            }
+        }
+
+        var nextIndex = (currentIndex + 1) % packs.Count;
+        ContentPacks.SetActivePack(packs[nextIndex].Manifest.Id);
+
+        if (_packButtonText != null)
+            _packButtonText.Text = $"Content Pack: {ContentPacks.ActivePack?.Manifest.Name ?? "None"}";
+        if (_subtitleText != null)
+            _subtitleText.Text = ContentPacks.ActivePack?.Manifest.Name ?? "Oravey 2";
     }
 }

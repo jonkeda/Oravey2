@@ -5,6 +5,7 @@ using Oravey2.Core.Automation;
 using Oravey2.Core.Camera;
 using Oravey2.Core.Character.Level;
 using Oravey2.Core.Character.Stats;
+using Oravey2.Core.Content;
 using Oravey2.Core.Framework.Events;
 using Oravey2.Core.Framework.Logging;
 using Oravey2.Core.Framework.Services;
@@ -87,6 +88,16 @@ public sealed class GameBootstrapper
         var scenarioLoader = new ScenarioLoader { Font = font };
         scenarioLoader.InitializeQuestSystem(eventBus);
         var zoneManager = new ZoneManager(scenarioLoader);
+
+        // --- Content pack discovery ---
+        var contentPackService = new ContentPackService();
+        contentPackService.DiscoverPacks();
+        if (contentPackService.Packs.Count > 0)
+        {
+            contentPackService.SetActivePack(contentPackService.Packs[0].Manifest.Id);
+            logger.LogInformation("Content packs found: {Count}, active: {Pack}",
+                contentPackService.Packs.Count, contentPackService.ActivePack?.Manifest.Name);
+        }
 
         // Helper: build SaveData from current scenario state
         SaveData? BuildSaveData()
@@ -212,12 +223,17 @@ public sealed class GameBootstrapper
         {
             StateManager = gameStateManager,
             SaveService = saveService,
+            ContentPacks = contentPackService,
             Font = font,
         };
 
         // Scenario selector overlay
         var scenarioSelectorEntity = new Entity("ScenarioSelector");
-        var scenarioSelectorScript = new ScenarioSelectorScript { Font = font };
+        var scenarioSelectorScript = new ScenarioSelectorScript
+        {
+            Font = font,
+            ContentPacks = contentPackService,
+        };
         scenarioSelectorScript.OnBack = () =>
         {
             scenarioSelectorScript.Hide();

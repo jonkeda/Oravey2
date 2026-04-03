@@ -1,0 +1,36 @@
+{
+  "npcs": [
+    {
+      "id": "village_elder",
+      "displayName": "Elder Miriel",
+      "role": "QuestGiver",
+      "dialogueTreeId": "elder_miriel_dialogue",
+      "position": { "x": -4.0, "y": 0.5, "z": -4.5 },
+      "color": { "r": 0.8, "g": 0.7, "b": 0.2 }
+    },
+    {
+      "id": "blacksmith",
+      "displayName": "Torvin the Smith",
+      "role": "Merchant",
+      "dialogueTreeId": "blacksmith_dialogue",
+      "position": { "x": 1.0, "y": 0.5, "z": -3.5 },
+      "color": { "r": 0.7, "g": 0.3, "b": 0.1 }
+    },
+    {
+      "id": "villager_1",
+      "displayName": "Villager",
+      "role": "Civilian",
+      "dialogueTreeId": "villager_dialogue",
+      "position": { "x": -4.0, "y": 0.5, "z": 3.5 },
+      "color": { "r": 0.5, "g": 0.6, "b": 0.5 }
+    },
+    {
+      "id": "villager_2",
+      "displayName": "Villager",
+      "role": "Civilian",
+      "dialogueTreeId": "villager_dialogue",
+      "position": { "x": 13.0, "y": 0.5, "z": 3.5 },
+      "color": { "r": 0.5, "g": 0.6, "b": 0.5 }
+    }
+  ]
+}
