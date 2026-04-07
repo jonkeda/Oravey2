@@ -1,4 +1,5 @@
 using System.Numerics;
+using Oravey2.Core.World.LinearFeatures;
 
 namespace Oravey2.Core.World.Terrain;
 
@@ -23,18 +24,28 @@ public sealed class ChunkTerrainMesh : IDisposable
     /// <summary>Terrain modifiers that were applied (kept for debugging / re-application).</summary>
     public IReadOnlyList<TerrainModifier> AppliedModifiers { get; }
 
+    /// <summary>Ribbon meshes for linear features (roads, rails, rivers) in this chunk.</summary>
+    public IReadOnlyList<RibbonMesh> LinearFeatureMeshes { get; }
+
+    /// <summary>Tile overlay data for Hybrid chunks. Null for Heightmap-only chunks.</summary>
+    public TileOverlayData? Overlay { get; }
+
     public ChunkTerrainMesh(
         VertexData[] vertices,
         int[] indices,
         byte[] splatMap0,
         byte[] splatMap1,
-        IReadOnlyList<TerrainModifier>? appliedModifiers = null)
+        IReadOnlyList<TerrainModifier>? appliedModifiers = null,
+        IReadOnlyList<RibbonMesh>? linearFeatureMeshes = null,
+        TileOverlayData? overlay = null)
     {
         Vertices = vertices;
         Indices = indices;
         SplatMap0 = splatMap0;
         SplatMap1 = splatMap1;
         AppliedModifiers = appliedModifiers ?? Array.Empty<TerrainModifier>();
+        LinearFeatureMeshes = linearFeatureMeshes ?? Array.Empty<RibbonMesh>();
+        Overlay = overlay;
     }
 
     public void Dispose()

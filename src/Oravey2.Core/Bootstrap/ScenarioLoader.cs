@@ -424,8 +424,9 @@ public sealed class ScenarioLoader
             = CreatePlayer(rootScene, game, cameraEntity, gameStateManager, eventBus);
 
         var mapData = TerrainTestData.CreateTestMap();
+        var worldMap = TerrainTestData.CreateTestWorldMap(mapData);
         var tileMapEntity = new Entity("TileMap");
-        var tileMapRenderer = new HeightmapTerrainScript { MapData = mapData };
+        var tileMapRenderer = new HeightmapTerrainScript { MapData = mapData, WorldMap = worldMap };
         tileMapEntity.Add(tileMapRenderer);
         AddEntity(tileMapEntity, rootScene);
 

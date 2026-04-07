@@ -2,7 +2,9 @@ using System.Numerics;
 using Oravey2.Core.World.Terrain;
 using Stride.Core.Mathematics;
 using Stride.Engine;
+using Stride.Extensions;
 using Stride.Graphics;
+using Stride.Graphics.GeometricPrimitives;
 using Stride.Rendering;
 
 namespace Oravey2.Core.Rendering;
@@ -29,7 +31,7 @@ public static class TerrainEntityFactory
             0f,
             chunkY * chunkWorldSize);
 
-        var mesh = CreateMesh(device, terrain);
+        var (mesh, primitive) = CreateMesh(device, terrain);
         var material = TerrainMaterialFactory.CreateChunkMaterial(device, terrain);
 
         var model = new Model();
@@ -41,24 +43,22 @@ public static class TerrainEntityFactory
         return entity;
     }
 
-    private static Mesh CreateMesh(GraphicsDevice device, ChunkTerrainMesh terrain)
+    /// <summary>
+    /// Creates a Mesh + GeometricPrimitive from terrain data.
+    /// Uses GeometricPrimitive + GeometricMeshData for correct buffer lifecycle (not raw Buffer.Vertex.New).
+    /// The caller must keep the returned GeometricPrimitive alive as long as the mesh is in use.
+    /// </summary>
+    public static (Mesh mesh, GeometricPrimitive primitive) CreateMesh(
+        GraphicsDevice device, ChunkTerrainMesh terrain)
     {
         var vertexData = ConvertVertices(terrain.Vertices);
 
-        var vertexBuffer = Stride.Graphics.Buffer.Vertex.New(device, vertexData);
-        var indexBuffer = Stride.Graphics.Buffer.Index.New(device, terrain.Indices);
-
-        var meshDraw = new MeshDraw
-        {
-            PrimitiveType = PrimitiveType.TriangleList,
-            DrawCount = terrain.Indices.Length,
-            VertexBuffers = new[]
-            {
-                new VertexBufferBinding(vertexBuffer,
-                    VertexPositionNormalTexture.Layout, terrain.Vertices.Length)
-            },
-            IndexBuffer = new IndexBufferBinding(indexBuffer, true, terrain.Indices.Length),
-        };
+        // Use GeometricMeshData + GeometricPrimitive — this is the proven working pattern.
+        // isLeftHanded=true tells Stride to flip our CW winding to CCW (Stride is right-handed).
+        var meshData = new GeometricMeshData<VertexPositionNormalTexture>(
+            vertexData, terrain.Indices, isLeftHanded: true);
+        var primitive = new GeometricPrimitive(device, meshData);
+        var meshDraw = primitive.ToMeshDraw();
 
         // Compute bounding box from vertex positions — required for frustum culling
         var min = new Stride.Core.Mathematics.Vector3(float.MaxValue);
@@ -76,12 +76,14 @@ public static class TerrainEntityFactory
         var boundingBox = new BoundingBox(min, max);
         var boundingSphere = BoundingSphere.FromBox(boundingBox);
 
-        return new Mesh
+        var mesh = new Mesh
         {
             Draw = meshDraw,
             BoundingBox = boundingBox,
             BoundingSphere = boundingSphere,
         };
+
+        return (mesh, primitive);
     }
 
     private static VertexPositionNormalTexture[] ConvertVertices(VertexData[] source)

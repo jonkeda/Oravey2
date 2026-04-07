@@ -1,4 +1,5 @@
 using Oravey2.Core.Rendering;
+using Oravey2.Core.World.LinearFeatures;
 using Oravey2.Core.World.Rendering;
 using Oravey2.Core.World.Terrain;
 using Stride.Core.Mathematics;
@@ -20,6 +21,7 @@ namespace Oravey2.Core.World;
 public class HeightmapTerrainScript : SyncScript
 {
     public TileMapData? MapData { get; set; }
+    public WorldMapData? WorldMap { get; set; }
     public float TileSize { get; set; } = HeightmapMeshGenerator.TileWorldSize;
     public QualityPreset Quality { get; set; } = QualityPreset.Medium;
     public BuildingRegistry? Buildings { get; set; }
@@ -75,8 +77,8 @@ public class HeightmapTerrainScript : SyncScript
                     }
                 }
 
-                var chunkData = new ChunkData(cx, cy,
-                    CreateTileMapFromGrid(chunkTiles, chunkSize));
+                var chunkData = WorldMap?.GetChunk(cx, cy) ??
+                    new ChunkData(cx, cy, CreateTileMapFromGrid(chunkTiles, chunkSize));
 
                 var terrainMesh = ChunkTerrainBuilder.Build(chunkData, neighbors: null, Quality);
 
@@ -91,10 +93,30 @@ public class HeightmapTerrainScript : SyncScript
                 _primitives.Add(geomPrimitive);
                 var meshDraw = geomPrimitive.ToMeshDraw();
 
+                // Compute bounding box from vertices — required for frustum culling
+                var min = new Vector3(float.MaxValue);
+                var max = new Vector3(float.MinValue);
+                foreach (var v in strideVerts)
+                {
+                    if (v.Position.X < min.X) min.X = v.Position.X;
+                    if (v.Position.Y < min.Y) min.Y = v.Position.Y;
+                    if (v.Position.Z < min.Z) min.Z = v.Position.Z;
+                    if (v.Position.X > max.X) max.X = v.Position.X;
+                    if (v.Position.Y > max.Y) max.Y = v.Position.Y;
+                    if (v.Position.Z > max.Z) max.Z = v.Position.Z;
+                }
+                var boundingBox = new BoundingBox(min, max);
+                var boundingSphere = BoundingSphere.FromBox(boundingBox);
+
                 // Build entity using the exact same pattern as working capsule/cube entities
-                var meshEntity = new Entity("TerrainChunk");
+                var meshEntity = new Entity($"TerrainChunk_{cx}_{cy}");
                 var model = new Model();
-                model.Meshes.Add(new Mesh { Draw = meshDraw });
+                model.Meshes.Add(new Mesh
+                {
+                    Draw = meshDraw,
+                    BoundingBox = boundingBox,
+                    BoundingSphere = boundingSphere,
+                });
                 model.Materials.Add(CreateTerrainMaterial(GetDominantColor(chunkTiles, chunkSize)));
                 meshEntity.Add(new ModelComponent(model));
 
@@ -108,7 +130,104 @@ public class HeightmapTerrainScript : SyncScript
                 Entity.AddChild(meshEntity);
                 _terrainEntities.Add(meshEntity);
 
+                // Render tile overlay for Hybrid chunks
+                if (terrainMesh.Overlay != null && terrainMesh.Overlay.FloorVertices.Length > 0)
+                {
+                    var overlayVerts = ConvertVertices(terrainMesh.Overlay.FloorVertices);
+                    var overlayMeshData = new GeometricMeshData<VertexPositionNormalTexture>(
+                        overlayVerts, terrainMesh.Overlay.FloorIndices, true);
+                    var overlayPrimitive = new GeometricPrimitive(GraphicsDevice, overlayMeshData);
+                    _primitives.Add(overlayPrimitive);
+                    var overlayDraw = overlayPrimitive.ToMeshDraw();
 
+                    var oMin = new Vector3(float.MaxValue);
+                    var oMax = new Vector3(float.MinValue);
+                    foreach (var v in overlayVerts)
+                    {
+                        if (v.Position.X < oMin.X) oMin.X = v.Position.X;
+                        if (v.Position.Y < oMin.Y) oMin.Y = v.Position.Y;
+                        if (v.Position.Z < oMin.Z) oMin.Z = v.Position.Z;
+                        if (v.Position.X > oMax.X) oMax.X = v.Position.X;
+                        if (v.Position.Y > oMax.Y) oMax.Y = v.Position.Y;
+                        if (v.Position.Z > oMax.Z) oMax.Z = v.Position.Z;
+                    }
+                    var oBounds = new BoundingBox(oMin, oMax);
+                    oBounds.Minimum.Y -= 0.5f;
+                    oBounds.Maximum.Y += 0.5f;
+                    var oSphere = BoundingSphere.FromBox(oBounds);
+
+                    var overlayEntity = new Entity($"TileOverlay_{cx}_{cy}");
+                    var overlayModel = new Model();
+                    overlayModel.Meshes.Add(new Mesh
+                    {
+                        Draw = overlayDraw,
+                        BoundingBox = oBounds,
+                        BoundingSphere = oSphere,
+                    });
+                    // Use a lighter concrete-ish colour to distinguish overlay from terrain
+                    overlayModel.Materials.Add(CreateTerrainMaterial(new Color4(0.70f, 0.68f, 0.62f, 1f)));
+                    var overlayModelComp = new ModelComponent(overlayModel) { IsShadowCaster = false };
+                    overlayEntity.Add(overlayModelComp);
+                    overlayEntity.Transform.Position = chunkPos;
+
+                    Entity.AddChild(overlayEntity);
+                    _terrainEntities.Add(overlayEntity);
+
+                    // Render structure placeholders (cubes) for Hybrid chunks
+                    foreach (var structure in terrainMesh.Overlay.Structures)
+                    {
+                        var structEntity = CreateStructurePlaceholder(structure, chunkPos);
+                        Entity.AddChild(structEntity);
+                        _terrainEntities.Add(structEntity);
+                    }
+                }
+
+                // Render linear feature ribbons for this chunk
+                foreach (var ribbon in terrainMesh.LinearFeatureMeshes)
+                {
+                    if (ribbon.Vertices.Length == 0) continue;
+
+                    var ribbonVerts = ConvertVertices(ribbon.Vertices);
+                    var ribbonMeshData = new GeometricMeshData<VertexPositionNormalTexture>(
+                        ribbonVerts, ribbon.Indices, true);
+                    var ribbonPrimitive = new GeometricPrimitive(GraphicsDevice, ribbonMeshData);
+                    _primitives.Add(ribbonPrimitive);
+                    var ribbonDraw = ribbonPrimitive.ToMeshDraw();
+
+                    var rMin = new Vector3(float.MaxValue);
+                    var rMax = new Vector3(float.MinValue);
+                    foreach (var v in ribbonVerts)
+                    {
+                        if (v.Position.X < rMin.X) rMin.X = v.Position.X;
+                        if (v.Position.Y < rMin.Y) rMin.Y = v.Position.Y;
+                        if (v.Position.Z < rMin.Z) rMin.Z = v.Position.Z;
+                        if (v.Position.X > rMax.X) rMax.X = v.Position.X;
+                        if (v.Position.Y > rMax.Y) rMax.Y = v.Position.Y;
+                        if (v.Position.Z > rMax.Z) rMax.Z = v.Position.Z;
+                    }
+                    var rBounds = new BoundingBox(rMin, rMax);
+                    // Pad Y extent so thin ribbons aren't culled by frustum tests at distance
+                    rBounds.Minimum.Y -= 1f;
+                    rBounds.Maximum.Y += 1f;
+                    var rSphere = BoundingSphere.FromBox(rBounds);
+
+                    var (r, g, b, a) = LinearFeatureStyles.GetColor(ribbon.Type, ribbon.Style);
+                    var ribbonEntity = new Entity($"LinearFeature_{cx}_{cy}_{ribbon.Type}");
+                    var ribbonModel = new Model();
+                    ribbonModel.Meshes.Add(new Mesh
+                    {
+                        Draw = ribbonDraw,
+                        BoundingBox = rBounds,
+                        BoundingSphere = rSphere,
+                    });
+                    ribbonModel.Materials.Add(CreateTerrainMaterial(new Color4(r, g, b, a)));
+                    var ribbonModelComp = new ModelComponent(ribbonModel) { IsShadowCaster = false };
+                    ribbonEntity.Add(ribbonModelComp);
+                    ribbonEntity.Transform.Position = chunkPos;
+
+                    Entity.AddChild(ribbonEntity);
+                    _terrainEntities.Add(ribbonEntity);
+                }
             }
         }
 
@@ -197,6 +316,39 @@ public class HeightmapTerrainScript : SyncScript
             for (int y = 0; y < size; y++)
                 map.SetTileData(x, y, tiles[x, y]);
         return map;
+    }
+
+    private Entity CreateStructurePlaceholder(StructureEntry structure, Vector3 chunkPos)
+    {
+        // Determine size based on placement type
+        bool isWall = structure.Placement is StructurePlacement.WallNorth
+            or StructurePlacement.WallEast or StructurePlacement.WallSouth
+            or StructurePlacement.WallWest;
+
+        float sizeX = isWall ? HeightmapMeshGenerator.TileWorldSize : 1.0f;
+        float sizeY = isWall ? 2.0f : 1.0f;
+        float sizeZ = isWall ? 0.2f : 1.0f;
+
+        var geom = GeometricPrimitive.Cube.New(GraphicsDevice, new Vector3(sizeX, sizeY, sizeZ));
+        _primitives.Add(geom);
+        var meshDraw = geom.ToMeshDraw();
+
+        var halfExtent = new Vector3(sizeX, sizeY, sizeZ) * 0.5f;
+        var bb = new BoundingBox(-halfExtent, halfExtent);
+        var bs = BoundingSphere.FromBox(bb);
+
+        var entity = new Entity($"Structure_{structure.StructureId}_{structure.Placement}");
+        var model = new Model();
+        model.Meshes.Add(new Mesh { Draw = meshDraw, BoundingBox = bb, BoundingSphere = bs });
+        model.Materials.Add(CreateTerrainMaterial(new Color4(0.45f, 0.42f, 0.38f, 1f)));
+        entity.Add(new ModelComponent(model));
+
+        // Position: chunk offset + local structure position + half height so base sits on ground
+        entity.Transform.Position = chunkPos + new Vector3(
+            structure.Position.X, structure.Position.Y + sizeY * 0.5f, structure.Position.Z);
+        entity.Transform.Rotation = Quaternion.RotationY(structure.RotationY);
+
+        return entity;
     }
 
     private void ClearTerrain()

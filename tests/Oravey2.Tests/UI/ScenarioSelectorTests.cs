@@ -7,7 +7,7 @@ public class ScenarioSelectorTests
     [Fact]
     public void Scenarios_ContainsFourEntries()
     {
-        Assert.Equal(4, ScenarioSelectorScript.Scenarios.Length);
+        Assert.Equal(5, ScenarioSelectorScript.Scenarios.Length);
     }
 
     [Fact]

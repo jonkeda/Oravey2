@@ -208,6 +208,62 @@ public static class HeightmapMeshGenerator
     }
 
     /// <summary>
+    /// Gets the interpolated surface height at an arbitrary XZ world position within a chunk,
+    /// using barycentric interpolation on the heightmap mesh triangles.
+    /// </summary>
+    /// <param name="worldXZ">XZ position in chunk-local space (0..chunkWorldSize).</param>
+    /// <param name="heights">Height grid from terrain pipeline.</param>
+    /// <param name="vertsPerSide">Vertex grid resolution.</param>
+    /// <param name="chunkWorldSize">World-space size of the chunk.</param>
+    /// <returns>Interpolated Y height at the given position.</returns>
+    public static float GetSurfaceHeight(
+        Vector2 worldXZ,
+        float[,] heights,
+        int vertsPerSide,
+        float chunkWorldSize)
+    {
+        float cellSize = chunkWorldSize / (vertsPerSide - 1);
+
+        // Convert world XZ to grid-cell coordinates
+        float gx = worldXZ.X / cellSize;
+        float gz = worldXZ.Y / cellSize;
+
+        // Clamp to valid grid range
+        gx = Math.Clamp(gx, 0f, vertsPerSide - 1f);
+        gz = Math.Clamp(gz, 0f, vertsPerSide - 1f);
+
+        int ix = (int)MathF.Floor(gx);
+        int iz = (int)MathF.Floor(gz);
+
+        // Clamp cell indices to avoid overflow
+        ix = Math.Min(ix, vertsPerSide - 2);
+        iz = Math.Min(iz, vertsPerSide - 2);
+
+        float fx = gx - ix;
+        float fz = gz - iz;
+
+        float hTL = heights[ix, iz];
+        float hTR = heights[ix + 1, iz];
+        float hBL = heights[ix, iz + 1];
+        float hBR = heights[ix + 1, iz + 1];
+
+        // Determine which triangle the point falls in and do barycentric interpolation.
+        // The quad is split along the TL→BR diagonal (matches BuildIndices winding):
+        //   Triangle 1: TL, BL, TR  (fx + fz <= 1)
+        //   Triangle 2: TR, BL, BR  (fx + fz > 1)
+        if (fx + fz <= 1f)
+        {
+            // Upper-left triangle: TL(0,0), BL(0,1), TR(1,0)
+            return hTL + fx * (hTR - hTL) + fz * (hBL - hTL);
+        }
+        else
+        {
+            // Lower-right triangle: BR(1,1), TR(1,0), BL(0,1)
+            return hBR + (1f - fx) * (hBL - hBR) + (1f - fz) * (hTR - hBR);
+        }
+    }
+
+    /// <summary>
     /// Builds a triangle-list index buffer for a quad grid.
     /// </summary>
     internal static int[] BuildIndices(int vertsPerSide)

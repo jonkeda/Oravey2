@@ -71,6 +71,11 @@ public class ScenarioSelectorScript : SyncScript
             "Bare sandbox for testing.",
             "Flat ground, no enemies, no NPCs. Good for debugging.\n\n"
           + "Map: 32×32 tiles\nEnemies: None\nFeatures: None"),
+
+        new("terrain_test", "Terrain Test",
+            "Heightmap terrain with roads, river, and bridge.",
+            "3×3 chunk grid with varied surfaces, hills, and linear features.\n\n"
+          + "Map: 48×48 tiles\nEnemies: None\nFeatures: Road, River, Bridge"),
     ];
 
     private static readonly Color SelectedColor = new(80, 80, 120, 255);
