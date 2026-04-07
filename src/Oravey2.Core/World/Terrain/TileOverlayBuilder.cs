@@ -95,32 +95,33 @@ public static class TileOverlayBuilder
                 {
                     float cx = x0 + tileWorld * 0.5f;
                     float cz = z0 + tileWorld * 0.5f;
-                    float cy = HeightmapMeshGenerator.GetSurfaceHeight(new Vector2(cx, cz), heights, vertsPerSide, chunkWorldSize);
+                    float cy = HeightmapMeshGenerator.GetSurfaceHeight(new Vector2(cx, cz), heights, vertsPerSide, chunkWorldSize) + OverlayOffset;
 
-                    // Place walls at tile edges where cover exists, otherwise place as prop at centre
+                    // Place walls at tile edges where cover exists, otherwise place as prop at centre.
+                    // All Y values include OverlayOffset so structures sit on the visible overlay floor.
                     bool placedWall = false;
 
                     if (tile.FullCover.HasFlag(CoverEdges.North) || tile.HalfCover.HasFlag(CoverEdges.North))
                     {
-                        float ey = HeightmapMeshGenerator.GetSurfaceHeight(new Vector2(cx, z0), heights, vertsPerSide, chunkWorldSize);
+                        float ey = HeightmapMeshGenerator.GetSurfaceHeight(new Vector2(cx, z0), heights, vertsPerSide, chunkWorldSize) + OverlayOffset;
                         structures.Add(new StructureEntry(tile.StructureId, StructurePlacement.WallNorth, new Vector3(cx, ey, z0), 0f));
                         placedWall = true;
                     }
                     if (tile.FullCover.HasFlag(CoverEdges.East) || tile.HalfCover.HasFlag(CoverEdges.East))
                     {
-                        float ey = HeightmapMeshGenerator.GetSurfaceHeight(new Vector2(x1, cz), heights, vertsPerSide, chunkWorldSize);
+                        float ey = HeightmapMeshGenerator.GetSurfaceHeight(new Vector2(x1, cz), heights, vertsPerSide, chunkWorldSize) + OverlayOffset;
                         structures.Add(new StructureEntry(tile.StructureId, StructurePlacement.WallEast, new Vector3(x1, ey, cz), MathF.PI * 0.5f));
                         placedWall = true;
                     }
                     if (tile.FullCover.HasFlag(CoverEdges.South) || tile.HalfCover.HasFlag(CoverEdges.South))
                     {
-                        float ey = HeightmapMeshGenerator.GetSurfaceHeight(new Vector2(cx, z1), heights, vertsPerSide, chunkWorldSize);
+                        float ey = HeightmapMeshGenerator.GetSurfaceHeight(new Vector2(cx, z1), heights, vertsPerSide, chunkWorldSize) + OverlayOffset;
                         structures.Add(new StructureEntry(tile.StructureId, StructurePlacement.WallSouth, new Vector3(cx, ey, z1), MathF.PI));
                         placedWall = true;
                     }
                     if (tile.FullCover.HasFlag(CoverEdges.West) || tile.HalfCover.HasFlag(CoverEdges.West))
                     {
-                        float ey = HeightmapMeshGenerator.GetSurfaceHeight(new Vector2(x0, cz), heights, vertsPerSide, chunkWorldSize);
+                        float ey = HeightmapMeshGenerator.GetSurfaceHeight(new Vector2(x0, cz), heights, vertsPerSide, chunkWorldSize) + OverlayOffset;
                         structures.Add(new StructureEntry(tile.StructureId, StructurePlacement.WallWest, new Vector3(x0, ey, cz), MathF.PI * 1.5f));
                         placedWall = true;
                     }

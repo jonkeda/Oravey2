@@ -1,5 +1,6 @@
 using System.Numerics;
 using Oravey2.Core.World.LinearFeatures;
+using Oravey2.Core.World.Liquids;
 
 namespace Oravey2.Core.World.Terrain;
 
@@ -30,6 +31,18 @@ public sealed class ChunkTerrainMesh : IDisposable
     /// <summary>Tile overlay data for Hybrid chunks. Null for Heightmap-only chunks.</summary>
     public TileOverlayData? Overlay { get; }
 
+    /// <summary>Liquid surface and waterfall meshes. Null for chunks with no liquid tiles.</summary>
+    public ChunkLiquidData? Liquids { get; }
+
+    /// <summary>Height grid for surface-height queries (tree placement, etc.).</summary>
+    public float[,] Heights { get; }
+
+    /// <summary>Number of vertices per side in the height grid.</summary>
+    public int VertsPerSide { get; }
+
+    /// <summary>World-space size of the chunk.</summary>
+    public float ChunkWorldSize { get; }
+
     public ChunkTerrainMesh(
         VertexData[] vertices,
         int[] indices,
@@ -37,7 +50,11 @@ public sealed class ChunkTerrainMesh : IDisposable
         byte[] splatMap1,
         IReadOnlyList<TerrainModifier>? appliedModifiers = null,
         IReadOnlyList<RibbonMesh>? linearFeatureMeshes = null,
-        TileOverlayData? overlay = null)
+        TileOverlayData? overlay = null,
+        ChunkLiquidData? liquids = null,
+        float[,]? heights = null,
+        int vertsPerSide = 0,
+        float chunkWorldSize = 0f)
     {
         Vertices = vertices;
         Indices = indices;
@@ -46,6 +63,10 @@ public sealed class ChunkTerrainMesh : IDisposable
         AppliedModifiers = appliedModifiers ?? Array.Empty<TerrainModifier>();
         LinearFeatureMeshes = linearFeatureMeshes ?? Array.Empty<RibbonMesh>();
         Overlay = overlay;
+        Liquids = liquids;
+        Heights = heights ?? new float[0, 0];
+        VertsPerSide = vertsPerSide;
+        ChunkWorldSize = chunkWorldSize;
     }
 
     public void Dispose()

@@ -1,0 +1,44 @@
+// OilShader.sdsl — Stride SDSL oil slick shader
+// Thin-film interference rainbow sheen on a dark base.
+
+shader OilShader : ShadingBase, Transformation, PositionStream4, NormalStream, Texturing, Global
+{
+    // Dark oil base colour
+    float4 OilColor = float4(0.10, 0.08, 0.05, 0.95);
+
+    // Rainbow sheen intensity
+    float SheenIntensity = 0.4;
+
+    override stage void VSMain()
+    {
+        base.VSMain();
+    }
+
+    // Approximate thin-film interference rainbow from view angle
+    float3 ThinFilm(float cosTheta)
+    {
+        // Shift through rainbow spectrum based on angle
+        float phase = cosTheta * 6.283 * 2.0;
+        float r = 0.5 + 0.5 * cos(phase);
+        float g = 0.5 + 0.5 * cos(phase + 2.094); // +120°
+        float b = 0.5 + 0.5 * cos(phase + 4.189); // +240°
+        return float3(r, g, b);
+    }
+
+    override stage void PSMain()
+    {
+        float2 uv = streams.TexCoord;
+
+        // View-dependent sheen: use UV as proxy for view angle variation
+        float viewAngle = 0.5 + 0.5 * sin(uv.x * 10.0 + uv.y * 7.0 + Global.Time * 0.1);
+        float3 rainbow = ThinFilm(viewAngle);
+
+        // Subtle surface ripple
+        float ripple = sin(uv.x * 20.0 + Global.Time * 0.3) * sin(uv.y * 20.0 + Global.Time * 0.2);
+        ripple = ripple * 0.5 + 0.5;
+
+        float3 color = OilColor.rgb + rainbow * SheenIntensity * ripple;
+
+        streams.ColorTarget = float4(color, OilColor.a);
+    }
+};

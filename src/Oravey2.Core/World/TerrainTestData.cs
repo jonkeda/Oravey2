@@ -108,6 +108,82 @@ public static class TerrainTestData
             }
         }
 
+        // Water lake: bottom-centre area (depression in dirt with water)
+        for (int x = 8; x < 16; x++)
+        {
+            for (int y = 34; y < 42; y++)
+            {
+                map.SetTileData(x, y, new TileData(
+                    Surface: SurfaceType.Mud,
+                    HeightLevel: 1,
+                    WaterLevel: 3,
+                    StructureId: 0,
+                    Flags: TileFlags.None,
+                    VariantSeed: (byte)((x + y) % 256),
+                    Liquid: LiquidType.Water));
+            }
+        }
+
+        // Lava pool: small 3×3 area near bottom-centre
+        for (int x = 22; x < 25; x++)
+        {
+            for (int y = 36; y < 39; y++)
+            {
+                map.SetTileData(x, y, new TileData(
+                    Surface: SurfaceType.Rock,
+                    HeightLevel: 2,
+                    WaterLevel: 3,
+                    StructureId: 0,
+                    Flags: TileFlags.None,
+                    VariantSeed: 0,
+                    Liquid: LiquidType.Lava));
+            }
+        }
+
+        // Toxic puddle: small 2×2 area
+        for (int x = 28; x < 30; x++)
+        {
+            for (int y = 36; y < 38; y++)
+            {
+                map.SetTileData(x, y, new TileData(
+                    Surface: SurfaceType.Mud,
+                    HeightLevel: 2,
+                    WaterLevel: 3,
+                    StructureId: 0,
+                    Flags: TileFlags.None,
+                    VariantSeed: 0,
+                    Liquid: LiquidType.Toxic));
+            }
+        }
+
+        // Waterfall edge: high terrain with water that drops off a cliff
+        // Upper plateau with water at height 12
+        for (int x = 4; x < 8; x++)
+        {
+            for (int y = 18; y < 21; y++)
+            {
+                map.SetTileData(x, y, new TileData(
+                    Surface: SurfaceType.Rock,
+                    HeightLevel: 12,
+                    WaterLevel: 13,
+                    StructureId: 0,
+                    Flags: TileFlags.None,
+                    VariantSeed: 0,
+                    Liquid: LiquidType.Water));
+            }
+        }
+        // Cliff drop below the waterfall (height 4, no water)
+        for (int x = 4; x < 8; x++)
+        {
+            map.SetTileData(x, 21, new TileData(
+                Surface: SurfaceType.Rock,
+                HeightLevel: 4,
+                WaterLevel: 0,
+                StructureId: 0,
+                Flags: TileFlags.Walkable,
+                VariantSeed: 0));
+        }
+
         // Town area: top-right chunk (2,0) — Hybrid mode overlay test
         // Paved concrete floor with wall structures at tile edges
         for (int x = 32; x < 48; x++)
@@ -164,6 +240,40 @@ public static class TerrainTestData
                     VariantSeed: (byte)((x + y) % 256),
                     HalfCover: halfCover,
                     FullCover: fullCover));
+            }
+        }
+
+        // Forested areas: two patches of grass with the Forested flag
+        // Dense forest: top-left chunk (0,0), tiles (0..10, 0..8)
+        for (int x = 0; x < 11; x++)
+        {
+            for (int y = 0; y < 9; y++)
+            {
+                // Skip the hills area already set above (4..17, 4..15)
+                if (x >= 4 && y >= 4) continue;
+
+                map.SetTileData(x, y, new TileData(
+                    Surface: SurfaceType.Grass,
+                    HeightLevel: 4,
+                    WaterLevel: 0,
+                    StructureId: 0,
+                    Flags: TileFlags.Walkable | TileFlags.Forested,
+                    VariantSeed: (byte)((x * 7 + y * 13) % 256)));
+            }
+        }
+
+        // Sparse forest: chunk (1,2), bottom area tiles (16..31, 32..40) in grass
+        for (int x = 16; x < 32; x++)
+        {
+            for (int y = 26; y < 30; y++)
+            {
+                map.SetTileData(x, y, new TileData(
+                    Surface: SurfaceType.Grass,
+                    HeightLevel: 4,
+                    WaterLevel: 0,
+                    StructureId: 0,
+                    Flags: TileFlags.Walkable | TileFlags.Forested,
+                    VariantSeed: (byte)((x * 7 + y * 13) % 256)));
             }
         }
 

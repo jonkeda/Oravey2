@@ -4,6 +4,7 @@ using Oravey2.Core.Character.Health;
 using Oravey2.Core.Character.Level;
 using Oravey2.Core.Character.Skills;
 using Oravey2.Core.Content;
+using Oravey2.Core.Data;
 using Oravey2.Core.Dialogue;
 using Oravey2.Core.NPC;
 using Oravey2.Core.Character.Stats;
@@ -140,6 +141,10 @@ public sealed class ScenarioLoader
                 break;
             case "terrain_test":
                 LoadTerrainTest(WorldScene, game, cameraEntity, gameStateManager, eventBus, inputProvider, logger);
+                break;
+            case "generated":
+                var worldDbPath = Path.Combine(AppContext.BaseDirectory, "world.db");
+                LoadGeneratedWorld(worldDbPath, WorldScene, game, cameraEntity, gameStateManager, eventBus, inputProvider, logger);
                 break;
             default:
                 var customMapDir = Path.Combine(AppContext.BaseDirectory, "Maps", scenarioId);
@@ -993,6 +998,71 @@ public sealed class ScenarioLoader
         gameOverEntity.Add(gameOverOverlay);
         AddEntity(gameOverEntity, rootScene);
         GameOverOverlay = gameOverOverlay;
+    }
+
+    // ---- generated: World from procedural generation pipeline ----
+
+    private void LoadGeneratedWorld(string worldDbPath, Scene rootScene, Game game, Entity cameraEntity,
+        GameStateManager gameStateManager, IEventBus eventBus, IInputProvider inputProvider, ILogger logger)
+    {
+        var (playerEntity, playerMovement, playerStats, playerLevel, playerHealth,
+            playerCombat, playerInventory, playerEquipment, inventoryProcessor)
+            = CreatePlayer(rootScene, game, cameraEntity, gameStateManager, eventBus);
+
+        // Load chunks from world.db
+        using var store = new WorldMapStore(worldDbPath);
+        var provider = new MapDataProvider(store);
+
+        // Load the starting area (chunks around origin)
+        var startChunk = provider.GetChunkData(1, 0, 0);
+        var mapData = startChunk?.Tiles ?? new TileMapData(ChunkData.Size, ChunkData.Size);
+
+        var tileMapEntity = new Entity("TileMap");
+        var tileMapRenderer = new HeightmapTerrainScript { MapData = mapData };
+        tileMapEntity.Add(tileMapRenderer);
+        AddEntity(tileMapEntity, rootScene);
+
+        playerMovement.MapData = mapData;
+        playerMovement.TileSize = tileMapRenderer.TileSize;
+
+        // Notification feed
+        var notificationService = new NotificationService();
+        eventBus.Subscribe<NotificationEvent>(e => notificationService.Add(e.Message, e.DurationSeconds));
+        NotificationService = notificationService;
+
+        var notificationEntity = new Entity("NotificationFeed");
+        notificationEntity.Add(new NotificationFeedScript { Notifications = notificationService, Font = Font });
+        AddEntity(notificationEntity, rootScene);
+
+        // HUD
+        var hudEntity = new Entity("HUD");
+        hudEntity.Add(new HudSyncScript
+        {
+            Health = playerHealth, Combat = playerCombat,
+            Level = playerLevel, Inventory = playerInventory,
+            StateManager = gameStateManager,
+            Font = Font,
+        });
+        AddEntity(hudEntity, rootScene);
+
+        // Inventory overlay
+        var inventoryOverlayEntity = new Entity("InventoryOverlay");
+        inventoryOverlayEntity.Add(new InventoryOverlayScript
+        {
+            Inventory = playerInventory, StateManager = gameStateManager,
+            InputProvider = inputProvider,
+            Font = Font,
+        });
+        AddEntity(inventoryOverlayEntity, rootScene);
+
+        // Game over overlay
+        var gameOverEntity = new Entity("GameOverOverlay");
+        var gameOverOverlay = new GameOverOverlayScript { StateManager = gameStateManager, Font = Font };
+        gameOverEntity.Add(gameOverOverlay);
+        AddEntity(gameOverEntity, rootScene);
+        GameOverOverlay = gameOverOverlay;
+
+        logger.LogInformation("Generated world loaded from {Path}", worldDbPath);
     }
 
     private void SpawnNpcs(Scene rootScene, Game game,

@@ -1,0 +1,80 @@
+// FrozenShader.sdsl — Stride SDSL frozen/ice surface shader
+// Static ice texture with crack normal map. No animation.
+
+shader FrozenShader : ShadingBase, Transformation, PositionStream4, NormalStream, Texturing
+{
+    // Ice base colour (pale blue-white)
+    float4 IceColor = float4(0.70, 0.85, 0.95, 0.5);
+
+    // Crack colour (darker blue in crevices)
+    float4 CrackTint = float4(0.30, 0.50, 0.70, 1.0);
+
+    // Crack pattern scale
+    float CrackScale = 6.0;
+
+    override stage void VSMain()
+    {
+        base.VSMain();
+    }
+
+    float Hash(float2 p)
+    {
+        float3 p3 = frac(float3(p.x, p.y, p.x) * 0.1031);
+        p3 += dot(p3, p3.yzx + 33.33);
+        return frac((p3.x + p3.y) * p3.z);
+    }
+
+    // Voronoi edges for crack pattern
+    float CrackPattern(float2 p)
+    {
+        float2 i = floor(p);
+        float2 f = frac(p);
+        float minDist = 1.0;
+        float secondDist = 1.0;
+
+        for (int y = -1; y <= 1; y++)
+        {
+            for (int x = -1; x <= 1; x++)
+            {
+                float2 neighbor = float2(x, y);
+                float2 point = float2(Hash(i + neighbor), Hash(i + neighbor + 13.0));
+                float dist = length(neighbor + point - f);
+                if (dist < minDist)
+                {
+                    secondDist = minDist;
+                    minDist = dist;
+                }
+                else if (dist < secondDist)
+                {
+                    secondDist = dist;
+                }
+            }
+        }
+
+        // Edge distance = difference between closest and second-closest cell
+        return secondDist - minDist;
+    }
+
+    override stage void PSMain()
+    {
+        float2 uv = streams.TexCoord * CrackScale;
+
+        // Crack pattern (static — no animation)
+        float crack = CrackPattern(uv);
+        float crackMask = 1.0 - smoothstep(0.0, 0.08, crack);
+
+        // Ice surface: blend base ice with crack tint
+        float3 color = lerp(IceColor.rgb, CrackTint.rgb, crackMask * 0.6);
+
+        // Subtle specular-like highlight from normal variation
+        float highlight = smoothstep(0.3, 0.5, crack);
+        color += highlight * 0.1;
+
+        // Crack normal perturbation for lighting
+        float dx = CrackPattern(uv + float2(0.01, 0)) - CrackPattern(uv - float2(0.01, 0));
+        float dz = CrackPattern(uv + float2(0, 0.01)) - CrackPattern(uv - float2(0, 0.01));
+        streams.normalWS = normalize(float3(-dx * 5.0, 1.0, -dz * 5.0));
+
+        streams.ColorTarget = float4(color, IceColor.a);
+    }
+};

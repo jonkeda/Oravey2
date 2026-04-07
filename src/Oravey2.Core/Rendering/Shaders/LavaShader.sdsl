@@ -1,0 +1,116 @@
+// LavaShader.sdsl — Stride SDSL lava surface shader
+// Crust pattern with Perlin noise: dark cooling plates with bright orange cracks.
+// Emissive in cracks, dim on crust surface.
+
+shader LavaShader : ShadingBase, Transformation, PositionStream4, NormalStream, Texturing, Global
+{
+    // Crust colour (dark cooled rock)
+    float4 CrustColor = float4(0.15, 0.05, 0.02, 1.0);
+
+    // Crack/glow colour (bright orange-red)
+    float4 CrackColor = float4(0.95, 0.30, 0.05, 1.0);
+
+    // Emissive intensity in cracks
+    float EmissiveIntensity = 3.0;
+
+    // Animation speed for crack movement
+    float FlowSpeed = 0.05;
+
+    // Noise scale
+    float NoiseScale = 4.0;
+
+    override stage void VSMain()
+    {
+        base.VSMain();
+    }
+
+    // Simple hash-based noise for crust pattern
+    float Hash(float2 p)
+    {
+        float3 p3 = frac(float3(p.x, p.y, p.x) * 0.1031);
+        p3 += dot(p3, p3.yzx + 33.33);
+        return frac((p3.x + p3.y) * p3.z);
+    }
+
+    // Value noise with smooth interpolation
+    float ValueNoise(float2 p)
+    {
+        float2 i = floor(p);
+        float2 f = frac(p);
+        f = f * f * (3.0 - 2.0 * f); // smoothstep
+
+        float a = Hash(i);
+        float b = Hash(i + float2(1.0, 0.0));
+        float c = Hash(i + float2(0.0, 1.0));
+        float d = Hash(i + float2(1.0, 1.0));
+
+        return lerp(lerp(a, b, f.x), lerp(c, d, f.x), f.y);
+    }
+
+    // Fractal Brownian Motion (2 octaves for Perlin-like noise)
+    float FBM(float2 p)
+    {
+        float value = 0.0;
+        float amplitude = 0.5;
+        for (int i = 0; i < 3; i++)
+        {
+            value += amplitude * ValueNoise(p);
+            p *= 2.0;
+            amplitude *= 0.5;
+        }
+        return value;
+    }
+
+    // Voronoi-like cell distance for crust plates
+    float CrustCells(float2 p)
+    {
+        float2 i = floor(p);
+        float2 f = frac(p);
+        float minDist = 1.0;
+
+        for (int y = -1; y <= 1; y++)
+        {
+            for (int x = -1; x <= 1; x++)
+            {
+                float2 neighbor = float2(x, y);
+                float2 point = float2(Hash(i + neighbor), Hash(i + neighbor + 17.0));
+                float dist = length(neighbor + point - f);
+                minDist = min(minDist, dist);
+            }
+        }
+
+        return minDist;
+    }
+
+    override stage void PSMain()
+    {
+        float2 uv = streams.TexCoord;
+        float t = Global.Time * FlowSpeed;
+
+        // Animated UV for slow flow
+        float2 flowUV = uv * NoiseScale + float2(t * 0.3, t * 0.2);
+
+        // Crust cell pattern — distance to cell edge = crack width
+        float cellDist = CrustCells(flowUV);
+
+        // Crack mask: thin lines where cell distance is small
+        float crackMask = 1.0 - smoothstep(0.0, 0.15, cellDist);
+
+        // Add FBM noise to break up regularity
+        float noise = FBM(flowUV * 2.0 + t);
+        crackMask = saturate(crackMask + noise * 0.2);
+
+        // Pulse the crack brightness slightly
+        float pulse = 0.85 + 0.15 * sin(t * 10.0 + uv.x * 5.0);
+        crackMask *= pulse;
+
+        // Blend crust and crack colours
+        float3 color = lerp(CrustColor.rgb, CrackColor.rgb, crackMask);
+
+        // Emissive: cracks glow, crust is dim
+        float3 emissive = CrackColor.rgb * crackMask * EmissiveIntensity;
+
+        // Output: diffuse + emissive glow
+        streams.ColorTarget = float4(color + emissive, 1.0);
+    }
+};

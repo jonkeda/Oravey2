@@ -1,7 +1,9 @@
 using Oravey2.Core.Rendering;
 using Oravey2.Core.World.LinearFeatures;
+using Oravey2.Core.World.Liquids;
 using Oravey2.Core.World.Rendering;
 using Oravey2.Core.World.Terrain;
+using Oravey2.Core.World.Vegetation;
 using Stride.Core.Mathematics;
 using Stride.Engine;
 using Stride.Extensions;
@@ -228,10 +230,167 @@ public class HeightmapTerrainScript : SyncScript
                     Entity.AddChild(ribbonEntity);
                     _terrainEntities.Add(ribbonEntity);
                 }
+
+                // Render liquid surfaces and waterfalls for this chunk
+                if (terrainMesh.Liquids != null)
+                {
+                    foreach (var liquidMesh in terrainMesh.Liquids.SurfaceMeshes)
+                        RenderLiquidMesh(liquidMesh, chunkPos, $"Liquid_{cx}_{cy}_{liquidMesh.Type}");
+
+                    foreach (var cascade in terrainMesh.Liquids.WaterfallMeshes)
+                        RenderLiquidMesh(cascade, chunkPos, $"Waterfall_{cx}_{cy}_{cascade.Type}");
+                }
+
+                // Render trees for forested tiles in this chunk
+                var treeSpawns = TreePlacementHelper.GenerateForChunk(chunkData.Tiles);
+                if (treeSpawns.Count > 0 && terrainMesh.Heights.GetLength(0) > 0)
+                {
+                    var treeMeshes = TreeRenderer.BuildMeshes(
+                        treeSpawns, terrainMesh.Heights,
+                        terrainMesh.VertsPerSide, terrainMesh.ChunkWorldSize);
+
+                    RenderTreeEntity(treeMeshes, chunkPos, cx, cy);
+
+                    // Billboard LOD: built per-frame based on camera distance (Step 11 zoom levels).
+                    // Not rendered statically — BuildBillboards() is available for the LOD system.
+                }
             }
         }
 
         _initialized = true;
+    }
+
+    private void RenderLiquidMesh(LiquidMesh liquidMesh, Vector3 chunkPos, string entityName)
+    {
+        if (liquidMesh.Vertices.Length == 0) return;
+
+        var verts = ConvertVertices(liquidMesh.Vertices);
+        var meshData = new GeometricMeshData<VertexPositionNormalTexture>(
+            verts, liquidMesh.Indices, true);
+        var primitive = new GeometricPrimitive(GraphicsDevice, meshData);
+        _primitives.Add(primitive);
+        var draw = primitive.ToMeshDraw();
+
+        var lMin = new Vector3(float.MaxValue);
+        var lMax = new Vector3(float.MinValue);
+        foreach (var v in verts)
+        {
+            if (v.Position.X < lMin.X) lMin.X = v.Position.X;
+            if (v.Position.Y < lMin.Y) lMin.Y = v.Position.Y;
+            if (v.Position.Z < lMin.Z) lMin.Z = v.Position.Z;
+            if (v.Position.X > lMax.X) lMax.X = v.Position.X;
+            if (v.Position.Y > lMax.Y) lMax.Y = v.Position.Y;
+            if (v.Position.Z > lMax.Z) lMax.Z = v.Position.Z;
+        }
+        var bounds = new BoundingBox(lMin, lMax);
+        bounds.Minimum.Y -= 0.5f;
+        bounds.Maximum.Y += 0.5f;
+        var sphere = BoundingSphere.FromBox(bounds);
+
+        var props = LiquidProperties.Get(liquidMesh.Type);
+        var color = new Color4(props.ColorR, props.ColorG, props.ColorB, props.Opacity);
+
+        var entity = new Entity(entityName);
+        var model = new Model();
+        model.Meshes.Add(new Mesh
+        {
+            Draw = draw,
+            BoundingBox = bounds,
+            BoundingSphere = sphere,
+        });
+        model.Materials.Add(liquidMesh.Emissive
+            ? CreateEmissiveMaterial(color)
+            : CreateTerrainMaterial(color));
+        var modelComp = new ModelComponent(model) { IsShadowCaster = false };
+        entity.Add(modelComp);
+        entity.Transform.Position = chunkPos;
+
+        Entity.AddChild(entity);
+        _terrainEntities.Add(entity);
+    }
+
+    /// <summary>
+    /// Renders trunk + canopy as a single entity with two sub-meshes so Stride
+    /// treats the entire tree as one shadow-casting unit. This avoids shadow bias
+    /// artifacts that cause the trunk shadow to detach from the canopy shadow.
+    /// </summary>
+    private void RenderTreeEntity(TreeChunkMeshData treeMeshes, Vector3 chunkPos, int cx, int cy)
+    {
+        bool hasTrunks = treeMeshes.Trunks.Vertices.Length > 0;
+        bool hasCanopies = treeMeshes.Canopies.Vertices.Length > 0;
+        if (!hasTrunks && !hasCanopies) return;
+
+        var treeEntity = new Entity($"Trees_{cx}_{cy}");
+        var model = new Model();
+
+        var boundsMin = new Vector3(float.MaxValue);
+        var boundsMax = new Vector3(float.MinValue);
+
+        if (hasTrunks)
+        {
+            var (meshDraw, bb) = BuildMeshDraw(treeMeshes.Trunks);
+            model.Meshes.Add(new Mesh
+            {
+                Draw = meshDraw,
+                MaterialIndex = 0,
+                BoundingBox = bb,
+                BoundingSphere = BoundingSphere.FromBox(bb),
+            });
+            boundsMin = Vector3.Min(boundsMin, bb.Minimum);
+            boundsMax = Vector3.Max(boundsMax, bb.Maximum);
+        }
+
+        // Trunk material (index 0)
+        model.Materials.Add(CreateTerrainMaterial(new Color4(0.40f, 0.28f, 0.16f, 1f)));
+
+        if (hasCanopies)
+        {
+            var (meshDraw, bb) = BuildMeshDraw(treeMeshes.Canopies);
+            model.Meshes.Add(new Mesh
+            {
+                Draw = meshDraw,
+                MaterialIndex = 1,
+                BoundingBox = bb,
+                BoundingSphere = BoundingSphere.FromBox(bb),
+            });
+            boundsMin = Vector3.Min(boundsMin, bb.Minimum);
+            boundsMax = Vector3.Max(boundsMax, bb.Maximum);
+        }
+
+        // Canopy material (index 1)
+        model.Materials.Add(CreateTerrainMaterial(new Color4(0.25f, 0.48f, 0.18f, 1f)));
+
+        treeEntity.Add(new ModelComponent(model));
+        treeEntity.Transform.Position = chunkPos;
+
+        Entity.AddChild(treeEntity);
+        _terrainEntities.Add(treeEntity);
+    }
+
+    private (MeshDraw draw, BoundingBox bounds) BuildMeshDraw(TreeMeshData treeMesh)
+    {
+        var verts = ConvertVertices(treeMesh.Vertices);
+        var meshData = new GeometricMeshData<VertexPositionNormalTexture>(
+            verts, treeMesh.Indices, true);
+        var primitive = new GeometricPrimitive(GraphicsDevice, meshData);
+        _primitives.Add(primitive);
+        var draw = primitive.ToMeshDraw();
+
+        var tMin = new Vector3(float.MaxValue);
+        var tMax = new Vector3(float.MinValue);
+        foreach (var v in verts)
+        {
+            if (v.Position.X < tMin.X) tMin.X = v.Position.X;
+            if (v.Position.Y < tMin.Y) tMin.Y = v.Position.Y;
+            if (v.Position.Z < tMin.Z) tMin.Z = v.Position.Z;
+            if (v.Position.X > tMax.X) tMax.X = v.Position.X;
+            if (v.Position.Y > tMax.Y) tMax.Y = v.Position.Y;
+            if (v.Position.Z > tMax.Z) tMax.Z = v.Position.Z;
+        }
+        var bounds = new BoundingBox(tMin, tMax);
+        bounds.Minimum.Y -= 0.5f;
+        bounds.Maximum.Y += 3.0f;
+        return (draw, bounds);
     }
 
     private static VertexPositionNormalTexture[] ConvertVertices(VertexData[] source)
@@ -257,6 +416,27 @@ public class HeightmapTerrainScript : SyncScript
                 DiffuseModel = new MaterialDiffuseLambertModelFeature(),
                 Diffuse = new MaterialDiffuseMapFeature(
                     new ComputeColor { Key = MaterialKeys.DiffuseValue })
+            }
+        };
+        var material = Material.New(GraphicsDevice, materialDesc);
+        material.Passes[0].Parameters.Set(MaterialKeys.DiffuseValue, color);
+        return material;
+    }
+
+    private Material CreateEmissiveMaterial(Color4 color)
+    {
+        var diffuseColor = new ComputeColor { Key = MaterialKeys.DiffuseValue };
+        var emissiveColor = new ComputeColor(new Stride.Core.Mathematics.Color4(color.R, color.G, color.B, 1f));
+        var materialDesc = new MaterialDescriptor
+        {
+            Attributes =
+            {
+                DiffuseModel = new MaterialDiffuseLambertModelFeature(),
+                Diffuse = new MaterialDiffuseMapFeature(diffuseColor),
+                Emissive = new MaterialEmissiveMapFeature(emissiveColor)
+                {
+                    Intensity = new ComputeFloat(1.5f),
+                }
             }
         };
         var material = Material.New(GraphicsDevice, materialDesc);

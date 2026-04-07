@@ -76,3 +76,6 @@ Desktop.ini
 *.userosscache
 *.sln.docstates
 .my
+
+# Real-world data files (SRTM, OSM)
+data/

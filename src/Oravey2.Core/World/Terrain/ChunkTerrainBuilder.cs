@@ -1,4 +1,5 @@
 using Oravey2.Core.World.LinearFeatures;
+using Oravey2.Core.World.Liquids;
 using Oravey2.Core.World.Rendering;
 
 namespace Oravey2.Core.World.Terrain;
@@ -60,7 +61,10 @@ public static class ChunkTerrainBuilder
             overlay = TileOverlayBuilder.Build(chunk, heights, vertsPerSide, chunkWorldSize, neighbors);
         }
 
-        return new ChunkTerrainMesh(vertices, indices, splat0, splat1, chunk.TerrainModifiers, ribbonMeshes, overlay);
+        // Phase 8: build liquid surface and waterfall meshes
+        var liquids = LiquidRenderer.Build(chunk);
+
+        return new ChunkTerrainMesh(vertices, indices, splat0, splat1, chunk.TerrainModifiers, ribbonMeshes, overlay, liquids, heights, vertsPerSide, chunkWorldSize);
     }
 
     private static List<RibbonMesh> BuildLinearFeatures(

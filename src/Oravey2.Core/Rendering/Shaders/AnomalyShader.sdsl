@@ -1,0 +1,78 @@
+// AnomalyShader.sdsl — Stride SDSL anomaly liquid shader
+// Spiral UV distortion with pulsing purple emissive.
+
+shader AnomalyShader : ShadingBase, Transformation, PositionStream4, NormalStream, Texturing, Global
+{
+    // Base anomaly colour (deep purple)
+    float4 AnomalyColor = float4(0.60, 0.10, 0.80, 0.4);
+
+    // Pulse colour (bright purple-white)
+    float4 PulseColor = float4(0.80, 0.40, 1.0, 1.0);
+
+    // Emissive intensity
+    float EmissiveIntensity = 2.5;
+
+    // Spiral speed
+    float SpiralSpeed = 1.0;
+
+    // Distortion strength
+    float DistortionStrength = 0.3;
+
+    override stage void VSMain()
+    {
+        base.VSMain();
+    }
+
+    float Hash(float2 p)
+    {
+        float3 p3 = frac(float3(p.x, p.y, p.x) * 0.1031);
+        p3 += dot(p3, p3.yzx + 33.33);
+        return frac((p3.x + p3.y) * p3.z);
+    }
+
+    override stage void PSMain()
+    {
+        float2 uv = streams.TexCoord;
+        float t = Global.Time;
+
+        // Centre UV for spiral
+        float2 centred = uv - 0.5;
+        float radius = length(centred);
+        float angle = atan2(centred.y, centred.x);
+
+        // Spiral distortion: rotate UV based on radius and time
+        float spiralAngle = angle + radius * 8.0 - t * SpiralSpeed;
+        float2 spiralUV = float2(cos(spiralAngle), sin(spiralAngle)) * radius + 0.5;
+
+        // Distort original UV with spiral
+        float2 distortedUV = lerp(uv, spiralUV, DistortionStrength);
+
+        // Concentric ring pattern
+        float rings = sin(radius * 30.0 - t * 3.0) * 0.5 + 0.5;
+        rings = smoothstep(0.3, 0.7, rings);
+
+        // Pulsing emissive (irregular, otherworldly)
+        float pulse1 = sin(t * 2.0) * 0.5 + 0.5;
+        float pulse2 = sin(t * 3.7 + 1.0) * 0.5 + 0.5;
+        float pulse = pulse1 * 0.6 + pulse2 * 0.4;
+
+        // Noise sparkle
+        float sparkle = Hash(distortedUV * 50.0 + t);
+        sparkle = step(0.95, sparkle);
+
+        // Colour blend
+        float3 color = AnomalyColor.rgb;
+        color += rings * PulseColor.rgb * 0.3;
+        color += sparkle * PulseColor.rgb * 0.5;
+
+        // Emissive
+        float3 emissive = PulseColor.rgb * pulse * EmissiveIntensity * 0.4;
+        emissive += rings * PulseColor.rgb * EmissiveIntensity * 0.2;
+
+        // Fade alpha at edges for ethereal look
+        float edgeFade = smoothstep(0.0, 0.15, radius) * smoothstep(0.7, 0.5, radius);
+        float alpha = AnomalyColor.a * (0.6 + edgeFade * 0.4);
+
+        streams.ColorTarget = float4(color + emissive, alpha);
+    }
+};

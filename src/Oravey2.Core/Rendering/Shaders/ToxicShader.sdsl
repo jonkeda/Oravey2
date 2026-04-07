@@ -1,0 +1,99 @@
+// ToxicShader.sdsl — Stride SDSL toxic liquid shader
+// Voronoi noise bubbles expanding and popping.
+// Green emissive pulse (~3s period).
+
+shader ToxicShader : ShadingBase, Transformation, PositionStream4, NormalStream, Texturing, Global
+{
+    // Base toxic green colour
+    float4 ToxicColor = float4(0.20, 0.75, 0.10, 0.8);
+
+    // Emissive glow colour
+    float4 GlowColor = float4(0.10, 0.90, 0.05, 1.0);
+
+    // Pulse period in seconds
+    float PulsePeriod = 3.0;
+
+    // Emissive intensity
+    float EmissiveIntensity = 2.0;
+
+    // Bubble scale
+    float BubbleScale = 8.0;
+
+    override stage void VSMain()
+    {
+        base.VSMain();
+    }
+
+    float Hash(float2 p)
+    {
+        float3 p3 = frac(float3(p.x, p.y, p.x) * 0.1031);
+        p3 += dot(p3, p3.yzx + 33.33);
+        return frac((p3.x + p3.y) * p3.z);
+    }
+
+    // Voronoi distance for bubble pattern
+    float Voronoi(float2 p, out float2 nearestCell)
+    {
+        float2 i = floor(p);
+        float2 f = frac(p);
+        float minDist = 1.0;
+        nearestCell = float2(0, 0);
+
+        for (int y = -1; y <= 1; y++)
+        {
+            for (int x = -1; x <= 1; x++)
+            {
+                float2 neighbor = float2(x, y);
+                float2 point = float2(Hash(i + neighbor), Hash(i + neighbor + 31.0));
+                float dist = length(neighbor + point - f);
+                if (dist < minDist)
+                {
+                    minDist = dist;
+                    nearestCell = i + neighbor;
+                }
+            }
+        }
+
+        return minDist;
+    }
+
+    override stage void PSMain()
+    {
+        float2 uv = streams.TexCoord;
+        float t = Global.Time;
+
+        // Animated UV for bubble movement
+        float2 bubbleUV = uv * BubbleScale + float2(0, t * 0.5);
+
+        // Voronoi cells = bubbles
+        float2 cell;
+        float dist = Voronoi(bubbleUV, cell);
+
+        // Bubble edge highlight
+        float bubbleEdge = smoothstep(0.3, 0.35, dist) - smoothstep(0.35, 0.45, dist);
+
+        // Per-cell animation: each bubble has its own phase
+        float cellPhase = Hash(cell) * 6.283;
+        float bubbleAge = frac(t * 0.5 + cellPhase);
+
+        // Bubble expanding: grows then pops
+        float bubbleRadius = bubbleAge * 0.4;
+        float bubble = smoothstep(bubbleRadius, bubbleRadius + 0.05, dist);
+        bubble = 1.0 - bubble;
+        bubble *= step(bubbleAge, 0.8); // pop at 80% of cycle
+
+        // Green emissive pulse (sinusoidal, ~3s period)
+        float pulse = 0.6 + 0.4 * sin(t * 6.283 / PulsePeriod);
+
+        // Combine
+        float3 color = ToxicColor.rgb;
+        color += bubbleEdge * 0.15;
+        color += bubble * GlowColor.rgb * 0.3;
+
+        // Emissive glow
+        float3 emissive = GlowColor.rgb * pulse * EmissiveIntensity * 0.3;
+        emissive += bubble * GlowColor.rgb * EmissiveIntensity * 0.5;
+
+        streams.ColorTarget = float4(color + emissive, ToxicColor.a);
+    }
+};

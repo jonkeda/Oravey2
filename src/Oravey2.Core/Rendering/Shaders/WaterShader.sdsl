@@ -1,0 +1,94 @@
+// WaterShader.sdsl — Stride SDSL water surface shader
+// Animated UV scroll with wave normal perturbation and depth-based alpha.
+// Quality levels:
+//   Low:    flat tinted plane with animated UV scroll
+//   Medium: normal-mapped waves (2-octave sine), depth-based alpha
+//   High:   screen-space reflection hint, foam at shore, caustics
+
+shader WaterShader : ShadingBase, Transformation, PositionStream4, NormalStream, Texturing, Global
+{
+    // Base water colour (tinted blue)
+    float4 WaterColor = float4(0.15, 0.40, 0.70, 0.6);
+
+    // Shore foam colour
+    float4 FoamColor = float4(0.90, 0.95, 1.0, 0.8);
+
+    // Animation
+    float ScrollSpeed = 0.3;
+    float WaveAmplitude = 0.08;
+    float WaveFrequency = 3.0;
+
+    // Quality: 0 = Low, 1 = Medium, 2 = High
+    int QualityLevel = 1;
+
+    // Shore mask: V coordinate of TexCoord encodes shore proximity (0 = interior, 1 = shore)
+    // (Set by the mesh builder via UV.y)
+
+    override stage void VSMain()
+    {
+        base.VSMain();
+    }
+
+    float2 AnimatedUV(float2 uv)
+    {
+        float t = Global.Time;
+        return uv + float2(t * ScrollSpeed, t * ScrollSpeed * 0.7);
+    }
+
+    float WaveHeight(float2 uv)
+    {
+        float t = Global.Time;
+        // Two-octave sine wave
+        float wave1 = sin(uv.x * WaveFrequency + t * 2.0) * WaveAmplitude;
+        float wave2 = sin(uv.y * WaveFrequency * 1.3 + t * 1.5) * WaveAmplitude * 0.5;
+        return wave1 + wave2;
+    }
+
+    float3 WaveNormal(float2 uv)
+    {
+        float t = Global.Time;
+        float dx = cos(uv.x * WaveFrequency + t * 2.0) * WaveFrequency * WaveAmplitude;
+        float dz = cos(uv.y * WaveFrequency * 1.3 + t * 1.5) * WaveFrequency * 1.3 * WaveAmplitude * 0.5;
+        return normalize(float3(-dx, 1.0, -dz));
+    }
+
+    override stage void PSMain()
+    {
+        float2 baseUV = streams.TexCoord;
+        float2 animUV = AnimatedUV(baseUV);
+        float shore = baseUV.y; // V channel = shore proximity (from mesh builder)
+
+        float3 color = WaterColor.rgb;
+        float alpha = WaterColor.a;
+
+        if (QualityLevel >= 1) // Medium+
+        {
+            // Perturb normal for wave effect
+            float3 waveN = WaveNormal(animUV);
+            streams.normalWS = waveN;
+
+            // Depth-based alpha: deeper = more opaque
+            alpha = lerp(0.3, WaterColor.a, 1.0 - shore * 0.5);
+
+            // Subtle UV distortion on color
+            float2 distort = waveN.xz * 0.02;
+            color = WaterColor.rgb + distort.x * 0.1;
+        }
+
+        if (QualityLevel >= 2) // High
+        {
+            // Foam at shore edges
+            float foam = smoothstep(0.6, 1.0, shore);
+            float foamPattern = frac(sin(dot(animUV * 20.0, float2(12.9898, 78.233))) * 43758.5453);
+            foam *= step(0.5, foamPattern);
+            color = lerp(color, FoamColor.rgb, foam * 0.7);
+
+            // Caustics: animated bright spots
+            float caustic = abs(sin(animUV.x * 15.0 + Global.Time) * sin(animUV.y * 15.0 + Global.Time * 0.8));
+            caustic = smoothstep(0.85, 1.0, caustic);
+            color += caustic * 0.15;
+        }
+
+        streams.ColorTarget = float4(color, alpha);
+    }
+};

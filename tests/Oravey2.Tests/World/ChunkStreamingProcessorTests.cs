@@ -5,11 +5,12 @@ namespace Oravey2.Tests.World;
 
 public class ChunkStreamingProcessorTests
 {
-    private static (ChunkStreamingProcessor proc, EventBus bus) Setup(int width = 8, int height = 8)
+    private static (ChunkStreamingProcessor proc, EventBus bus) Setup(
+        int width = 8, int height = 8, int gridRadius = 1)
     {
         var world = new WorldMapData(width, height);
         var bus = new EventBus();
-        return (new ChunkStreamingProcessor(world, bus), bus);
+        return (new ChunkStreamingProcessor(world, bus, gridRadius: gridRadius), bus);
     }
 
     [Fact]
@@ -132,5 +133,58 @@ public class ChunkStreamingProcessorTests
         var (proc, _) = Setup(2, 2);
         var (loaded, _) = proc.Update(0, 0);
         Assert.Equal(4, loaded.Count); // all 4 chunks in 2×2 world
+    }
+
+    // --- Step 10 tests ---
+
+    [Fact]
+    public void ActiveGrid_5x5_Has25Chunks()
+    {
+        // 10×10 world with default 5×5 grid (radius 2)
+        var (proc, _) = Setup(width: 10, height: 10, gridRadius: 2);
+        var (loaded, _) = proc.Update(5, 5);
+        Assert.Equal(25, loaded.Count);
+    }
+
+    [Fact]
+    public void PlayerMoves_ChunksEnterAndExit()
+    {
+        var (proc, _) = Setup(width: 12, height: 12, gridRadius: 2);
+        proc.Update(5, 5); // Initial 5×5 load
+
+        var (loaded, unloaded) = proc.Update(6, 5); // Move right 1
+        // Should load column at dx=+2 (5 chunks), unload column at old dx=-2 (5 chunks)
+        Assert.Equal(5, loaded.Count);
+        Assert.Equal(5, unloaded.Count);
+        Assert.All(loaded, c => Assert.Equal(8, c.cx));   // new right column
+        Assert.All(unloaded, c => Assert.Equal(3, c.cx)); // old left column
+    }
+
+    [Fact]
+    public void MissingChunk_TriggersGeneration()
+    {
+        var world = new WorldMapData(10, 10);
+        var bus = new EventBus();
+        var generatedChunks = new List<(int, int)>();
+        var generator = new TestChunkGenerator(generatedChunks);
+
+        var proc = new ChunkStreamingProcessor(world, bus, generator: generator, gridRadius: 1);
+        proc.Update(5, 5);
+
+        // All 9 chunks should have been generated (none in WorldMapData)
+        Assert.Equal(9, generatedChunks.Count);
+    }
+
+    private sealed class TestChunkGenerator : IChunkGenerator
+    {
+        private readonly List<(int, int)> _generated;
+
+        public TestChunkGenerator(List<(int, int)> generated) => _generated = generated;
+
+        public ChunkData Generate(int chunkX, int chunkY)
+        {
+            _generated.Add((chunkX, chunkY));
+            return ChunkData.CreateDefault(chunkX, chunkY);
+        }
     }
 }
