@@ -9,7 +9,12 @@ public sealed record ChunkJson(
     int[][] Structure,
     int[][] Flags,
     int[][] Variant,
-    EntitySpawnJson[]? Entities
+    EntitySpawnJson[]? Entities,
+    int[][]? Liquid = null,
+    int[][]? HalfCover = null,
+    int[][]? FullCover = null,
+    int? Mode = null,
+    int? Layer = null
 );
 
 public sealed record EntitySpawnJson(

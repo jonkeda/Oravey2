@@ -8,6 +8,10 @@ public sealed class ChunkData
     public int ChunkY { get; }
     public TileMapData Tiles { get; }
     public IReadOnlyList<EntitySpawnInfo> Entities { get; }
+    public ChunkMode Mode { get; }
+    public MapLayer Layer { get; }
+    public IReadOnlyList<TerrainModifier> TerrainModifiers { get; }
+    public IReadOnlyList<LinearFeature> LinearFeatures { get; }
 
     /// <summary>
     /// Tracks runtime modifications: destroyed objects, looted containers, dead persistent NPCs.
@@ -16,12 +20,20 @@ public sealed class ChunkData
     public Dictionary<string, bool> ModifiedState { get; } = new();
 
     public ChunkData(int chunkX, int chunkY, TileMapData? tiles = null,
-        IReadOnlyList<EntitySpawnInfo>? entities = null)
+        IReadOnlyList<EntitySpawnInfo>? entities = null,
+        ChunkMode mode = ChunkMode.Heightmap,
+        MapLayer layer = MapLayer.Surface,
+        IReadOnlyList<TerrainModifier>? terrainModifiers = null,
+        IReadOnlyList<LinearFeature>? linearFeatures = null)
     {
         ChunkX = chunkX;
         ChunkY = chunkY;
         Tiles = tiles ?? new TileMapData(Size, Size);
         Entities = entities ?? Array.Empty<EntitySpawnInfo>();
+        Mode = mode;
+        Layer = layer;
+        TerrainModifiers = terrainModifiers ?? Array.Empty<TerrainModifier>();
+        LinearFeatures = linearFeatures ?? Array.Empty<LinearFeature>();
     }
 
     /// <summary>

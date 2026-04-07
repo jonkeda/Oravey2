@@ -1,5 +1,4 @@
 using System.Windows.Input;
-using Oravey2.Core.World.Blueprint;
 using Oravey2.MapGen.Models;
 using Oravey2.MapGen.Services;
 
@@ -219,46 +218,7 @@ public sealed class GeneratorViewModel : BaseViewModel
 
     private void CompileBlueprint()
     {
-        if (LastGeneratedJson is null) return;
-
-        try
-        {
-            var blueprint = BlueprintLoader.LoadFromString(LastGeneratedJson);
-
-            var safeName = string.IsNullOrWhiteSpace(LocationName)
-                ? "blueprint"
-                : string.Join("_", LocationName.Split(Path.GetInvalidFileNameChars()));
-
-            var packPath = Preferences.Get("ContentPackPath", string.Empty);
-            string outputDir;
-
-            if (!string.IsNullOrWhiteSpace(packPath) && Directory.Exists(packPath))
-            {
-                outputDir = Path.Combine(packPath, "maps", safeName);
-            }
-            else
-            {
-                var exportPath = Preferences.Get("ExportPath",
-                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Oravey2", "Blueprints"));
-                outputDir = Path.Combine(exportPath, "compiled", safeName);
-            }
-
-            var result = MapCompiler.Compile(blueprint, outputDir);
-
-            if (result.Success)
-            {
-                LastCompileOutputDir = outputDir;
-                StatusMessage = $"Compiled {result.ChunksGenerated} chunks, {result.BuildingsPlaced} buildings, {result.PropsPlaced} props → {outputDir}";
-            }
-            else
-            {
-                StatusMessage = $"Compile failed: {string.Join("; ", result.Warnings.Select(w => w.Message))}";
-            }
-        }
-        catch (Exception ex)
-        {
-            StatusMessage = $"Compile error: {ex.Message}";
-        }
+        StatusMessage = "Blueprint compilation has been removed. Procedural generation coming soon.";
     }
 
     private void OnProgress(GenerationProgress progress)

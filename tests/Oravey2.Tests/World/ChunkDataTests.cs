@@ -67,4 +67,40 @@ public class ChunkDataTests
             for (int y = 0; y < ChunkData.Size; y++)
                 Assert.Equal(TileType.Ground, chunk.Tiles.GetTile(x, y));
     }
+
+    [Fact]
+    public void ChunkData_DefaultMode_IsHeightmap()
+    {
+        var chunk = new ChunkData(0, 0);
+        Assert.Equal(ChunkMode.Heightmap, chunk.Mode);
+    }
+
+    [Fact]
+    public void ChunkData_DefaultLayer_IsSurface()
+    {
+        var chunk = new ChunkData(0, 0);
+        Assert.Equal(MapLayer.Surface, chunk.Layer);
+    }
+
+    [Fact]
+    public void ChunkData_DefaultTerrainModifiers_Empty()
+    {
+        var chunk = new ChunkData(0, 0);
+        Assert.Empty(chunk.TerrainModifiers);
+    }
+
+    [Fact]
+    public void ChunkData_DefaultLinearFeatures_Empty()
+    {
+        var chunk = new ChunkData(0, 0);
+        Assert.Empty(chunk.LinearFeatures);
+    }
+
+    [Fact]
+    public void ChunkData_WithMode_SetsCorrectly()
+    {
+        var chunk = new ChunkData(0, 0, mode: ChunkMode.Hybrid, layer: MapLayer.Underground);
+        Assert.Equal(ChunkMode.Hybrid, chunk.Mode);
+        Assert.Equal(MapLayer.Underground, chunk.Layer);
+    }
 }

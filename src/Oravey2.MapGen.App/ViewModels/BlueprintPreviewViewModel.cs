@@ -1,24 +1,15 @@
 using System.Collections.ObjectModel;
-using System.Text.Json;
 using System.Windows.Input;
-using Oravey2.Core.World.Blueprint;
-using Oravey2.MapGen.Validation;
 
 namespace Oravey2.MapGen.App.ViewModels;
 
 public sealed class BlueprintPreviewViewModel : BaseViewModel
 {
-    private readonly IBlueprintValidator _validator;
-
     private string? _blueprintJson;
     public string? BlueprintJson
     {
         get => _blueprintJson;
-        set
-        {
-            if (SetProperty(ref _blueprintJson, value))
-                ParseBlueprint();
-        }
+        set => SetProperty(ref _blueprintJson, value);
     }
 
     private string? _mapName;
@@ -46,76 +37,9 @@ public sealed class BlueprintPreviewViewModel : BaseViewModel
 
     public ICommand RevalidateCommand { get; }
 
-    public BlueprintPreviewViewModel(IBlueprintValidator validator)
+    public BlueprintPreviewViewModel()
     {
-        _validator = validator;
-        RevalidateCommand = new Command(Revalidate, () => BlueprintJson is not null);
-    }
-
-    private void ParseBlueprint()
-    {
-        if (string.IsNullOrEmpty(BlueprintJson))
-        {
-            ClearFields();
-            return;
-        }
-
-        try
-        {
-            var bp = BlueprintLoader.LoadFromString(BlueprintJson);
-            MapName = bp.Name;
-            MapDescription = bp.Description;
-            Dimensions = $"{bp.Dimensions.ChunksWide}×{bp.Dimensions.ChunksHigh} chunks ({bp.Dimensions.ChunksWide * 16}×{bp.Dimensions.ChunksHigh * 16} tiles)";
-            TerrainRegionCount = bp.Terrain.Regions?.Length ?? 0;
-            RoadCount = bp.Roads?.Length ?? 0;
-            BuildingCount = bp.Buildings?.Length ?? 0;
-            ZoneCount = bp.Zones?.Length ?? 0;
-
-            Revalidate();
-        }
-        catch (Exception ex)
-        {
-            ClearFields();
-            ValidationErrors.Clear();
-            ValidationErrors.Add($"Parse error: {ex.Message}");
-        }
-    }
-
-    private void Revalidate()
-    {
-        ValidationErrors.Clear();
-
-        if (string.IsNullOrEmpty(BlueprintJson)) return;
-
-        try
-        {
-            var bp = BlueprintLoader.LoadFromString(BlueprintJson);
-            var result = _validator.Validate(bp);
-
-            if (result.IsValid)
-            {
-                ValidationErrors.Add("✓ No errors");
-            }
-            else
-            {
-                foreach (var error in result.Errors)
-                    ValidationErrors.Add($"[{error.Code}] {error.Message}");
-            }
-        }
-        catch (Exception ex)
-        {
-            ValidationErrors.Add($"Validation error: {ex.Message}");
-        }
-    }
-
-    private void ClearFields()
-    {
-        MapName = null;
-        MapDescription = null;
-        Dimensions = null;
-        TerrainRegionCount = 0;
-        RoadCount = 0;
-        BuildingCount = 0;
-        ZoneCount = 0;
+        RevalidateCommand = new Command(() => { }, () => false);
     }
 }
+                foreach (var error in result.Errors)

@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using Oravey2.MapGen.App.ViewModels;
 using Oravey2.MapGen.Assets;
 using Oravey2.MapGen.Services;
-using Oravey2.MapGen.Validation;
 
 namespace Oravey2.MapGen.App;
 
@@ -22,7 +21,6 @@ public static class MauiProgram
 
         // Services
         builder.Services.AddSingleton<IAssetRegistry, AssetRegistry>();
-        builder.Services.AddSingleton<IBlueprintValidator, TerrainBlueprintValidator>();
         builder.Services.AddSingleton<MapGeneratorService>();
         builder.Services.AddSingleton<MeshyClient>(sp =>
         {

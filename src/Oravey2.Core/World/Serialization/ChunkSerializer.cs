@@ -54,6 +54,9 @@ public static class ChunkSerializer
         var structure = new int[height][];
         var flags = new int[height][];
         var variant = new int[height][];
+        var liquid = new int[height][];
+        var halfCover = new int[height][];
+        var fullCover = new int[height][];
 
         for (int y = 0; y < height; y++)
         {
@@ -63,6 +66,9 @@ public static class ChunkSerializer
             structure[y] = new int[width];
             flags[y] = new int[width];
             variant[y] = new int[width];
+            liquid[y] = new int[width];
+            halfCover[y] = new int[width];
+            fullCover[y] = new int[width];
 
             for (int x = 0; x < width; x++)
             {
@@ -71,8 +77,11 @@ public static class ChunkSerializer
                 heightArr[y][x] = td.HeightLevel;
                 water[y][x] = td.WaterLevel;
                 structure[y][x] = td.StructureId;
-                flags[y][x] = (byte)td.Flags;
+                flags[y][x] = (ushort)td.Flags;
                 variant[y][x] = td.VariantSeed;
+                liquid[y][x] = (byte)td.Liquid;
+                halfCover[y][x] = (byte)td.HalfCover;
+                fullCover[y][x] = (byte)td.FullCover;
             }
         }
 
@@ -84,7 +93,9 @@ public static class ChunkSerializer
             : null;
 
         return new ChunkJson(chunk.ChunkX, chunk.ChunkY,
-            surface, heightArr, water, structure, flags, variant, entities);
+            surface, heightArr, water, structure, flags, variant, entities,
+            liquid, halfCover, fullCover,
+            (int)chunk.Mode, (int)chunk.Layer);
     }
 
     internal static ChunkData FromChunkJson(ChunkJson cj)
@@ -103,7 +114,10 @@ public static class ChunkSerializer
                     (byte)cj.Water[y][x],
                     cj.Structure[y][x],
                     (TileFlags)cj.Flags[y][x],
-                    (byte)cj.Variant[y][x]);
+                    (byte)cj.Variant[y][x],
+                    cj.Liquid is not null ? (LiquidType)cj.Liquid[y][x] : LiquidType.None,
+                    cj.HalfCover is not null ? (CoverEdges)cj.HalfCover[y][x] : CoverEdges.None,
+                    cj.FullCover is not null ? (CoverEdges)cj.FullCover[y][x] : CoverEdges.None);
                 tiles.SetTileData(x, y, td);
             }
         }
@@ -114,6 +128,9 @@ public static class ChunkSerializer
             e.Persistent, e.ConditionFlag)).ToList()
             ?? new List<EntitySpawnInfo>();
 
-        return new ChunkData(cj.ChunkX, cj.ChunkY, tiles, entities);
+        var mode = cj.Mode.HasValue ? (ChunkMode)cj.Mode.Value : ChunkMode.Heightmap;
+        var layer = cj.Layer.HasValue ? (MapLayer)cj.Layer.Value : MapLayer.Surface;
+
+        return new ChunkData(cj.ChunkX, cj.ChunkY, tiles, entities, mode, layer);
     }
 }

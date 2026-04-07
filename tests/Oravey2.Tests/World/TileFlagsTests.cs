@@ -29,4 +29,24 @@ public class TileFlagsTests
         Assert.False(TileFlags.None.HasFlag(TileFlags.Walkable));
         Assert.False(TileFlags.None.HasFlag(TileFlags.Irradiated));
     }
+
+    [Fact]
+    public void TileFlags_NewFlags_HaveCorrectValues()
+    {
+        Assert.Equal((TileFlags)16, TileFlags.Forested);
+        Assert.Equal((TileFlags)32, TileFlags.Interior);
+        Assert.Equal((TileFlags)64, TileFlags.FastTravel);
+        Assert.Equal((TileFlags)128, TileFlags.Searchable);
+    }
+
+    [Fact]
+    public void TileFlags_CombinedFlags_WorkWithBitwiseOr()
+    {
+        var flags = TileFlags.Walkable | TileFlags.Forested | TileFlags.Searchable;
+        Assert.True(flags.HasFlag(TileFlags.Walkable));
+        Assert.True(flags.HasFlag(TileFlags.Forested));
+        Assert.True(flags.HasFlag(TileFlags.Searchable));
+        Assert.False(flags.HasFlag(TileFlags.Interior));
+        Assert.False(flags.HasFlag(TileFlags.Irradiated));
+    }
 }

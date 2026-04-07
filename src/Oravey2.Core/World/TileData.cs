@@ -6,12 +6,15 @@ public readonly record struct TileData(
     byte WaterLevel,
     int StructureId,
     TileFlags Flags,
-    byte VariantSeed)
+    byte VariantSeed,
+    LiquidType Liquid = LiquidType.None,
+    CoverEdges HalfCover = CoverEdges.None,
+    CoverEdges FullCover = CoverEdges.None)
 {
     public static readonly TileData Empty = default;
 
     public bool IsWalkable => Flags.HasFlag(TileFlags.Walkable);
-    public bool HasWater => WaterLevel > HeightLevel;
+    public bool HasWater => Liquid != LiquidType.None || WaterLevel > HeightLevel;
     public int WaterDepth => HasWater ? WaterLevel - HeightLevel : 0;
 
     /// <summary>
