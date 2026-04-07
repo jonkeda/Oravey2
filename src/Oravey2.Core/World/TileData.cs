@@ -1,5 +1,8 @@
+using System.Runtime.InteropServices;
+
 namespace Oravey2.Core.World;
 
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 public readonly record struct TileData(
     SurfaceType Surface,
     byte HeightLevel,

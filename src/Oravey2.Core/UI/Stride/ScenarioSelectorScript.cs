@@ -62,13 +62,6 @@ public class ScenarioSelectorScript : SyncScript
             "Connected to Haven Town via the west gate. Hostile territory.\n\n"
           + "Map: 32×32 tiles\nEnemies: 3 Radrats + Scar Boss\nFeatures: Combat, Loot, Kill Quests"),
 
-        new("portland", "Portland",
-            "Full demo city compiled from a blueprint.",
-            "Showcases Phase 1-7 features — terrain regions, river, lake,\n"
-          + "asphalt & concrete roads, a building, props, and zone data.\n\n"
-          + "Map: 2×2 chunks (32×32 tiles)\nEnemies: None\n"
-          + "Features: Water, Height, Buildings, Props, Zones"),
-
         new("m0_combat", "Combat Arena",
             "Quick combat test with three enemies.",
             "Minimal scenario for testing combat mechanics.\n\n"

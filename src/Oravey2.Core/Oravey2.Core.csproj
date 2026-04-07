@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.*" />
     <PackageReference Include="Stride.Core" Version="4.3.0.2507" PrivateAssets="contentfiles;analyzers" />
     <PackageReference Include="Stride.Engine" Version="4.3.0.2507" PrivateAssets="contentfiles;analyzers" />
@@ -22,6 +23,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Brinell\srcnew\Brinell.Automation\Brinell.Automation.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Data\*.sql" />
   </ItemGroup>
 
 </Project>

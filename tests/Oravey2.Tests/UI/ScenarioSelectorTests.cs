@@ -5,9 +5,9 @@ namespace Oravey2.Tests.UI;
 public class ScenarioSelectorTests
 {
     [Fact]
-    public void Scenarios_ContainsFiveEntries()
+    public void Scenarios_ContainsFourEntries()
     {
-        Assert.Equal(5, ScenarioSelectorScript.Scenarios.Length);
+        Assert.Equal(4, ScenarioSelectorScript.Scenarios.Length);
     }
 
     [Fact]
@@ -32,7 +32,6 @@ public class ScenarioSelectorTests
     [Theory]
     [InlineData("town")]
     [InlineData("wasteland")]
-    [InlineData("portland")]
     [InlineData("m0_combat")]
     [InlineData("empty")]
     public void Scenarios_ContainsExpectedId(string expectedId)

@@ -138,9 +138,6 @@ public sealed class ScenarioLoader
             case "wasteland":
                 LoadWasteland(WorldScene, game, cameraEntity, gameStateManager, eventBus, inputProvider, logger);
                 break;
-            case "portland":
-                LoadPortland(WorldScene, game, cameraEntity, gameStateManager, eventBus, inputProvider, logger);
-                break;
             default:
                 var customMapDir = Path.Combine(AppContext.BaseDirectory, "Maps", scenarioId);
                 if (Directory.Exists(customMapDir))
@@ -885,13 +882,6 @@ public sealed class ScenarioLoader
         ZoneExitTrigger = zoneExitScript;
     }
 
-    private void LoadPortland(Scene rootScene, Game game, Entity cameraEntity,
-        GameStateManager gameStateManager, IEventBus eventBus, IInputProvider inputProvider, ILogger logger)
-    {
-        var mapDir = Path.Combine(AppContext.BaseDirectory, "Maps", "portland");
-        LoadFromCompiledMap("portland", mapDir, rootScene, game, cameraEntity, gameStateManager, eventBus, inputProvider, logger);
-    }
-
     private void LoadFromCompiledMap(string scenarioId, string mapDir, Scene rootScene, Game game, Entity cameraEntity,
         GameStateManager gameStateManager, IEventBus eventBus, IInputProvider inputProvider, ILogger logger)
     {
@@ -899,12 +889,8 @@ public sealed class ScenarioLoader
             playerCombat, playerInventory, playerEquipment, inventoryProcessor)
             = CreatePlayer(rootScene, game, cameraEntity, gameStateManager, eventBus);
 
-        // Load compiled map from disk
-        var world = MapLoader.LoadWorldFull(mapDir);
-
-        // Use chunk (0,0) as the initial view
-        var chunk = world.GetChunk(0, 0);
-        var mapData = chunk?.Tiles ?? new TileMapData(ChunkData.Size, ChunkData.Size);
+        // TODO: Step 10 will wire this to MapDataProvider/SQLite
+        var mapData = new TileMapData(ChunkData.Size, ChunkData.Size);
 
         // Load buildings
         var buildingJsons = BuildingSerializer.LoadBuildings(mapDir);
