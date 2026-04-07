@@ -253,4 +253,21 @@ public static class GameQueryHelpers
 
     public static VictoryStateResponse GetVictoryState(IStrideTestContext context)
         => SendQuery<VictoryStateResponse>("GetVictoryState", context);
+
+    // --- Step 15: Location Description helpers ---
+
+    public static InfoPanelStateResponse GetInfoPanelState(IStrideTestContext context)
+        => SendQuery<InfoPanelStateResponse>("GetInfoPanelState", context);
+
+    public static InfoPanelStateResponse ShowInfoPanel(IStrideTestContext context,
+        int locationId, string name, string type, string tagline,
+        string? summary = null, string? dossier = null)
+        => SendQuery<InfoPanelStateResponse>("ShowInfoPanel", context,
+            new ShowInfoPanelRequest(locationId, name, type, tagline, summary, dossier));
+
+    public static ExpandInfoPanelResponse ExpandInfoPanel(IStrideTestContext context, string tier)
+        => SendQuery<ExpandInfoPanelResponse>("ExpandInfoPanel", context, new ExpandInfoPanelRequest(tier));
+
+    public static InfoPanelStateResponse CloseInfoPanel(IStrideTestContext context)
+        => SendQuery<InfoPanelStateResponse>("CloseInfoPanel", context);
 }

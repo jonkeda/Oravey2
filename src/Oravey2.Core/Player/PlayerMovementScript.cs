@@ -5,6 +5,7 @@ using Oravey2.Core.Framework.State;
 using Oravey2.Core.Input;
 using Oravey2.Core.NPC;
 using Oravey2.Core.World;
+using Oravey2.Core.World.Terrain;
 using Stride.Core.Mathematics;
 using Stride.Engine;
 
@@ -38,6 +39,11 @@ public class PlayerMovementScript : SyncScript
     /// Game state manager for input freeze during GameOver.
     /// </summary>
     public GameStateManager? StateManager { get; set; }
+
+    /// <summary>
+    /// Terrain height query for Y snapping. If null, player stays at current Y.
+    /// </summary>
+    public TerrainHeightQuery? HeightQuery { get; set; }
 
     private float CameraYaw => CameraScript?.Yaw ?? 45f;
 
@@ -93,6 +99,45 @@ public class PlayerMovementScript : SyncScript
 
         // NPC circle-circle collision: reject movement that overlaps any NPC
         newPos = ResolveNpcCollision(newPos, oldPosition);
+
+        // Cliff blocking: reject XZ if height delta is a cliff
+        if (HeightQuery != null)
+        {
+            if (HeightQuery.IsCliffBlocking(oldPosition.X, oldPosition.Z, newPos.X, newPos.Z))
+            {
+                newPos.X = oldPosition.X;
+                newPos.Z = oldPosition.Z;
+            }
+
+            // Deep liquid blocking
+            if (HeightQuery.IsDeepLiquid(newPos.X, newPos.Z))
+            {
+                newPos.X = oldPosition.X;
+                newPos.Z = oldPosition.Z;
+            }
+        }
+
+        // Terrain height snapping (smooth lerp)
+        if (HeightQuery != null)
+        {
+            float targetY = HeightQuery.GetEffectiveHeight(newPos.X, newPos.Z)
+                + TerrainHeightQuery.PlayerHeightOffset;
+            float currentY = oldPosition.Y;
+            float heightDelta = MathF.Abs(targetY - currentY);
+
+            if (heightDelta > TerrainHeightQuery.SnapThreshold)
+            {
+                // Large height change (teleport, spawn) — snap immediately
+                newPos.Y = targetY;
+            }
+            else
+            {
+                // Smooth lerp toward target height
+                var dt2 = (float)Game.UpdateTime.Elapsed.TotalSeconds;
+                newPos.Y = MathUtil.Lerp(currentY, targetY,
+                    1f - MathF.Exp(-TerrainHeightQuery.HeightSmoothing * dt2));
+            }
+        }
 
         Entity.Transform.Position = newPos;
 

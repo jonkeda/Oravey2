@@ -298,9 +298,8 @@ public class HeightmapTerrainScript : SyncScript
             BoundingBox = bounds,
             BoundingSphere = sphere,
         });
-        model.Materials.Add(liquidMesh.Emissive
-            ? CreateEmissiveMaterial(color)
-            : CreateTerrainMaterial(color));
+        model.Materials.Add(LiquidEffectFactory.CreateMaterial(
+            GraphicsDevice, liquidMesh.Type, color, Quality));
         var modelComp = new ModelComponent(model) { IsShadowCaster = false };
         entity.Add(modelComp);
         entity.Transform.Position = chunkPos;

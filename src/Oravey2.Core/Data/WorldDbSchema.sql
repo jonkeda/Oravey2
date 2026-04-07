@@ -102,12 +102,14 @@ CREATE TABLE IF NOT EXISTS sync_log (
 );
 
 CREATE TABLE IF NOT EXISTS location_description (
-    id           INTEGER PRIMARY KEY AUTOINCREMENT,
-    region_id    INTEGER REFERENCES region(id),
-    chunk_x      INTEGER,
-    chunk_y      INTEGER,
-    description  TEXT    NOT NULL,
-    generated_at TEXT    NOT NULL DEFAULT (datetime('now'))
+    location_id    INTEGER PRIMARY KEY,
+    location_type  TEXT    NOT NULL,
+    tagline        TEXT    NOT NULL,
+    summary        TEXT,
+    dossier        TEXT,
+    summary_utc    TEXT,
+    dossier_utc    TEXT,
+    llm_model      TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_region_continent ON region(continent_id);
@@ -116,4 +118,4 @@ CREATE INDEX IF NOT EXISTS idx_entity_chunk     ON entity_spawn(chunk_id);
 CREATE INDEX IF NOT EXISTS idx_lf_region        ON linear_feature(region_id);
 CREATE INDEX IF NOT EXISTS idx_poi_region       ON poi(region_id);
 CREATE INDEX IF NOT EXISTS idx_tm_chunk         ON terrain_modifier(chunk_id);
-CREATE INDEX IF NOT EXISTS idx_locdesc_region   ON location_description(region_id);
+CREATE INDEX IF NOT EXISTS idx_locdesc_type    ON location_description(location_type);

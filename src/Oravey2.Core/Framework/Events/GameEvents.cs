@@ -28,6 +28,11 @@ public readonly record struct CameraRotatedEvent(
     float NewYaw
 ) : IGameEvent;
 
+public readonly record struct ZoomLevelChangedEvent(
+    Camera.ZoomLevel OldLevel,
+    Camera.ZoomLevel NewLevel
+) : IGameEvent;
+
 public readonly record struct HealthChangedEvent(int OldHP, int NewHP) : IGameEvent;
 
 public readonly record struct XPGainedEvent(int Amount) : IGameEvent;

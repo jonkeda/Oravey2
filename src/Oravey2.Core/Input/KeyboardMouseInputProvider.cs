@@ -29,6 +29,7 @@ public sealed class KeyboardMouseInputProvider : IInputProvider
         { GameAction.DialogueChoice3, [Keys.D3] },
         { GameAction.DialogueChoice4, [Keys.D4] },
         { GameAction.OpenJournal, [Keys.J] },
+        { GameAction.Info, [Keys.N] },
     };
 
     private InputManager? _input;

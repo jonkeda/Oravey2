@@ -25,6 +25,13 @@
     <Content Include="Maps\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <!-- Copy .sdsl shader sources from Core project so runtime EffectSystem can compile them -->
+  <ItemGroup>
+    <Content Include="..\Oravey2.Core\Rendering\Shaders\*.sdsl"
+             Link="Effects\%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
   <!-- Content packs: auto-discover all packs under content/ -->
   <PropertyGroup>
     <ContentPacksRoot>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)\..\..\content'))</ContentPacksRoot>

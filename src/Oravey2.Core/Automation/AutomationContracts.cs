@@ -237,3 +237,20 @@ public record VictoryStateResponse(bool Achieved, string? Title);
 public record QuestJournalStateResponse(bool Visible, List<QuestJournalEntryDto> ActiveQuests, List<QuestJournalEntryDto> CompletedQuests);
 
 public record QuestJournalEntryDto(string Id, string Title, string Description, string? CurrentObjective, string? Progress, int XpReward);
+
+// ---- Step 15: Location Description ----
+
+public record InfoPanelStateResponse(
+    bool Visible, int LocationId, string LocationName, string LocationType,
+    string Tagline, string? Summary, string? Dossier, string CurrentTier);
+
+public record ShowInfoPanelRequest(int LocationId, string Name, string Type, string Tagline, string? Summary, string? Dossier);
+
+public record ExpandInfoPanelRequest(string Tier);
+
+public record ExpandInfoPanelResponse(bool Success, string CurrentTier);
+
+public record GetLocationDescriptionRequest(int LocationId);
+
+public record LocationDescriptionResponse(
+    int LocationId, string LocationType, string Tagline, string? Summary, string? Dossier);

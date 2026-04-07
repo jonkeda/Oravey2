@@ -379,5 +379,82 @@ public sealed class WorldMapStore : IDisposable
         new(r.GetInt64(0), r.GetInt64(1), r.GetInt32(2), r.GetInt32(3),
             (ChunkMode)r.GetInt32(4), (MapLayer)r.GetInt32(5), (byte[])r[6]);
 
+    // ── Location Description ──────────────────────────────
+
+    public void InsertDescription(int locationId, string locationType, string tagline,
+        string? summary = null, string? dossier = null, string? llmModel = null)
+    {
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = """
+            INSERT OR REPLACE INTO location_description (location_id, location_type, tagline, summary, dossier, summary_utc, dossier_utc, llm_model)
+            VALUES ($lid, $lt, $tag, $sum, $dos, $sutc, $dutc, $model);
+            """;
+        cmd.Parameters.AddWithValue("$lid", locationId);
+        cmd.Parameters.AddWithValue("$lt", locationType);
+        cmd.Parameters.AddWithValue("$tag", tagline);
+        cmd.Parameters.AddWithValue("$sum", (object?)summary ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$dos", (object?)dossier ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$sutc", summary != null ? DateTime.UtcNow.ToString("o") : (object)DBNull.Value);
+        cmd.Parameters.AddWithValue("$dutc", dossier != null ? DateTime.UtcNow.ToString("o") : (object)DBNull.Value);
+        cmd.Parameters.AddWithValue("$model", (object?)llmModel ?? DBNull.Value);
+        cmd.ExecuteNonQuery();
+    }
+
+    public Descriptions.LocationDescription? GetDescription(int locationId)
+    {
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = "SELECT location_id, location_type, tagline, summary, dossier, summary_utc, dossier_utc, llm_model FROM location_description WHERE location_id = $lid;";
+        cmd.Parameters.AddWithValue("$lid", locationId);
+        using var r = cmd.ExecuteReader();
+        if (!r.Read()) return null;
+
+        var locType = Enum.TryParse<Descriptions.LocationType>(r.GetString(1), true, out var lt) ? lt : Descriptions.LocationType.Poi;
+        return new Descriptions.LocationDescription(
+            r.GetInt32(0),
+            locType,
+            r.GetString(2),
+            r.IsDBNull(3) ? null : r.GetString(3),
+            r.IsDBNull(4) ? null : r.GetString(4),
+            r.IsDBNull(5) ? null : DateTime.Parse(r.GetString(5)),
+            r.IsDBNull(6) ? null : DateTime.Parse(r.GetString(6)),
+            r.IsDBNull(7) ? null : r.GetString(7));
+    }
+
+    public void UpdateDescriptionSummary(int locationId, string summary, string? llmModel = null)
+    {
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = """
+            UPDATE location_description SET summary = $sum, summary_utc = $utc, llm_model = COALESCE($model, llm_model)
+            WHERE location_id = $lid;
+            """;
+        cmd.Parameters.AddWithValue("$lid", locationId);
+        cmd.Parameters.AddWithValue("$sum", summary);
+        cmd.Parameters.AddWithValue("$utc", DateTime.UtcNow.ToString("o"));
+        cmd.Parameters.AddWithValue("$model", (object?)llmModel ?? DBNull.Value);
+        cmd.ExecuteNonQuery();
+    }
+
+    public void UpdateDescriptionDossier(int locationId, string dossier, string? llmModel = null)
+    {
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = """
+            UPDATE location_description SET dossier = $dos, dossier_utc = $utc, llm_model = COALESCE($model, llm_model)
+            WHERE location_id = $lid;
+            """;
+        cmd.Parameters.AddWithValue("$lid", locationId);
+        cmd.Parameters.AddWithValue("$dos", dossier);
+        cmd.Parameters.AddWithValue("$utc", DateTime.UtcNow.ToString("o"));
+        cmd.Parameters.AddWithValue("$model", (object?)llmModel ?? DBNull.Value);
+        cmd.ExecuteNonQuery();
+    }
+
+    public void DeleteDescription(int locationId)
+    {
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = "DELETE FROM location_description WHERE location_id = $lid;";
+        cmd.Parameters.AddWithValue("$lid", locationId);
+        cmd.ExecuteNonQuery();
+    }
+
     public void Dispose() => _connection.Dispose();
 }

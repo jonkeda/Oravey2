@@ -29,4 +29,9 @@
     <EmbeddedResource Include="Data\*.sql" />
   </ItemGroup>
 
+  <!-- Stride shader sources: discovered by the asset compiler and runtime EffectSystem -->
+  <ItemGroup>
+    <None Include="Rendering\Shaders\*.sdsl" />
+  </ItemGroup>
+
 </Project>

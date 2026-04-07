@@ -14,20 +14,39 @@ public sealed class WeatherProcessor
     private static readonly Dictionary<WeatherState, (WeatherState state, int weight)[]> TransitionWeights = new()
     {
         [WeatherState.Clear] = [
-            (WeatherState.Clear, 50), (WeatherState.Foggy, 25),
-            (WeatherState.DustStorm, 15), (WeatherState.AcidRain, 10)
+            (WeatherState.Clear, 40), (WeatherState.Rain, 20), (WeatherState.Snow, 10),
+            (WeatherState.Foggy, 10), (WeatherState.DustStorm, 10),
+            (WeatherState.RadiationFog, 5), (WeatherState.AcidRain, 5)
+        ],
+        [WeatherState.Rain] = [
+            (WeatherState.Clear, 30), (WeatherState.Rain, 30), (WeatherState.Snow, 5),
+            (WeatherState.Foggy, 15), (WeatherState.DustStorm, 5),
+            (WeatherState.RadiationFog, 5), (WeatherState.AcidRain, 10)
+        ],
+        [WeatherState.Snow] = [
+            (WeatherState.Clear, 30), (WeatherState.Rain, 5), (WeatherState.Snow, 35),
+            (WeatherState.Foggy, 15), (WeatherState.DustStorm, 5),
+            (WeatherState.RadiationFog, 5), (WeatherState.AcidRain, 5)
         ],
         [WeatherState.Foggy] = [
-            (WeatherState.Clear, 45), (WeatherState.Foggy, 25),
-            (WeatherState.DustStorm, 15), (WeatherState.AcidRain, 15)
+            (WeatherState.Clear, 30), (WeatherState.Rain, 15), (WeatherState.Snow, 10),
+            (WeatherState.Foggy, 20), (WeatherState.DustStorm, 10),
+            (WeatherState.RadiationFog, 10), (WeatherState.AcidRain, 5)
         ],
         [WeatherState.DustStorm] = [
-            (WeatherState.Clear, 40), (WeatherState.Foggy, 25),
-            (WeatherState.DustStorm, 20), (WeatherState.AcidRain, 15)
+            (WeatherState.Clear, 35), (WeatherState.Rain, 5), (WeatherState.Snow, 5),
+            (WeatherState.Foggy, 15), (WeatherState.DustStorm, 25),
+            (WeatherState.RadiationFog, 10), (WeatherState.AcidRain, 5)
+        ],
+        [WeatherState.RadiationFog] = [
+            (WeatherState.Clear, 35), (WeatherState.Rain, 10), (WeatherState.Snow, 5),
+            (WeatherState.Foggy, 15), (WeatherState.DustStorm, 10),
+            (WeatherState.RadiationFog, 20), (WeatherState.AcidRain, 5)
         ],
         [WeatherState.AcidRain] = [
-            (WeatherState.Clear, 40), (WeatherState.Foggy, 25),
-            (WeatherState.DustStorm, 15), (WeatherState.AcidRain, 20)
+            (WeatherState.Clear, 30), (WeatherState.Rain, 15), (WeatherState.Snow, 5),
+            (WeatherState.Foggy, 15), (WeatherState.DustStorm, 10),
+            (WeatherState.RadiationFog, 10), (WeatherState.AcidRain, 15)
         ],
     };
 

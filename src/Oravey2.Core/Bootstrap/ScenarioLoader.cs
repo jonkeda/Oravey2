@@ -23,6 +23,7 @@ using Oravey2.Core.UI;
 using Oravey2.Core.UI.Stride;
 using Oravey2.Core.World;
 using Oravey2.Core.World.Serialization;
+using Oravey2.Core.World.Terrain;
 using Stride.CommunityToolkit.Engine;
 using Stride.Core.Mathematics;
 using Stride.Engine;
@@ -200,6 +201,21 @@ public sealed class ScenarioLoader
         return entity;
     }
 
+    /// <summary>
+    /// Wires terrain height query into player movement and snaps spawn height.
+    /// </summary>
+    private static void WireTerrainHeight(PlayerMovementScript movement, Entity playerEntity,
+        TileMapData mapData, float tileSize)
+    {
+        var heightQuery = new TerrainHeightQuery(mapData, tileSize);
+        movement.HeightQuery = heightQuery;
+
+        // Snap spawn position to terrain so there's no pop on the first frame
+        var pos = playerEntity.Transform.Position;
+        pos.Y = heightQuery.GetEffectiveHeight(pos.X, pos.Z) + TerrainHeightQuery.PlayerHeightOffset;
+        playerEntity.Transform.Position = pos;
+    }
+
     // ---- Shared player creation used by all scenarios ----
 
     private (Entity player, PlayerMovementScript movement, StatsComponent stats,
@@ -275,6 +291,7 @@ public sealed class ScenarioLoader
 
         playerMovement.MapData = mapData;
         playerMovement.TileSize = tileMapRenderer.TileSize;
+        WireTerrainHeight(playerMovement, playerEntity, mapData, tileMapRenderer.TileSize);
 
         // Enemies
         var enemyPositions = new (string id, Vector3 pos)[]
@@ -437,6 +454,7 @@ public sealed class ScenarioLoader
 
         playerMovement.MapData = mapData;
         playerMovement.TileSize = tileMapRenderer.TileSize;
+        WireTerrainHeight(playerMovement, playerEntity, mapData, tileMapRenderer.TileSize);
 
         var notificationService = new NotificationService();
         eventBus.Subscribe<NotificationEvent>(e => notificationService.Add(e.Message, e.DurationSeconds));
@@ -465,6 +483,7 @@ public sealed class ScenarioLoader
 
         playerMovement.MapData = mapData;
         playerMovement.TileSize = tileMapRenderer.TileSize;
+        WireTerrainHeight(playerMovement, playerEntity, mapData, tileMapRenderer.TileSize);
 
         // Notification feed (needed for save notifications)
         var notificationService = new NotificationService();
@@ -546,6 +565,7 @@ public sealed class ScenarioLoader
 
         playerMovement.MapData = mapData;
         playerMovement.TileSize = tileMapRenderer.TileSize;
+        WireTerrainHeight(playerMovement, playerEntity, mapData, tileMapRenderer.TileSize);
 
         // Notification feed
         var notificationService = new NotificationService();
@@ -721,6 +741,7 @@ public sealed class ScenarioLoader
 
         playerMovement.MapData = mapData;
         playerMovement.TileSize = tileMapRenderer.TileSize;
+        WireTerrainHeight(playerMovement, playerEntity, mapData, tileMapRenderer.TileSize);
 
         // Notification feed
         var notificationService = new NotificationService();
@@ -961,6 +982,7 @@ public sealed class ScenarioLoader
 
         playerMovement.MapData = mapData;
         playerMovement.TileSize = tileMapRenderer.TileSize;
+        WireTerrainHeight(playerMovement, playerEntity, mapData, tileMapRenderer.TileSize);
 
         // Notification feed
         var notificationService = new NotificationService();
@@ -1024,6 +1046,7 @@ public sealed class ScenarioLoader
 
         playerMovement.MapData = mapData;
         playerMovement.TileSize = tileMapRenderer.TileSize;
+        WireTerrainHeight(playerMovement, playerEntity, mapData, tileMapRenderer.TileSize);
 
         // Notification feed
         var notificationService = new NotificationService();

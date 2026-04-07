@@ -65,6 +65,10 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
     private ScenarioLoader? _scenarioLoader;
     private ZoneManager? _zoneManager;
 
+    // Step 15 references
+    private LocationInfoPanelScript? _infoPanel;
+    private Descriptions.DescriptionService? _descriptionService;
+
     public OraveyAutomationHandler(IAutomationHandler inner, Scene rootScene, Game game)
     {
         _inner = inner;
@@ -130,6 +134,12 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
     public void SetZoneManager(ZoneManager zoneManager)
     {
         _zoneManager = zoneManager;
+    }
+
+    public void SetInfoPanel(LocationInfoPanelScript infoPanel, Descriptions.DescriptionService? descriptionService = null)
+    {
+        _infoPanel = infoPanel;
+        _descriptionService = descriptionService;
     }
 
     /// <summary>
@@ -219,6 +229,11 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
             "GetDeathState" => GetDeathState(),
             "ForcePlayerDeath" => ForcePlayerDeath(),
             "GetVictoryState" => GetVictoryState(),
+            "GetInfoPanelState" => GetInfoPanelState(),
+            "ShowInfoPanel" => ShowInfoPanel(command),
+            "ExpandInfoPanel" => ExpandInfoPanel(command),
+            "CloseInfoPanel" => CloseInfoPanel(),
+            "GetLocationDescription" => GetLocationDescription(command),
             _ => null // Let inner handler deal with it
         };
     }
@@ -508,6 +523,78 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
         var viewProj = viewMatrix * projMatrix;
 
         return (viewProj, backBuffer);
+    }
+
+    // ---- Step 15: Location Description handlers ----
+
+    private AutomationResponse GetInfoPanelState()
+    {
+        if (_infoPanel == null)
+            return Respond(new InfoPanelStateResponse(false, 0, "", "", "", null, null, "tagline"));
+
+        return Respond(new InfoPanelStateResponse(
+            _infoPanel.IsVisible,
+            _infoPanel.CurrentLocationId,
+            _infoPanel.LocationName,
+            _infoPanel.LocationTypeName,
+            _infoPanel.Tagline,
+            _infoPanel.Summary,
+            _infoPanel.Dossier,
+            _infoPanel.CurrentTier));
+    }
+
+    private AutomationResponse ShowInfoPanel(AutomationCommand command)
+    {
+        if (_infoPanel == null)
+            return AutomationResponse.Fail("Info panel not available");
+
+        var req = DeserializeArg<ShowInfoPanelRequest>(command);
+        if (req == null)
+            return AutomationResponse.Fail("ShowInfoPanel request required");
+
+        _infoPanel.Show(req.LocationId, req.Name, req.Type, req.Tagline, req.Summary, req.Dossier);
+        return Respond(new InfoPanelStateResponse(
+            true, req.LocationId, req.Name, req.Type,
+            req.Tagline, req.Summary, req.Dossier, "tagline"));
+    }
+
+    private AutomationResponse ExpandInfoPanel(AutomationCommand command)
+    {
+        if (_infoPanel == null || !_infoPanel.IsVisible)
+            return AutomationResponse.Fail("Info panel not visible");
+
+        var req = DeserializeArg<ExpandInfoPanelRequest>(command);
+        if (req == null)
+            return AutomationResponse.Fail("ExpandInfoPanel request required");
+
+        if (req.Tier == "summary" && _infoPanel.Summary != null)
+            _infoPanel.ExpandToSummary(_infoPanel.Summary);
+        else if (req.Tier == "dossier" && _infoPanel.Dossier != null)
+            _infoPanel.ExpandToDossier(_infoPanel.Dossier);
+        else
+            return AutomationResponse.Fail($"Cannot expand to tier '{req.Tier}' — text not available");
+
+        return Respond(new ExpandInfoPanelResponse(true, _infoPanel.CurrentTier));
+    }
+
+    private AutomationResponse CloseInfoPanel()
+    {
+        _infoPanel?.Hide();
+        return Respond(new InfoPanelStateResponse(false, 0, "", "", "", null, null, "tagline"));
+    }
+
+    private AutomationResponse GetLocationDescription(AutomationCommand command)
+    {
+        var req = DeserializeArg<GetLocationDescriptionRequest>(command);
+        if (req == null)
+            return AutomationResponse.Fail("GetLocationDescription request required");
+
+        var desc = _descriptionService?.GetCached(req.LocationId);
+        if (desc == null)
+            return AutomationResponse.Fail($"No description for location {req.LocationId}");
+
+        return Respond(new LocationDescriptionResponse(
+            desc.LocationId, desc.Type.ToString(), desc.Tagline, desc.Summary, desc.Dossier));
     }
 
     private Entity? FindEntity(string name)
