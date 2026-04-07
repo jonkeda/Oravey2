@@ -24,11 +24,18 @@ public static class MauiProgram
         builder.Services.AddSingleton<IAssetRegistry, AssetRegistry>();
         builder.Services.AddSingleton<IBlueprintValidator, TerrainBlueprintValidator>();
         builder.Services.AddSingleton<MapGeneratorService>();
+        builder.Services.AddSingleton<MeshyClient>(sp =>
+        {
+            var apiKey = SecureStorage.Default.GetAsync("MeshyApiKey").Result ?? "";
+            return new MeshyClient(apiKey);
+        });
 
         // ViewModels
         builder.Services.AddTransient<GeneratorViewModel>();
         builder.Services.AddTransient<BlueprintPreviewViewModel>();
         builder.Services.AddTransient<SettingsViewModel>();
+        builder.Services.AddTransient<HouseGeneratorViewModel>();
+        builder.Services.AddTransient<FigureGeneratorViewModel>();
 
 #if DEBUG
         builder.Logging.AddDebug();

@@ -66,7 +66,6 @@ public sealed class GeneratorViewModel : BaseViewModel
     public Command SaveBlueprintCommand { get; }
     public Command CopyJsonCommand { get; }
     public Command CompileBlueprintCommand { get; }
-    public Command InstallToGameCommand { get; }
 
     private string? _lastCompileOutputDir;
     public string? LastCompileOutputDir { get => _lastCompileOutputDir; private set => SetProperty(ref _lastCompileOutputDir, value); }
@@ -81,7 +80,6 @@ public sealed class GeneratorViewModel : BaseViewModel
         SaveBlueprintCommand = new Command(async () => await SaveBlueprintAsync(), () => LastGeneratedJson is not null);
         CopyJsonCommand = new Command(async () => await CopyJsonAsync(), () => LastGeneratedJson is not null);
         CompileBlueprintCommand = new Command(CompileBlueprint, () => LastGeneratedJson is not null);
-        InstallToGameCommand = new Command(InstallToGame, () => LastCompileOutputDir is not null);
     }
 
     private async Task GenerateAsync()
@@ -99,14 +97,22 @@ public sealed class GeneratorViewModel : BaseViewModel
         try { _service.ApiKey = await SecureStorage.GetAsync("ApiKey"); } catch { }
 
         // Load content pack asset catalog if configured
-        var catalogPath = Preferences.Get("ContentPackCatalogPath", string.Empty);
-        if (!string.IsNullOrWhiteSpace(catalogPath) && File.Exists(catalogPath))
+        var packPath = Preferences.Get("ContentPackPath", string.Empty);
+        if (!string.IsNullOrWhiteSpace(packPath))
         {
-            try
+            var catalogPath = Path.Combine(packPath, "catalog.json");
+            if (File.Exists(catalogPath))
             {
-                _service.AssetRegistryOverride = Oravey2.MapGen.Assets.AssetRegistry.LoadFromFile(catalogPath);
+                try
+                {
+                    _service.AssetRegistryOverride = Oravey2.MapGen.Assets.AssetRegistry.LoadFromFile(catalogPath);
+                }
+                catch
+                {
+                    _service.AssetRegistryOverride = null;
+                }
             }
-            catch
+            else
             {
                 _service.AssetRegistryOverride = null;
             }
@@ -161,7 +167,6 @@ public sealed class GeneratorViewModel : BaseViewModel
             SaveBlueprintCommand.ChangeCanExecute();
             CopyJsonCommand.ChangeCanExecute();
             CompileBlueprintCommand.ChangeCanExecute();
-            InstallToGameCommand.ChangeCanExecute();
         }
     }
 
@@ -174,20 +179,35 @@ public sealed class GeneratorViewModel : BaseViewModel
     {
         if (LastGeneratedJson is null) return;
 
-        var exportPath = Preferences.Get("ExportPath",
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Oravey2", "Blueprints"));
+        var packPath = Preferences.Get("ContentPackPath", string.Empty);
+        string savePath;
 
-        Directory.CreateDirectory(exportPath);
+        if (!string.IsNullOrWhiteSpace(packPath) && Directory.Exists(packPath))
+        {
+            var blueprintsDir = Path.Combine(packPath, "blueprints");
+            Directory.CreateDirectory(blueprintsDir);
 
-        var safeName = string.IsNullOrWhiteSpace(LocationName)
-            ? "blueprint"
-            : string.Join("_", LocationName.Split(Path.GetInvalidFileNameChars()));
+            var safeName = string.IsNullOrWhiteSpace(LocationName)
+                ? "blueprint"
+                : string.Join("_", LocationName.Split(Path.GetInvalidFileNameChars()));
 
-        var path = Path.Combine(exportPath,
-            $"{safeName}_{DateTime.Now:yyyyMMdd-HHmmss}.json");
+            savePath = Path.Combine(blueprintsDir, $"{safeName}.json");
+        }
+        else
+        {
+            var exportPath = Preferences.Get("ExportPath",
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Oravey2", "Blueprints"));
+            Directory.CreateDirectory(exportPath);
 
-        await File.WriteAllTextAsync(path, LastGeneratedJson);
-        StatusMessage = $"Saved to {path}";
+            var safeName = string.IsNullOrWhiteSpace(LocationName)
+                ? "blueprint"
+                : string.Join("_", LocationName.Split(Path.GetInvalidFileNameChars()));
+
+            savePath = Path.Combine(exportPath, $"{safeName}_{DateTime.Now:yyyyMMdd-HHmmss}.json");
+        }
+
+        await File.WriteAllTextAsync(savePath, LastGeneratedJson);
+        StatusMessage = $"Saved to {savePath}";
     }
 
     private async Task CopyJsonAsync()
@@ -205,21 +225,30 @@ public sealed class GeneratorViewModel : BaseViewModel
         {
             var blueprint = BlueprintLoader.LoadFromString(LastGeneratedJson);
 
-            var exportPath = Preferences.Get("ExportPath",
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Oravey2", "Blueprints"));
-
             var safeName = string.IsNullOrWhiteSpace(LocationName)
                 ? "blueprint"
                 : string.Join("_", LocationName.Split(Path.GetInvalidFileNameChars()));
 
-            var outputDir = Path.Combine(exportPath, "compiled", safeName);
+            var packPath = Preferences.Get("ContentPackPath", string.Empty);
+            string outputDir;
+
+            if (!string.IsNullOrWhiteSpace(packPath) && Directory.Exists(packPath))
+            {
+                outputDir = Path.Combine(packPath, "maps", safeName);
+            }
+            else
+            {
+                var exportPath = Preferences.Get("ExportPath",
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Oravey2", "Blueprints"));
+                outputDir = Path.Combine(exportPath, "compiled", safeName);
+            }
+
             var result = MapCompiler.Compile(blueprint, outputDir);
 
             if (result.Success)
             {
                 LastCompileOutputDir = outputDir;
                 StatusMessage = $"Compiled {result.ChunksGenerated} chunks, {result.BuildingsPlaced} buildings, {result.PropsPlaced} props → {outputDir}";
-                InstallToGameCommand.ChangeCanExecute();
             }
             else
             {
@@ -229,49 +258,6 @@ public sealed class GeneratorViewModel : BaseViewModel
         catch (Exception ex)
         {
             StatusMessage = $"Compile error: {ex.Message}";
-        }
-    }
-
-    private void InstallToGame()
-    {
-        if (LastCompileOutputDir is null) return;
-
-        var gameInstallPath = Preferences.Get("GameInstallPath", string.Empty);
-        if (string.IsNullOrWhiteSpace(gameInstallPath))
-        {
-            StatusMessage = "Set Game Install Path in Settings first.";
-            return;
-        }
-
-        try
-        {
-            var mapName = Path.GetFileName(LastCompileOutputDir);
-            var destDir = Path.Combine(gameInstallPath, "Maps", mapName);
-
-            CopyDirectory(LastCompileOutputDir, destDir);
-
-            StatusMessage = $"Installed to {destDir} — launch with --scenario {mapName}";
-        }
-        catch (Exception ex)
-        {
-            StatusMessage = $"Install error: {ex.Message}";
-        }
-    }
-
-    private static void CopyDirectory(string sourceDir, string destDir)
-    {
-        Directory.CreateDirectory(destDir);
-
-        foreach (var file in Directory.GetFiles(sourceDir))
-        {
-            var destFile = Path.Combine(destDir, Path.GetFileName(file));
-            File.Copy(file, destFile, overwrite: true);
-        }
-
-        foreach (var dir in Directory.GetDirectories(sourceDir))
-        {
-            var destSubDir = Path.Combine(destDir, Path.GetFileName(dir));
-            CopyDirectory(dir, destSubDir);
         }
     }
 

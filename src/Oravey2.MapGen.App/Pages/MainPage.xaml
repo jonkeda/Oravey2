@@ -7,6 +7,8 @@
 
     <views:GeneratorView Title="Generate" />
     <views:BlueprintPreviewView Title="Preview" />
+    <views:HouseGeneratorView Title="Houses" />
+    <views:FigureGeneratorView Title="Figures" />
     <views:SettingsView Title="Settings" />
 
 </TabbedPage>

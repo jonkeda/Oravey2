@@ -45,22 +45,39 @@
                 <Button Text="Browse..." Command="{Binding BrowseExportPathCommand}" />
             </HorizontalStackLayout>
 
-            <Label Text="Game Install Path" FontAttributes="Bold" Margin="0,10,0,0" />
+            <Label Text="Content Pack Path" FontAttributes="Bold" Margin="0,10,0,0" />
             <HorizontalStackLayout Spacing="10">
-                <Entry Text="{Binding GameInstallPath}" Placeholder="Path to Oravey2.Windows output dir (e.g. bin/Debug/.../)" WidthRequest="400" />
-                <Button Text="Browse..." Command="{Binding BrowseGameInstallPathCommand}" />
-            </HorizontalStackLayout>
-
-            <Label Text="Content Pack Catalog" FontAttributes="Bold" Margin="0,10,0,0" />
-            <HorizontalStackLayout Spacing="10">
-                <Entry Text="{Binding ContentPackCatalogPath}" Placeholder="catalog.json from a content pack (optional)" WidthRequest="400" />
-                <Button Text="Browse..." Command="{Binding BrowseContentPackCommand}" />
+                <Entry Text="{Binding ContentPackPath}" Placeholder="Root folder of a content pack (contains manifest.json)" WidthRequest="400" />
+                <Button Text="Browse..." Command="{Binding BrowseContentPackPathCommand}" />
             </HorizontalStackLayout>
 
             <BoxView HeightRequest="1" Color="Gray" Margin="0,10" />
 
             <Label Text="Copilot CLI Path (optional)" FontAttributes="Bold" />
             <Entry Text="{Binding CliPath}" Placeholder="Auto-detect" />
+
+            <BoxView HeightRequest="1" Color="Gray" Margin="0,10" />
+
+            <Label Text="Meshy AI" FontAttributes="Bold" FontSize="16" />
+
+            <Label Text="Meshy API Key" />
+            <Entry Text="{Binding MeshyApiKey}" IsPassword="True" Placeholder="Paste your Meshy API key" />
+
+            <Label Text="Model Export Path" />
+            <Entry Text="{Binding MeshyExportPath}" Placeholder="Folder for downloaded 3D models" />
+
+            <Label Text="Default Art Style" />
+            <Picker SelectedItem="{Binding MeshyDefaultArtStyle}">
+                <Picker.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>realistic</x:String>
+                        <x:String>cartoon</x:String>
+                        <x:String>low-poly</x:String>
+                        <x:String>sculpture</x:String>
+                        <x:String>pbr</x:String>
+                    </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
 
             <HorizontalStackLayout Spacing="10" Margin="0,20,0,0">
                 <Button Text="Save Settings" Command="{Binding SaveSettingsCommand}" />

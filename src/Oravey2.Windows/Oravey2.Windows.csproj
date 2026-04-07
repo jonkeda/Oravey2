@@ -25,20 +25,15 @@
     <Content Include="Maps\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <!-- Content packs: copy to output as ContentPacks/{PackName}/ -->
+  <!-- Content packs: auto-discover all packs under content/ -->
   <PropertyGroup>
-    <ApocalypticContentDir>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)\..\..\content\Oravey2.Apocalyptic'))</ApocalypticContentDir>
-    <FantasyContentDir>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)\..\..\content\Oravey2.Fantasy'))</FantasyContentDir>
+    <ContentPacksRoot>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)\..\..\content'))</ContentPacksRoot>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="$(ApocalypticContentDir)\**\*"
-             Exclude="$(ApocalypticContentDir)\**\bin\**;$(ApocalypticContentDir)\**\obj\**;$(ApocalypticContentDir)\*.csproj"
-             Link="ContentPacks\Oravey2.Apocalyptic\%(RecursiveDir)%(Filename)%(Extension)"
-             CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="$(FantasyContentDir)\**\*"
-             Exclude="$(FantasyContentDir)\**\bin\**;$(FantasyContentDir)\**\obj\**;$(FantasyContentDir)\*.csproj"
-             Link="ContentPacks\Oravey2.Fantasy\%(RecursiveDir)%(Filename)%(Extension)"
+    <Content Include="$(ContentPacksRoot)\**\*"
+             Exclude="$(ContentPacksRoot)\**\bin\**;$(ContentPacksRoot)\**\obj\**;$(ContentPacksRoot)\**\*.csproj"
+             Link="ContentPacks\%(RecursiveDir)%(Filename)%(Extension)"
              CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
