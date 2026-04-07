@@ -1,0 +1,55 @@
+// TerrainSplatEffect.sdsl — Stride SDSL terrain splat shader
+// Blends 8 surface albedo textures using two RGBA splat maps.
+// Used when the full Stride shader pipeline is available; for code-only
+// projects see TerrainMaterialFactory.cs which builds materials at runtime.
+
+shader TerrainSplatEffect : ShadingBase, Transformation, PositionStream4, NormalStream, Texturing
+{
+    // Splat maps (two RGBA, 32×32)
+    Texture2D SplatMap0;
+    Texture2D SplatMap1;
+
+    // Surface albedo textures (tiled)
+    Texture2D AlbedoDirt;
+    Texture2D AlbedoAsphalt;
+    Texture2D AlbedoConcrete;
+    Texture2D AlbedoGrass;
+    Texture2D AlbedoSand;
+    Texture2D AlbedoMud;
+    Texture2D AlbedoRock;
+    Texture2D AlbedoMetal;
+
+    // World-space UV tiling scale
+    float WorldUVScale = 0.5;
+
+    override stage void VSMain()
+    {
+        base.VSMain();
+    }
+
+    float3 SampleAlbedo(float2 worldUV)
+    {
+        float2 tiledUV = worldUV * WorldUVScale;
+
+        float4 s0 = SplatMap0.Sample(Texturing.Sampler, streams.TexCoord);
+        float4 s1 = SplatMap1.Sample(Texturing.Sampler, streams.TexCoord);
+
+        float3 color = float3(0, 0, 0);
+        color += s0.r * AlbedoDirt.Sample(Texturing.Sampler, tiledUV).rgb;
+        color += s0.g * AlbedoAsphalt.Sample(Texturing.Sampler, tiledUV).rgb;
+        color += s0.b * AlbedoConcrete.Sample(Texturing.Sampler, tiledUV).rgb;
+        color += s0.a * AlbedoGrass.Sample(Texturing.Sampler, tiledUV).rgb;
+        color += s1.r * AlbedoSand.Sample(Texturing.Sampler, tiledUV).rgb;
+        color += s1.g * AlbedoMud.Sample(Texturing.Sampler, tiledUV).rgb;
+        color += s1.b * AlbedoRock.Sample(Texturing.Sampler, tiledUV).rgb;
+        color += s1.a * AlbedoMetal.Sample(Texturing.Sampler, tiledUV).rgb;
+
+        return color;
+    }
+
+    override stage void PSMain()
+    {
+        float2 worldUV = streams.TexCoord;
+        streams.ColorTarget = float4(SampleAlbedo(worldUV), 1.0);
+    }
+};

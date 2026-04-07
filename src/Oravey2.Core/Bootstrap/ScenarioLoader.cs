@@ -138,6 +138,9 @@ public sealed class ScenarioLoader
             case "wasteland":
                 LoadWasteland(WorldScene, game, cameraEntity, gameStateManager, eventBus, inputProvider, logger);
                 break;
+            case "terrain_test":
+                LoadTerrainTest(WorldScene, game, cameraEntity, gameStateManager, eventBus, inputProvider, logger);
+                break;
             default:
                 var customMapDir = Path.Combine(AppContext.BaseDirectory, "Maps", scenarioId);
                 if (Directory.Exists(customMapDir))
@@ -261,7 +264,7 @@ public sealed class ScenarioLoader
         // Tile map
         var mapData = TileMapData.CreateDefault(32, 32);
         var tileMapEntity = new Entity("TileMap");
-        var tileMapRenderer = new TileMapRendererScript { MapData = mapData };
+        var tileMapRenderer = new HeightmapTerrainScript { MapData = mapData };
         tileMapEntity.Add(tileMapRenderer);
         AddEntity(tileMapEntity, rootScene);
 
@@ -411,6 +414,33 @@ public sealed class ScenarioLoader
         AddEntity(floatingDamageEntity, rootScene);
     }
 
+    // ---- terrain_test: Heightmap terrain test scene (3×3 chunk grid) ----
+
+    private void LoadTerrainTest(Scene rootScene, Game game, Entity cameraEntity,
+        GameStateManager gameStateManager, IEventBus eventBus, IInputProvider inputProvider, ILogger logger)
+    {
+        var (playerEntity, playerMovement, playerStats, playerLevel, playerHealth,
+            playerCombat, playerInventory, playerEquipment, inventoryProcessor)
+            = CreatePlayer(rootScene, game, cameraEntity, gameStateManager, eventBus);
+
+        var mapData = TerrainTestData.CreateTestMap();
+        var tileMapEntity = new Entity("TileMap");
+        var tileMapRenderer = new HeightmapTerrainScript { MapData = mapData };
+        tileMapEntity.Add(tileMapRenderer);
+        AddEntity(tileMapEntity, rootScene);
+
+        playerMovement.MapData = mapData;
+        playerMovement.TileSize = tileMapRenderer.TileSize;
+
+        var notificationService = new NotificationService();
+        eventBus.Subscribe<NotificationEvent>(e => notificationService.Add(e.Message, e.DurationSeconds));
+        NotificationService = notificationService;
+
+        var notificationEntity = new Entity("NotificationFeed");
+        notificationEntity.Add(new NotificationFeedScript { Notifications = notificationService, Font = Font });
+        AddEntity(notificationEntity, rootScene);
+    }
+
     // ---- empty: Minimal world for smoke tests ----
 
     private void LoadEmpty(Scene rootScene, Game game, Entity cameraEntity,
@@ -423,7 +453,7 @@ public sealed class ScenarioLoader
         // Basic tile map
         var mapData = TileMapData.CreateDefault(32, 32);
         var tileMapEntity = new Entity("TileMap");
-        var tileMapRenderer = new TileMapRendererScript { MapData = mapData };
+        var tileMapRenderer = new HeightmapTerrainScript { MapData = mapData };
         tileMapEntity.Add(tileMapRenderer);
         AddEntity(tileMapEntity, rootScene);
 
@@ -504,7 +534,7 @@ public sealed class ScenarioLoader
         // Town tile map
         var mapData = TownMapBuilder.CreateTownMap();
         var tileMapEntity = new Entity("TileMap");
-        var tileMapRenderer = new TileMapRendererScript { MapData = mapData };
+        var tileMapRenderer = new HeightmapTerrainScript { MapData = mapData };
         tileMapEntity.Add(tileMapRenderer);
         AddEntity(tileMapEntity, rootScene);
 
@@ -679,7 +709,7 @@ public sealed class ScenarioLoader
         // Wasteland tile map
         var mapData = WastelandMapBuilder.CreateWastelandMap();
         var tileMapEntity = new Entity("TileMap");
-        var tileMapRenderer = new TileMapRendererScript { MapData = mapData };
+        var tileMapRenderer = new HeightmapTerrainScript { MapData = mapData };
         tileMapEntity.Add(tileMapRenderer);
         AddEntity(tileMapEntity, rootScene);
 
@@ -914,7 +944,7 @@ public sealed class ScenarioLoader
 
         // Tile map renderer with all features
         var tileMapEntity = new Entity("TileMap");
-        var tileMapRenderer = new TileMapRendererScript
+        var tileMapRenderer = new HeightmapTerrainScript
         {
             MapData = mapData,
             Buildings = buildingRegistry,

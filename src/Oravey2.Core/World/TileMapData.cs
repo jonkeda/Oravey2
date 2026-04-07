@@ -69,7 +69,7 @@ public sealed class TileMapData
 
     /// <summary>
     /// Converts a world-space X/Z position to a tile index, given the tile size.
-    /// Uses the same centering formula as TileMapRendererScript.
+    /// Uses the same centering formula as HeightmapTerrainScript.
     /// </summary>
     public (int X, int Y) WorldToTile(float worldX, float worldZ, float tileSize = 1f)
     {

@@ -411,12 +411,12 @@ public sealed class OraveyAutomationHandler : IAutomationHandler
         if (tileMapEntity == null)
             return AutomationResponse.Fail("TileMap entity not found");
 
-        var renderer = tileMapEntity.Get<TileMapRendererScript>();
+        var renderer = tileMapEntity.Get<HeightmapTerrainScript>();
         if (renderer?.MapData == null)
-            return AutomationResponse.Fail("TileMapRendererScript or MapData not found");
+            return AutomationResponse.Fail("HeightmapTerrainScript or MapData not found");
 
         var map = renderer.MapData;
-        // Reverse the world→tile coordinate mapping from TileMapRendererScript
+        // Reverse the world→tile coordinate mapping from HeightmapTerrainScript
         int tileX = (int)MathF.Floor(worldX / renderer.TileSize + map.Width / 2f);
         int tileZ = (int)MathF.Floor(worldZ / renderer.TileSize + map.Height / 2f);
 
