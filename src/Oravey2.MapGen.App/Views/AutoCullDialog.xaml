@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Oravey2.MapGen.ViewModels;assembly=Oravey2.MapGen"
+             x:Class="Oravey2.MapGen.App.Views.AutoCullDialog"
+             x:DataType="vm:AutoCullDialogViewModel"
+             Title="Auto-Cull Settings">
+
+    <ScrollView Padding="16">
+        <VerticalStackLayout Spacing="10" WidthRequest="500">
+
+            <!-- ═══ Town Culling ═══ -->
+            <Label Text="Town Culling" FontAttributes="Bold" FontSize="16" />
+
+            <HorizontalStackLayout Spacing="8">
+                <Label Text="Min Category" VerticalOptions="Center" WidthRequest="140" />
+                <Picker ItemsSource="{Binding TownCategories}"
+                        SelectedItem="{Binding TownMinCategory}" WidthRequest="140" />
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout Spacing="8">
+                <Label Text="Min Population" VerticalOptions="Center" WidthRequest="140" />
+                <Entry Text="{Binding TownMinPopulation}" Keyboard="Numeric" WidthRequest="100" />
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout Spacing="8">
+                <Label Text="Min Spacing (km)" VerticalOptions="Center" WidthRequest="140" />
+                <Entry Text="{Binding TownMinSpacingKm}" Keyboard="Numeric" WidthRequest="100" />
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout Spacing="8">
+                <Label Text="Max Towns" VerticalOptions="Center" WidthRequest="140" />
+                <Entry Text="{Binding TownMaxCount}" Keyboard="Numeric" WidthRequest="100" />
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout Spacing="8">
+                <Label Text="Priority" VerticalOptions="Center" WidthRequest="140" />
+                <Picker ItemsSource="{Binding CullPriorities}"
+                        SelectedItem="{Binding TownPriority}" WidthRequest="140" />
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout Spacing="4">
+                <CheckBox IsChecked="{Binding TownAlwaysKeepCities}" />
+                <Label Text="Always keep Cities" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+            <HorizontalStackLayout Spacing="4">
+                <CheckBox IsChecked="{Binding TownAlwaysKeepMetropolis}" />
+                <Label Text="Always keep Metropolis" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+
+            <!-- ═══ Road Culling ═══ -->
+            <Label Text="Road Culling" FontAttributes="Bold" FontSize="16" Margin="0,12,0,0" />
+
+            <HorizontalStackLayout Spacing="8">
+                <Label Text="Min Road Class" VerticalOptions="Center" WidthRequest="140" />
+                <Picker ItemsSource="{Binding RoadClasses}"
+                        SelectedItem="{Binding RoadMinClass}" WidthRequest="140" />
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout Spacing="4">
+                <CheckBox IsChecked="{Binding RoadAlwaysKeepMotorways}" />
+                <Label Text="Always keep Motorways" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout Spacing="4">
+                <CheckBox IsChecked="{Binding RoadKeepNearTowns}" />
+                <Label Text="Keep roads near towns" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout Spacing="8">
+                <Label Text="Town Proximity (km)" VerticalOptions="Center" WidthRequest="140" />
+                <Entry Text="{Binding RoadTownProximityKm}" Keyboard="Numeric" WidthRequest="100" />
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout Spacing="4">
+                <CheckBox IsChecked="{Binding RoadRemoveDeadEnds}" />
+                <Label Text="Remove dead-ends" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout Spacing="8">
+                <Label Text="Dead-end min (km)" VerticalOptions="Center" WidthRequest="140" />
+                <Entry Text="{Binding RoadDeadEndMinKm}" Keyboard="Numeric" WidthRequest="100" />
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout Spacing="4">
+                <CheckBox IsChecked="{Binding RoadSimplifyGeometry}" />
+                <Label Text="Simplify geometry" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout Spacing="8">
+                <Label Text="Tolerance (m)" VerticalOptions="Center" WidthRequest="140" />
+                <Entry Text="{Binding RoadSimplifyToleranceM}" Keyboard="Numeric" WidthRequest="100" />
+            </HorizontalStackLayout>
+
+            <!-- ═══ Water Culling ═══ -->
+            <Label Text="Water Culling" FontAttributes="Bold" FontSize="16" Margin="0,12,0,0" />
+
+            <HorizontalStackLayout Spacing="8">
+                <Label Text="Min Area (km²)" VerticalOptions="Center" WidthRequest="140" />
+                <Entry Text="{Binding WaterMinAreaKm2}" Keyboard="Numeric" WidthRequest="100" />
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout Spacing="8">
+                <Label Text="Min River Length (km)" VerticalOptions="Center" WidthRequest="140" />
+                <Entry Text="{Binding WaterMinRiverLengthKm}" Keyboard="Numeric" WidthRequest="100" />
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout Spacing="4">
+                <CheckBox IsChecked="{Binding WaterAlwaysKeepSea}" />
+                <Label Text="Always keep Sea" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+            <HorizontalStackLayout Spacing="4">
+                <CheckBox IsChecked="{Binding WaterAlwaysKeepLakes}" />
+                <Label Text="Always keep Lakes" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+
+            <!-- ═══ Preview ═══ -->
+            <Label Text="{Binding PreviewText}" FontAttributes="Italic" TextColor="Gray" Margin="0,8,0,0" />
+
+            <!-- ═══ Actions ═══ -->
+            <HorizontalStackLayout Spacing="8" Margin="0,12,0,0">
+                <Button Text="Load…" Clicked="OnLoad" Padding="8,4" />
+                <Button Text="Save…" Clicked="OnSave" Padding="8,4" />
+                <Button Text="Preview" Command="{Binding PreviewCommand}" Padding="8,4" />
+                <Button Text="Apply" Command="{Binding ApplyCommand}" Padding="8,4" BackgroundColor="#238636" TextColor="White" />
+                <Button Text="Cancel" Command="{Binding CancelCommand}" Padding="8,4" BackgroundColor="DarkRed" TextColor="White" />
+            </HorizontalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -2,7 +2,10 @@ using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
 using Oravey2.MapGen.App.ViewModels;
 using Oravey2.MapGen.Assets;
+using Oravey2.MapGen.Download;
 using Oravey2.MapGen.Services;
+using Oravey2.MapGen.ViewModels;
+using Oravey2.MapGen.WorldTemplate;
 
 namespace Oravey2.MapGen.App;
 
@@ -22,6 +25,12 @@ public static class MauiProgram
         // Services
         builder.Services.AddSingleton<IAssetRegistry, AssetRegistry>();
         builder.Services.AddSingleton<MapGeneratorService>();
+        builder.Services.AddSingleton<HttpClient>();
+        builder.Services.AddSingleton<IDataDownloadService, DataDownloadService>();
+        builder.Services.AddSingleton<IGeofabrikService>(sp =>
+            new GeofabrikService(
+                sp.GetRequiredService<HttpClient>(),
+                Path.Combine(FileSystem.AppDataDirectory, "cache")));
         builder.Services.AddSingleton<MeshyClient>(sp =>
         {
             var apiKey = SecureStorage.Default.GetAsync("MeshyApiKey").Result ?? "";
@@ -29,6 +38,7 @@ public static class MauiProgram
         });
 
         // ViewModels
+        builder.Services.AddTransient<WorldTemplateViewModel>();
         builder.Services.AddTransient<GeneratorViewModel>();
         builder.Services.AddTransient<BlueprintPreviewViewModel>();
         builder.Services.AddTransient<SettingsViewModel>();

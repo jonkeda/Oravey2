@@ -7,7 +7,9 @@ public enum RoadClass
     Motorway,
     Trunk,
     Primary,
-    Secondary
+    Secondary,
+    Tertiary,
+    Residential
 }
 
 public record RoadSegment(RoadClass RoadClass, Vector2[] Nodes);

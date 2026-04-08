@@ -5,6 +5,7 @@
             x:Class="Oravey2.MapGen.App.Pages.MainPage"
             Title="Oravey2 Map Generator">
 
+    <views:WorldTemplateView Title="WorldTemplate" />
     <views:GeneratorView Title="Generate" />
     <views:BlueprintPreviewView Title="Preview" />
     <views:HouseGeneratorView Title="Houses" />

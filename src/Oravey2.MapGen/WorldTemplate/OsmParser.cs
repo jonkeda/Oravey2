@@ -127,6 +127,8 @@ public class OsmParser
         "trunk" or "trunk_link" => RoadClass.Trunk,
         "primary" or "primary_link" => RoadClass.Primary,
         "secondary" or "secondary_link" => RoadClass.Secondary,
+        "tertiary" or "tertiary_link" => RoadClass.Tertiary,
+        "residential" or "living_street" => RoadClass.Residential,
         _ => null
     };
 

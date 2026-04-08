@@ -42,4 +42,3 @@ public sealed class BlueprintPreviewViewModel : BaseViewModel
         RevalidateCommand = new Command(() => { }, () => false);
     }
 }
-                foreach (var error in result.Errors)

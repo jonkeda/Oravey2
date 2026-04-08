@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Oravey2.MapGen.ViewModels;assembly=Oravey2.MapGen"
+             x:Class="Oravey2.MapGen.App.Views.RegionPickerDialog"
+             x:DataType="vm:RegionPickerViewModel"
+             Title="Select Region"
+             BackgroundColor="#1E1E2E">
+
+    <Grid RowDefinitions="Auto,*,Auto,Auto" Padding="16" RowSpacing="12">
+
+        <!-- Search -->
+        <Entry Grid.Row="0"
+               Text="{Binding SearchText}"
+               Placeholder="Search regions…"
+               PlaceholderColor="#6C7086"
+               TextColor="#CDD6F4"
+               BackgroundColor="#2D2D44" />
+
+        <!-- Tree -->
+        <CollectionView Grid.Row="1"
+                        ItemsSource="{Binding FlatItems}"
+                        SelectionMode="None">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:RegionTreeItem">
+                    <Grid ColumnDefinitions="Auto,*" Padding="8,4">
+
+                        <!-- Expand/collapse button -->
+                        <Label Grid.Column="0"
+                               Text="{Binding ExpandIcon}"
+                               FontSize="12"
+                               TextColor="#89B4FA"
+                               WidthRequest="24"
+                               VerticalOptions="Center">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnExpandTapped" />
+                            </Label.GestureRecognizers>
+                        </Label>
+
+                        <!-- Region name -->
+                        <Label Grid.Column="1"
+                               Text="{Binding Region.Name}"
+                               FontSize="14"
+                               TextColor="#CDD6F4"
+                               VerticalOptions="Center">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnItemTapped" />
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Selection info -->
+        <VerticalStackLayout Grid.Row="2" Spacing="4" IsVisible="{Binding HasSelection}">
+            <Label FontSize="14" TextColor="#A6E3A1">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text="Selected: " FontAttributes="Bold" />
+                        <Span Text="{Binding SelectedRegion.Name}" />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+            <Label Text="{Binding SelectedPbfUrl}" FontSize="11" TextColor="#6C7086" LineBreakMode="MiddleTruncation" />
+            <Label Text="{Binding SelectedPath}" FontSize="12" TextColor="#89B4FA" />
+        </VerticalStackLayout>
+
+        <!-- Buttons -->
+        <HorizontalStackLayout Grid.Row="3" Spacing="12" HorizontalOptions="End">
+            <Button Text="Cancel"
+                    Command="{Binding CancelCommand}"
+                    BackgroundColor="#45475A"
+                    TextColor="#CDD6F4"
+                    Padding="16,8" />
+            <Button Text="Select"
+                    Command="{Binding SelectCommand}"
+                    BackgroundColor="#89B4FA"
+                    TextColor="#1E1E2E"
+                    Padding="16,8"
+                    IsEnabled="{Binding HasSelection}" />
+        </HorizontalStackLayout>
+
+    </Grid>
+
+</ContentPage>
