@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Oravey2.MapGen.ViewModels;assembly=Oravey2.MapGen"
+             x:Class="Oravey2.MapGen.App.Views.ParseStepView"
+             x:DataType="vm:ParseStepViewModel">
+    <ScrollView>
+        <VerticalStackLayout Spacing="16" Padding="8">
+            <Label Text="③ Parse &amp; Extract" FontSize="24" FontAttributes="Bold" />
+            <Label Text="Parse SRTM and OSM data into in-memory structures. Heavy visualizations are on-demand only."
+                   TextColor="#AAAAAA" />
+
+            <!-- Parse Button -->
+            <HorizontalStackLayout Spacing="12">
+                <Button Text="Parse Data"
+                        Command="{Binding ParseCommand}"
+                        BackgroundColor="#2D2D30"
+                        TextColor="White"
+                        HorizontalOptions="Start" />
+                <ActivityIndicator IsRunning="{Binding IsParsing}" IsVisible="{Binding IsParsing}"
+                                   Color="#0078D4" HeightRequest="24" WidthRequest="24" />
+            </HorizontalStackLayout>
+
+            <Label Text="{Binding StatusText}" TextColor="#888888" FontSize="13" />
+
+            <!-- Summary (visible after parse) -->
+            <Border IsVisible="{Binding IsParsed}"
+                    Stroke="#444444" StrokeThickness="1"
+                    Padding="12,8" BackgroundColor="#252530"
+                    Margin="0,8,0,0">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="8" />
+                </Border.StrokeShape>
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Parse Results"
+                           FontSize="15" FontAttributes="Bold" TextColor="White" />
+                    <Label Text="{Binding RawSummary}" FontSize="15" TextColor="White" />
+                    <Label Text="{Binding FilteredSummary}" FontSize="15" TextColor="#A6E3A1"
+                           FontAttributes="Bold" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Lazy expand buttons -->
+            <HorizontalStackLayout Spacing="8" IsVisible="{Binding IsParsed}" Margin="0,8,0,0">
+                <Button Text="Show Town List"
+                        Command="{Binding ToggleTownListCommand}"
+                        BackgroundColor="#2D2D30"
+                        TextColor="White"
+                        Padding="12,6" />
+                <Button Text="Show Summary"
+                        Command="{Binding ToggleSummaryCommand}"
+                        BackgroundColor="#2D2D30"
+                        TextColor="White"
+                        Padding="12,6" />
+                <Button Text="Show Map Preview"
+                        Command="{Binding ToggleMapCommand}"
+                        BackgroundColor="#2D2D30"
+                        TextColor="White"
+                        Padding="12,6" />
+                <Button Text="Cull Settings"
+                        Command="{Binding ToggleCullSettingsCommand}"
+                        BackgroundColor="#2D2D30"
+                        TextColor="White"
+                        Padding="12,6" />
+            </HorizontalStackLayout>
+
+            <!-- Town List (lazy) -->
+            <Border IsVisible="{Binding ShowTownList}"
+                    Stroke="#444444" StrokeThickness="1" Padding="8" BackgroundColor="#1E1E1E">
+                <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Towns" FontSize="16" FontAttributes="Bold" TextColor="White" />
+                    <!-- Header -->
+                    <Grid ColumnDefinitions="*,80,100,90,90" Padding="4,2">
+                        <Label Grid.Column="0" Text="Name" FontAttributes="Bold" FontSize="12" TextColor="#888888" />
+                        <Label Grid.Column="1" Text="Pop." FontAttributes="Bold" FontSize="12" TextColor="#888888" />
+                        <Label Grid.Column="2" Text="Category" FontAttributes="Bold" FontSize="12" TextColor="#888888" />
+                        <Label Grid.Column="3" Text="Lat" FontAttributes="Bold" FontSize="12" TextColor="#888888" />
+                        <Label Grid.Column="4" Text="Lon" FontAttributes="Bold" FontSize="12" TextColor="#888888" />
+                    </Grid>
+                    <CollectionView ItemsSource="{Binding Towns}"
+                                    HeightRequest="300">
+                        <CollectionView.ItemsLayout>
+                            <LinearItemsLayout Orientation="Vertical" ItemSpacing="0" />
+                        </CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="vm:TownDisplayItem">
+                                <Grid ColumnDefinitions="*,80,100,90,90" Padding="4,2">
+                                    <Label Grid.Column="0" Text="{Binding Name}" FontSize="13" TextColor="White" />
+                                    <Label Grid.Column="1" Text="{Binding Population, StringFormat='{0:N0}'}" FontSize="13" TextColor="White" />
+                                    <Label Grid.Column="2" Text="{Binding Category}" FontSize="13" TextColor="White" />
+                                    <Label Grid.Column="3" Text="{Binding Lat, StringFormat='{0:F4}'}" FontSize="13" TextColor="White" />
+                                    <Label Grid.Column="4" Text="{Binding Lon, StringFormat='{0:F4}'}" FontSize="13" TextColor="White" />
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Summary Tables (lazy) -->
+            <Grid IsVisible="{Binding ShowSummaryTables}"
+                  ColumnDefinitions="*,16,*" Margin="0,4,0,0">
+
+                <!-- Roads by Class -->
+                <Border Grid.Column="0"
+                        Stroke="#444444" StrokeThickness="1" Padding="8" BackgroundColor="#1E1E1E">
+                    <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Roads by Class" FontSize="14" FontAttributes="Bold" TextColor="White" />
+                        <CollectionView ItemsSource="{Binding RoadsByClass}">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="vm:CategoryCount">
+                                    <Grid ColumnDefinitions="*,60" Padding="4,1">
+                                        <Label Grid.Column="0" Text="{Binding Category}" FontSize="13" TextColor="White" />
+                                        <Label Grid.Column="1" Text="{Binding Count}" FontSize="13" HorizontalTextAlignment="End" TextColor="White" />
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Water by Type -->
+                <Border Grid.Column="2"
+                        Stroke="#444444" StrokeThickness="1" Padding="8" BackgroundColor="#1E1E1E">
+                    <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Water by Type" FontSize="14" FontAttributes="Bold" TextColor="White" />
+                        <CollectionView ItemsSource="{Binding WaterByType}">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="vm:CategoryCount">
+                                    <Grid ColumnDefinitions="*,60" Padding="4,1">
+                                        <Label Grid.Column="0" Text="{Binding Category}" FontSize="13" TextColor="White" />
+                                        <Label Grid.Column="1" Text="{Binding Count}" FontSize="13" HorizontalTextAlignment="End" TextColor="White" />
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+
+            <!-- Cull Settings (lazy) -->
+            <Border IsVisible="{Binding ShowCullSettings}"
+                    Stroke="#444444" StrokeThickness="1" Padding="12" BackgroundColor="#1E1E1E"
+                    Margin="0,4,0,0">
+                <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
+                <VerticalStackLayout Spacing="8" WidthRequest="500" HorizontalOptions="Start">
+
+                    <!-- Town Culling -->
+                    <Label Text="Town Culling" FontAttributes="Bold" FontSize="16" TextColor="White" />
+                    <HorizontalStackLayout Spacing="8">
+                        <Label Text="Min Category" VerticalOptions="Center" WidthRequest="140" TextColor="White" />
+                        <Picker ItemsSource="{Binding TownCategories}"
+                                SelectedItem="{Binding CullTownMinCategory}" WidthRequest="140" />
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Spacing="8">
+                        <Label Text="Min Population" VerticalOptions="Center" WidthRequest="140" TextColor="White" />
+                        <Entry Text="{Binding CullTownMinPopulation}" Keyboard="Numeric" WidthRequest="100" TextColor="White" />
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Spacing="8">
+                        <Label Text="Min Spacing (km)" VerticalOptions="Center" WidthRequest="140" TextColor="White" />
+                        <Entry Text="{Binding CullTownMinSpacingKm}" Keyboard="Numeric" WidthRequest="100" TextColor="White" />
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Spacing="8">
+                        <Label Text="Max Towns" VerticalOptions="Center" WidthRequest="140" TextColor="White" />
+                        <Entry Text="{Binding CullTownMaxCount}" Keyboard="Numeric" WidthRequest="100" TextColor="White" />
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Spacing="8">
+                        <Label Text="Priority" VerticalOptions="Center" WidthRequest="140" TextColor="White" />
+                        <Picker ItemsSource="{Binding CullPriorities}"
+                                SelectedItem="{Binding CullTownPriority}" WidthRequest="140" />
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Spacing="4">
+                        <CheckBox IsChecked="{Binding CullTownAlwaysKeepCities}" />
+                        <Label Text="Always keep Cities" VerticalOptions="Center" TextColor="White" />
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Spacing="4">
+                        <CheckBox IsChecked="{Binding CullTownAlwaysKeepMetropolis}" />
+                        <Label Text="Always keep Metropolis" VerticalOptions="Center" TextColor="White" />
+                    </HorizontalStackLayout>
+
+                    <!-- Road Culling -->
+                    <Label Text="Road Culling" FontAttributes="Bold" FontSize="16" TextColor="White" Margin="0,12,0,0" />
+                    <HorizontalStackLayout Spacing="8">
+                        <Label Text="Min Road Class" VerticalOptions="Center" WidthRequest="140" TextColor="White" />
+                        <Picker ItemsSource="{Binding RoadClasses}"
+                                SelectedItem="{Binding CullRoadMinClass}" WidthRequest="140" />
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Spacing="4">
+                        <CheckBox IsChecked="{Binding CullRoadAlwaysKeepMotorways}" />
+                        <Label Text="Always keep Motorways" VerticalOptions="Center" TextColor="White" />
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Spacing="4">
+                        <CheckBox IsChecked="{Binding CullRoadKeepNearTowns}" />
+                        <Label Text="Keep roads near towns" VerticalOptions="Center" TextColor="White" />
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Spacing="8">
+                        <Label Text="Town Proximity (km)" VerticalOptions="Center" WidthRequest="140" TextColor="White" />
+                        <Entry Text="{Binding CullRoadTownProximityKm}" Keyboard="Numeric" WidthRequest="100" TextColor="White" />
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Spacing="4">
+                        <CheckBox IsChecked="{Binding CullRoadRemoveDeadEnds}" />
+                        <Label Text="Remove dead-ends" VerticalOptions="Center" TextColor="White" />
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Spacing="8">
+                        <Label Text="Dead-end min (km)" VerticalOptions="Center" WidthRequest="140" TextColor="White" />
+                        <Entry Text="{Binding CullRoadDeadEndMinKm}" Keyboard="Numeric" WidthRequest="100" TextColor="White" />
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Spacing="4">
+                        <CheckBox IsChecked="{Binding CullRoadSimplifyGeometry}" />
+                        <Label Text="Simplify geometry" VerticalOptions="Center" TextColor="White" />
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Spacing="8">
+                        <Label Text="Tolerance (m)" VerticalOptions="Center" WidthRequest="140" TextColor="White" />
+                        <Entry Text="{Binding CullRoadSimplifyToleranceM}" Keyboard="Numeric" WidthRequest="100" TextColor="White" />
+                    </HorizontalStackLayout>
+
+                    <!-- Water Culling -->
+                    <Label Text="Water Culling" FontAttributes="Bold" FontSize="16" TextColor="White" Margin="0,12,0,0" />
+                    <HorizontalStackLayout Spacing="8">
+                        <Label Text="Min Area (km²)" VerticalOptions="Center" WidthRequest="140" TextColor="White" />
+                        <Entry Text="{Binding CullWaterMinAreaKm2}" Keyboard="Numeric" WidthRequest="100" TextColor="White" />
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Spacing="8">
+                        <Label Text="Min River Length (km)" VerticalOptions="Center" WidthRequest="140" TextColor="White" />
+                        <Entry Text="{Binding CullWaterMinRiverLengthKm}" Keyboard="Numeric" WidthRequest="100" TextColor="White" />
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Spacing="4">
+                        <CheckBox IsChecked="{Binding CullWaterAlwaysKeepSea}" />
+                        <Label Text="Always keep Sea" VerticalOptions="Center" TextColor="White" />
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Spacing="4">
+                        <CheckBox IsChecked="{Binding CullWaterAlwaysKeepLakes}" />
+                        <Label Text="Always keep Lakes" VerticalOptions="Center" TextColor="White" />
+                    </HorizontalStackLayout>
+
+                    <!-- Cull / Save actions -->
+                    <HorizontalStackLayout Spacing="8" Margin="0,12,0,0">
+                        <Button Text="Cull"
+                                Command="{Binding CullCommand}"
+                                BackgroundColor="#238636" TextColor="White"
+                                Padding="16,8" />
+                        <Button Text="Save"
+                                Command="{Binding SaveCommand}"
+                                BackgroundColor="#0078D4" TextColor="White"
+                                Padding="16,8" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Map Preview (lazy) -->
+            <Border IsVisible="{Binding ShowMapPreview}"
+                    Stroke="#444444" StrokeThickness="1" Padding="0" BackgroundColor="#1E1E1E"
+                    HeightRequest="500">
+                <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
+                <GraphicsView x:Name="MapGraphicsView" HeightRequest="500" />
+            </Border>
+
+            <!-- Next Button -->
+            <Button Text="Next →"
+                    Command="{Binding NextCommand}"
+                    HorizontalOptions="Start"
+                    BackgroundColor="#0078D4"
+                    TextColor="White"
+                    Margin="0,16,0,0" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentView>

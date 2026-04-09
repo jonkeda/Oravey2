@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Oravey2.MapGen.App.Views.AssemblyStepView">
+    <VerticalStackLayout Spacing="16" Padding="8">
+        <Label Text="⑧ Assemble Pack" FontSize="24" FontAttributes="Bold" />
+        <Label Text="Generate metadata, validate integrity, and build the content pack."
+               TextColor="#AAAAAA" />
+        <Label Text="Not yet implemented — will be completed in step 10." TextColor="#666666" FontSize="12" />
+        <Button Text="Build Package" IsEnabled="False" HorizontalOptions="Start" />
+    </VerticalStackLayout>
+</ContentView>

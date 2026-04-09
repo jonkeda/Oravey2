@@ -80,5 +80,6 @@ Desktop.ini
 # Real-world data files (SRTM, OSM)
 data/
 
-# Large generated world templates
+# Large generated region templates
 *.worldtemplate
+*.regiontemplate

@@ -2,7 +2,7 @@ using System.Numerics;
 using System.Text.Json;
 using Oravey2.Core.Data;
 using Oravey2.Core.World;
-using Oravey2.MapGen.WorldTemplate;
+using Oravey2.MapGen.RegionTemplates;
 
 namespace Oravey2.MapGen.Generation;
 
@@ -20,7 +20,7 @@ public sealed class WorldGenerator
     }
 
     public async Task GenerateAsync(
-        WorldTemplate.WorldTemplate template,
+        RegionTemplateFile template,
         int seed,
         WorldMapStore store,
         CancellationToken ct = default)

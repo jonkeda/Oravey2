@@ -2,10 +2,12 @@
 <Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:converters="clr-namespace:Oravey2.MapGen.App.Converters"
              x:Class="Oravey2.MapGen.App.App">
     <Application.Resources>
         <ResourceDictionary>
             <toolkit:IsNotNullConverter x:Key="IsNotNullConverter" />
+            <converters:BoolToColorConverter x:Key="BoolToColorConverter" />
             <Color x:Key="Primary">#512BD4</Color>
             <Color x:Key="Secondary">#DFD8F7</Color>
             <Color x:Key="Tertiary">#2B0B98</Color>

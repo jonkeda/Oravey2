@@ -103,6 +103,105 @@ public class DataDownloadServiceTests
     }
 
     [Fact]
+    public void GetExistingTiles_FindsHgtGzFiles()
+    {
+        var svc = CreateService();
+        var tempDir = Path.Combine(Path.GetTempPath(), $"srtm_gz_{Guid.NewGuid()}");
+        Directory.CreateDirectory(tempDir);
+
+        try
+        {
+            File.WriteAllBytes(Path.Combine(tempDir, "N52E004.hgt.gz"), [0]);
+            File.WriteAllBytes(Path.Combine(tempDir, "N52E005.hgt.gz"), [0]);
+
+            var existing = svc.GetExistingSrtmTiles(tempDir);
+
+            Assert.Equal(2, existing.Count);
+            Assert.Contains("N52E004", existing);
+            Assert.Contains("N52E005", existing);
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void GetExistingTiles_MixedFormats_Deduplicates()
+    {
+        var svc = CreateService();
+        var tempDir = Path.Combine(Path.GetTempPath(), $"srtm_mixed_{Guid.NewGuid()}");
+        Directory.CreateDirectory(tempDir);
+
+        try
+        {
+            File.WriteAllBytes(Path.Combine(tempDir, "N52E004.hgt"), [0]);
+            File.WriteAllBytes(Path.Combine(tempDir, "N52E004.hgt.gz"), [0]);
+            File.WriteAllBytes(Path.Combine(tempDir, "N52E005.hgt.gz"), [0]);
+
+            var existing = svc.GetExistingSrtmTiles(tempDir);
+
+            Assert.Equal(2, existing.Count);
+            Assert.Contains("N52E004", existing);
+            Assert.Contains("N52E005", existing);
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void GetExistingTiles_CountsOceanMarkers()
+    {
+        var svc = CreateService();
+        var tempDir = Path.Combine(Path.GetTempPath(), $"srtm_ocean_{Guid.NewGuid()}");
+        Directory.CreateDirectory(tempDir);
+
+        try
+        {
+            File.WriteAllBytes(Path.Combine(tempDir, "N52E004.hgt"), [0]);
+            File.WriteAllBytes(Path.Combine(tempDir, "N52E005.hgt"), [0]);
+            File.WriteAllBytes(Path.Combine(tempDir, "N52E003.ocean"), []);
+
+            var existing = svc.GetExistingSrtmTiles(tempDir);
+
+            Assert.Equal(3, existing.Count);
+            Assert.Contains("N52E003", existing);
+            Assert.Contains("N52E004", existing);
+            Assert.Contains("N52E005", existing);
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void GetExistingTiles_OceanAndHgtDeduplicates()
+    {
+        var svc = CreateService();
+        var tempDir = Path.Combine(Path.GetTempPath(), $"srtm_dedup_{Guid.NewGuid()}");
+        Directory.CreateDirectory(tempDir);
+
+        try
+        {
+            // If a tile has both .hgt and .ocean (shouldn't happen, but be safe)
+            File.WriteAllBytes(Path.Combine(tempDir, "N52E004.hgt"), [0]);
+            File.WriteAllBytes(Path.Combine(tempDir, "N52E004.ocean"), []);
+
+            var existing = svc.GetExistingSrtmTiles(tempDir);
+
+            Assert.Single(existing);
+            Assert.Contains("N52E004", existing);
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [Fact]
     public void FormatTileName_PositiveCoords()
     {
         Assert.Equal("N52E004", DataDownloadService.FormatTileName(52, 4));

@@ -1,6 +1,6 @@
 using System.Numerics;
 using Oravey2.Core.World;
-using Oravey2.MapGen.WorldTemplate;
+using Oravey2.MapGen.RegionTemplates;
 
 namespace Oravey2.MapGen.Generation;
 
@@ -46,7 +46,7 @@ public sealed class RegionGenerator
         var pois = curated.Towns.Select(t => new PoiMarker(
             t.GameName, "town", t.GamePosition, t.Description)).ToList();
 
-        // Linear features (roads, rivers) from WorldTemplate
+        // Linear features (roads, rivers) from RegionTemplateFile
         var linearFeatures = new List<LinearFeatureData>();
         foreach (var road in region.Roads)
         {

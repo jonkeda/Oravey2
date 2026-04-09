@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Oravey2.MapGen.ViewModels;assembly=Oravey2.MapGen"
+             x:Class="Oravey2.MapGen.App.Views.RegionStepView"
+             x:DataType="vm:RegionStepViewModel">
+    <VerticalStackLayout Spacing="16" Padding="8">
+        <Label Text="① Region Selection" FontSize="24" FontAttributes="Bold" />
+        <Label Text="Select a geographic region from the Geofabrik index and choose a target content pack."
+               TextColor="#AAAAAA" />
+
+        <!-- Select Region Button -->
+        <Button Text="Select Region…"
+                Clicked="OnSelectRegionClicked"
+                HorizontalOptions="Start"
+                BackgroundColor="#2D2D30"
+                TextColor="White" />
+
+        <!-- Region Card (visible when selected) -->
+        <Border IsVisible="{Binding HasRegion}"
+                Stroke="#444444"
+                StrokeThickness="1"
+                Padding="16"
+                BackgroundColor="#1E1E1E">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="8" />
+            </Border.StrokeShape>
+            <VerticalStackLayout Spacing="8">
+                <Label Text="{Binding RegionDisplayName}" FontSize="18" FontAttributes="Bold" />
+                <Label Text="{Binding BoundingBoxText}" TextColor="#AAAAAA" FontSize="13" />
+                <Label TextColor="#888888" FontSize="12">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="OSM: " />
+                            <Span Text="{Binding OsmUrl}" />
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+            </VerticalStackLayout>
+        </Border>
+
+        <!-- Content Pack Selector -->
+        <Label Text="Target Content Pack" FontSize="16" FontAttributes="Bold" Margin="0,8,0,0" />
+        <Picker Title="Select content pack…"
+                ItemsSource="{Binding ContentPacks}"
+                SelectedItem="{Binding SelectedContentPack}" />
+
+        <!-- Next Button -->
+        <Button Text="Next →"
+                Command="{Binding NextCommand}"
+                HorizontalOptions="Start"
+                BackgroundColor="#0078D4"
+                TextColor="White"
+                Margin="0,16,0,0" />
+    </VerticalStackLayout>
+</ContentView>

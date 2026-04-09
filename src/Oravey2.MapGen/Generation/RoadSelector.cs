@@ -1,6 +1,6 @@
 using System.Numerics;
 using Oravey2.Core.World;
-using Oravey2.MapGen.WorldTemplate;
+using Oravey2.MapGen.RegionTemplates;
 
 namespace Oravey2.MapGen.Generation;
 

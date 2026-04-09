@@ -58,6 +58,16 @@
 
             <BoxView HeightRequest="1" Color="Gray" Margin="0,10" />
 
+            <Label Text="NASA Earthdata (SRTM Downloads)" FontAttributes="Bold" FontSize="16" />
+
+            <Label Text="Username" />
+            <Entry Text="{Binding EarthdataUsername}" Placeholder="Earthdata username" />
+
+            <Label Text="Password" />
+            <Entry Text="{Binding EarthdataPassword}" IsPassword="True" Placeholder="Earthdata password" />
+
+            <BoxView HeightRequest="1" Color="Gray" Margin="0,10" />
+
             <Label Text="Meshy AI" FontAttributes="Bold" FontSize="16" />
 
             <Label Text="Meshy API Key" />

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Oravey2.MapGen.App.ViewModels"
+             x:Class="Oravey2.MapGen.App.Views.PipelineWizardView"
+             x:DataType="vm:PipelineWizardViewModel"
+             Title="Pipeline v3">
+
+    <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,*,Auto">
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Grid.ColumnSpan="2" Padding="16,8" BackgroundColor="#1E1E2E"
+              ColumnDefinitions="*,Auto">
+            <Label Text="Generation Pipeline v3" FontSize="20" FontAttributes="Bold"
+                   TextColor="White" VerticalOptions="Center" />
+            <Button Grid.Column="1" Text="⚙ Settings" Command="{Binding OpenSettingsCommand}"
+                    BackgroundColor="Transparent" TextColor="#AAAAAA" FontSize="14" />
+        </Grid>
+
+        <!-- Sidebar step list -->
+        <CollectionView Grid.Row="1" Grid.Column="0" ItemsSource="{Binding Steps}"
+                        SelectionMode="Single" BackgroundColor="#252535" Margin="0">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:PipelineStepInfo">
+                    <Grid Padding="12,10" ColumnDefinitions="*,Auto">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:PipelineWizardViewModel}}, Path=NavigateToStepCommand}"
+                                CommandParameter="{Binding}" />
+                        </Grid.GestureRecognizers>
+
+                        <Label Text="{Binding DisplayText}" FontSize="14"
+                               TextColor="{Binding IsCurrent, Converter={StaticResource BoolToColorConverter}}"
+                               VerticalOptions="Center" />
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Main content area -->
+        <ContentView Grid.Row="1" Grid.Column="1" Content="{Binding CurrentStepView}"
+                     Padding="16" />
+
+        <!-- Status bar -->
+        <Label Grid.Row="2" Grid.ColumnSpan="2" Text="{Binding StatusMessage}"
+               Padding="16,8" FontSize="12" TextColor="#888888" BackgroundColor="#1A1A2A" />
+    </Grid>
+
+</ContentPage>

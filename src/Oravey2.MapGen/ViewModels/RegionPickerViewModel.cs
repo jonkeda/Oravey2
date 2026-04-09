@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using Oravey2.MapGen.WorldTemplate;
+using Oravey2.MapGen.RegionTemplates;
 
 namespace Oravey2.MapGen.ViewModels;
 
@@ -234,7 +234,53 @@ public class RegionPickerViewModel : INotifyPropertyChanged
     {
         if (item is null || !item.HasChildren) return;
         item.IsExpanded = !item.IsExpanded;
-        ApplyFilter();
+
+        // If searching, fall back to full rebuild (rare path)
+        if (!string.IsNullOrWhiteSpace(SearchText))
+        {
+            ApplyFilter();
+            return;
+        }
+
+        var parentIndex = FlatItems.IndexOf(item);
+        if (parentIndex < 0)
+        {
+            ApplyFilter();
+            return;
+        }
+
+        if (item.IsExpanded)
+        {
+            // Insert visible children right after parent
+            var toInsert = GetVisibleDescendants(item);
+            for (var i = 0; i < toInsert.Count; i++)
+                FlatItems.Insert(parentIndex + 1 + i, toInsert[i]);
+        }
+        else
+        {
+            // Remove all descendants that are currently shown
+            while (parentIndex + 1 < FlatItems.Count &&
+                   FlatItems[parentIndex + 1].Depth > item.Depth)
+            {
+                FlatItems.RemoveAt(parentIndex + 1);
+            }
+        }
+    }
+
+    private List<RegionTreeItem> GetVisibleDescendants(RegionTreeItem parent)
+    {
+        var result = new List<RegionTreeItem>();
+        var parentIdx = _allItems.IndexOf(parent);
+        if (parentIdx < 0) return result;
+
+        for (var i = parentIdx + 1; i < _allItems.Count; i++)
+        {
+            var candidate = _allItems[i];
+            if (candidate.Depth <= parent.Depth) break;
+            if (IsAncestorExpanded(candidate))
+                result.Add(candidate);
+        }
+        return result;
     }
 
     private void OnSelect()

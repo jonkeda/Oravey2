@@ -40,6 +40,13 @@ public sealed class SettingsViewModel : BaseViewModel
     private string _contentPackPath = string.Empty;
     public string ContentPackPath { get => _contentPackPath; set => SetProperty(ref _contentPackPath, value); }
 
+    // --- Earthdata (SRTM) ---
+    private string? _earthdataUsername;
+    public string? EarthdataUsername { get => _earthdataUsername; set => SetProperty(ref _earthdataUsername, value); }
+
+    private string? _earthdataPassword;
+    public string? EarthdataPassword { get => _earthdataPassword; set => SetProperty(ref _earthdataPassword, value); }
+
     // --- Meshy AI ---
     private string? _meshyApiKey;
     public string? MeshyApiKey { get => _meshyApiKey; set => SetProperty(ref _meshyApiKey, value); }
@@ -88,6 +95,12 @@ public sealed class SettingsViewModel : BaseViewModel
         if (ApiKey is not null)
             SecureStorage.SetAsync("ApiKey", ApiKey).ConfigureAwait(false);
 
+        // Earthdata credentials
+        if (EarthdataUsername is not null)
+            SecureStorage.SetAsync("Earthdata_Username", EarthdataUsername).ConfigureAwait(false);
+        if (EarthdataPassword is not null)
+            SecureStorage.SetAsync("Earthdata_Password", EarthdataPassword).ConfigureAwait(false);
+
         // Meshy AI settings
         if (MeshyApiKey is not null)
             SecureStorage.SetAsync("MeshyApiKey", MeshyApiKey).ConfigureAwait(false);
@@ -108,10 +121,19 @@ public sealed class SettingsViewModel : BaseViewModel
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Oravey2", "Blueprints"));
         ContentPackPath = Preferences.Get("ContentPackPath", string.Empty);
 
+        // Earthdata credentials (loaded async)
+        _ = LoadSecureSettingsAsync();
+
         // Meshy AI
         MeshyExportPath = Preferences.Get("MeshyExportPath",
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Oravey2", "Models"));
         MeshyDefaultArtStyle = Preferences.Get("MeshyDefaultArtStyle", "realistic");
+    }
+
+    private async Task LoadSecureSettingsAsync()
+    {
+        EarthdataUsername = await SecureStorage.Default.GetAsync("Earthdata_Username");
+        EarthdataPassword = await SecureStorage.Default.GetAsync("Earthdata_Password");
     }
 
     private async Task TestConnectionAsync()

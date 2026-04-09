@@ -1,0 +1,15 @@
+{
+  "id": "oravey2.apocalyptic.nl",
+  "name": "Netherlands",
+  "version": "0.1.0",
+  "description": "Shared Dutch content for post-apocalyptic Oravey2. Windmills, dykes, canal boats, and other assets common to all Dutch regions.",
+  "author": "Oravey2 Team",
+  "engineVersion": ">=0.1.0",
+  "parent": "oravey2.apocalyptic",
+  "tags": ["apocalyptic", "netherlands", "dutch"],
+  "palette": {
+    "primary": "#4A6741",
+    "accent": "#C17817",
+    "danger": "#8B2500"
+  }
+}

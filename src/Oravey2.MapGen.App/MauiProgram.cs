@@ -1,11 +1,13 @@
 using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
+using Oravey2.MapGen.App.Services;
 using Oravey2.MapGen.App.ViewModels;
 using Oravey2.MapGen.Assets;
 using Oravey2.MapGen.Download;
+using Oravey2.MapGen.Pipeline;
 using Oravey2.MapGen.Services;
 using Oravey2.MapGen.ViewModels;
-using Oravey2.MapGen.WorldTemplate;
+using Oravey2.MapGen.RegionTemplates;
 
 namespace Oravey2.MapGen.App;
 
@@ -23,6 +25,7 @@ public static class MauiProgram
                });
 
         // Services
+        builder.Services.AddSingleton<ISettingsService, MauiSettingsService>();
         builder.Services.AddSingleton<IAssetRegistry, AssetRegistry>();
         builder.Services.AddSingleton<MapGeneratorService>();
         builder.Services.AddSingleton<HttpClient>();
@@ -36,14 +39,25 @@ public static class MauiProgram
             var apiKey = SecureStorage.Default.GetAsync("MeshyApiKey").Result ?? "";
             return new MeshyClient(apiKey);
         });
+        builder.Services.AddSingleton(sp =>
+            new PipelineStateService(
+                Path.Combine(FileSystem.AppDataDirectory, "data")));
 
         // ViewModels
-        builder.Services.AddTransient<WorldTemplateViewModel>();
+        builder.Services.AddTransient<RegionStepViewModel>();
+        builder.Services.AddTransient<DownloadStepViewModel>();
+        builder.Services.AddTransient<ParseStepViewModel>();
+        builder.Services.AddTransient<PipelineWizardViewModel>();
+        builder.Services.AddTransient<RegionPickerViewModel>();
+        builder.Services.AddTransient<RegionTemplateViewModel>();
         builder.Services.AddTransient<GeneratorViewModel>();
         builder.Services.AddTransient<BlueprintPreviewViewModel>();
         builder.Services.AddTransient<SettingsViewModel>();
         builder.Services.AddTransient<HouseGeneratorViewModel>();
         builder.Services.AddTransient<FigureGeneratorViewModel>();
+
+        // Pages
+        builder.Services.AddTransient<Oravey2.MapGen.App.Pages.MainPage>();
 
 #if DEBUG
         builder.Logging.AddDebug();

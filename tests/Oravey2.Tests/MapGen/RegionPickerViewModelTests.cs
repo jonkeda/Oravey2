@@ -1,5 +1,5 @@
 using Oravey2.MapGen.ViewModels;
-using Oravey2.MapGen.WorldTemplate;
+using Oravey2.MapGen.RegionTemplates;
 
 namespace Oravey2.Tests.MapGen;
 

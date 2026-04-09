@@ -8,8 +8,8 @@ namespace Oravey2.MapGen.Download;
 
 public class DataDownloadService : IDataDownloadService
 {
-    private const string SrtmBaseUrl = "https://e4ftl01.cr.usgs.gov/MEASURES/SRTMGL1.003/2000.02.11";
-    private const string EarthdataTokenUrl = "https://urs.earthdata.nasa.gov/api/users/token";
+    private const string SrtmBaseUrl = "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/SRTMGL1.003";
+    private const string EarthdataTokenUrl = "https://urs.earthdata.nasa.gov/api/users/find_or_create_token";
     private const string UserAgent = "Oravey2.MapGen/1.0";
     private const int BufferSize = 65_536; // 64 KB
     private const long ProgressIntervalBytes = 1_048_576; // 1 MB
@@ -49,8 +49,14 @@ public class DataDownloadService : IDataDownloadService
         if (!Directory.Exists(directory))
             return [];
 
-        return Directory.GetFiles(directory, "*.hgt")
-            .Select(f => Path.GetFileNameWithoutExtension(f))
+        return Directory.GetFiles(directory)
+            .Where(f => f.EndsWith(".hgt", StringComparison.OrdinalIgnoreCase)
+                      || f.EndsWith(".hgt.gz", StringComparison.OrdinalIgnoreCase)
+                      || f.EndsWith(".ocean", StringComparison.OrdinalIgnoreCase))
+            .Select(f => f.EndsWith(".hgt.gz", StringComparison.OrdinalIgnoreCase)
+                ? Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(f))
+                : Path.GetFileNameWithoutExtension(f))
+            .Distinct()
             .ToList();
     }
 
@@ -83,7 +89,7 @@ public class DataDownloadService : IDataDownloadService
         {
             ct.ThrowIfCancellationRequested();
 
-            var url = $"{SrtmBaseUrl}/{tile}.SRTMGL1.hgt.zip";
+            var url = $"{SrtmBaseUrl}/{tile}.SRTMGL1.hgt/{tile}.SRTMGL1.hgt.zip";
             var tempZip = Path.Combine(request.TargetDirectory, $"{tile}.hgt.zip.tmp");
 
             try
@@ -97,7 +103,9 @@ public class DataDownloadService : IDataDownloadService
 
                 if (response.StatusCode == HttpStatusCode.NotFound)
                 {
-                    // Ocean tile — no data available, skip gracefully
+                    // Ocean tile — no data available, write marker for recount
+                    var markerPath = Path.Combine(request.TargetDirectory, $"{tile}.ocean");
+                    await File.WriteAllBytesAsync(markerPath, [], ct);
                     completed++;
                     progress.Report(new DownloadProgress(tile, 0, 0, completed, total));
                     continue;
@@ -128,8 +136,18 @@ public class DataDownloadService : IDataDownloadService
 
                 fileStream.Close();
 
-                // Extract .hgt from zip
+                // Extract .hgt from zip, then compress to .hgt.gz
                 ExtractHgtFromZip(tempZip, request.TargetDirectory, tile);
+
+                var hgtPath = Path.Combine(request.TargetDirectory, $"{tile}.hgt");
+                var gzPath = Path.Combine(request.TargetDirectory, $"{tile}.hgt.gz");
+
+                await using (var input = File.OpenRead(hgtPath))
+                await using (var output = File.Create(gzPath))
+                await using (var gz = new GZipStream(output, CompressionLevel.Optimal))
+                    await input.CopyToAsync(gz, ct);
+
+                File.Delete(hgtPath);
 
                 completed++;
                 progress.Report(new DownloadProgress(tile, totalBytes, totalBytes, completed, total));

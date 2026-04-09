@@ -1,7 +1,7 @@
 using System.Numerics;
 using Oravey2.Core.World;
 using Oravey2.MapGen.Generation;
-using Oravey2.MapGen.WorldTemplate;
+using Oravey2.MapGen.RegionTemplates;
 using Xunit;
 
 namespace Oravey2.Tests.Generation;

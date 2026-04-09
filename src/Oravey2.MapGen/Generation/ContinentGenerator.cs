@@ -1,6 +1,6 @@
 using System.Numerics;
 using Oravey2.Core.World;
-using Oravey2.MapGen.WorldTemplate;
+using Oravey2.MapGen.RegionTemplates;
 
 namespace Oravey2.MapGen.Generation;
 
@@ -8,7 +8,7 @@ public sealed class ContinentGenerator
 {
     private const int SampleResolutionMetres = 1000;
 
-    public ContinentData Generate(WorldTemplate.WorldTemplate template)
+    public ContinentData Generate(RegionTemplateFile template)
     {
         int gridWidth = 1;
         int gridHeight = 1;

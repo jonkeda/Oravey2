@@ -2,10 +2,15 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Oravey2.MapGen.ViewModels;assembly=Oravey2.MapGen"
+             xmlns:converters="clr-namespace:Oravey2.MapGen.App.Converters"
              x:Class="Oravey2.MapGen.App.Views.RegionPickerDialog"
              x:DataType="vm:RegionPickerViewModel"
              Title="Select Region"
              BackgroundColor="#1E1E2E">
+
+    <ContentPage.Resources>
+        <converters:IndentToThicknessConverter x:Key="IndentConverter" />
+    </ContentPage.Resources>
 
     <Grid RowDefinitions="Auto,*,Auto,Auto" Padding="16" RowSpacing="12">
 
@@ -23,7 +28,9 @@
                         SelectionMode="None">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="vm:RegionTreeItem">
-                    <Grid ColumnDefinitions="Auto,*" Padding="8,4">
+                    <Grid ColumnDefinitions="Auto,*"
+                          Padding="{Binding IndentLeft, Converter={StaticResource IndentConverter}}"
+                          HeightRequest="32">
 
                         <!-- Expand/collapse button -->
                         <Label Grid.Column="0"
