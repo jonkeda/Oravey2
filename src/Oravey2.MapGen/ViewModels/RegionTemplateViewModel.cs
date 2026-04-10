@@ -4,7 +4,7 @@ using System.Numerics;
 using System.Text.Json;
 using System.Windows.Input;
 using Oravey2.MapGen.Download;
-using Oravey2.MapGen.ViewModels.RegionTemplate;
+using Oravey2.MapGen.ViewModels.RegionTemplates;
 using Oravey2.MapGen.RegionTemplates;
 
 namespace Oravey2.MapGen.ViewModels;

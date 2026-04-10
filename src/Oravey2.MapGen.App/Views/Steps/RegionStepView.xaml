@@ -5,30 +5,30 @@
              x:Class="Oravey2.MapGen.App.Views.RegionStepView"
              x:DataType="vm:RegionStepViewModel">
     <VerticalStackLayout Spacing="16" Padding="8">
-        <Label Text="① Region Selection" FontSize="24" FontAttributes="Bold" />
+        <Label Text="① Region Selection" Style="{StaticResource HeaderLabel}" />
         <Label Text="Select a geographic region from the Geofabrik index and choose a target content pack."
-               TextColor="#AAAAAA" />
+               TextColor="{StaticResource OnSurfaceVariant}" />
+        <Button Text="Next →"
+                Command="{Binding NextCommand}"
+                HorizontalOptions="Start"
+                Style="{StaticResource PrimaryButton}" />
 
         <!-- Select Region Button -->
         <Button Text="Select Region…"
                 Clicked="OnSelectRegionClicked"
                 HorizontalOptions="Start"
-                BackgroundColor="#2D2D30"
-                TextColor="White" />
+                Style="{StaticResource SecondaryButton}" />
 
         <!-- Region Card (visible when selected) -->
         <Border IsVisible="{Binding HasRegion}"
-                Stroke="#444444"
-                StrokeThickness="1"
-                Padding="16"
-                BackgroundColor="#1E1E1E">
+                Style="{StaticResource CardBorder}">
             <Border.StrokeShape>
                 <RoundRectangle CornerRadius="8" />
             </Border.StrokeShape>
             <VerticalStackLayout Spacing="8">
                 <Label Text="{Binding RegionDisplayName}" FontSize="18" FontAttributes="Bold" />
-                <Label Text="{Binding BoundingBoxText}" TextColor="#AAAAAA" FontSize="13" />
-                <Label TextColor="#888888" FontSize="12">
+                <Label Text="{Binding BoundingBoxText}" TextColor="{StaticResource OnSurfaceVariant}" FontSize="13" />
+                <Label TextColor="{StaticResource OnSurfaceVariant}" FontSize="12">
                     <Label.FormattedText>
                         <FormattedString>
                             <Span Text="OSM: " />
@@ -40,17 +40,11 @@
         </Border>
 
         <!-- Content Pack Selector -->
-        <Label Text="Target Content Pack" FontSize="16" FontAttributes="Bold" Margin="0,8,0,0" />
+        <Label Text="Target Content Pack" Style="{StaticResource SectionLabel}" Margin="0,8,0,0" />
         <Picker Title="Select content pack…"
                 ItemsSource="{Binding ContentPacks}"
                 SelectedItem="{Binding SelectedContentPack}" />
 
-        <!-- Next Button -->
-        <Button Text="Next →"
-                Command="{Binding NextCommand}"
-                HorizontalOptions="Start"
-                BackgroundColor="#0078D4"
-                TextColor="White"
-                Margin="0,16,0,0" />
+
     </VerticalStackLayout>
 </ContentView>

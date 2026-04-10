@@ -293,11 +293,11 @@ public class ParseStepViewModel : BaseViewModel
     public ObservableCollection<CategoryCount> WaterByType { get; } = [];
 
     // The parsed result held in memory for subsequent steps
-    public RegionTemplates.RegionTemplate? ParsedTemplate { get; private set; }
+    public RegionTemplate? ParsedTemplate { get; private set; }
     public OsmExtract? RawExtract { get; private set; }
 
     /// <summary>Invoked when a cached template finishes loading asynchronously.</summary>
-    public Action<RegionTemplates.RegionTemplate>? TemplateLoaded { get; set; }
+    public Action<RegionTemplate>? TemplateLoaded { get; set; }
 
     private bool _isLoadingCache;
 
@@ -454,7 +454,7 @@ public class ParseStepViewModel : BaseViewModel
             StatusText = "Building template...";
 
             // Build RegionTemplate with raw (unculled) data
-            ParsedTemplate = new RegionTemplates.RegionTemplate
+            ParsedTemplate = new RegionTemplate
             {
                 Name = regionName,
                 ElevationGrid = elevationGrid,
@@ -583,7 +583,7 @@ public class ParseStepViewModel : BaseViewModel
             FilteredWaterCount = filteredWater.Count;
 
             // Update template
-            ParsedTemplate = new RegionTemplates.RegionTemplate
+            ParsedTemplate = new RegionTemplate
             {
                 Name = ParsedTemplate!.Name,
                 ElevationGrid = ParsedTemplate.ElevationGrid,

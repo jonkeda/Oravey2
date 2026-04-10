@@ -1,12 +1,232 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Oravey2.MapGen.App.Views.AssetsStepView">
-    <VerticalStackLayout Spacing="16" Padding="8">
-        <Label Text="⑦ 3D Assets" FontSize="24" FontAttributes="Bold" />
-        <Label Text="Generate unique 3D assets via Meshy API. Create one at a time, review, accept or reject."
-               TextColor="#AAAAAA" />
-        <Label Text="Not yet implemented — will be completed in step 09." TextColor="#666666" FontSize="12" />
-        <Button Text="Next →" IsEnabled="False" HorizontalOptions="Start" />
-    </VerticalStackLayout>
+             xmlns:vm="clr-namespace:Oravey2.MapGen.ViewModels;assembly=Oravey2.MapGen"
+             xmlns:gen="clr-namespace:Oravey2.MapGen.Generation;assembly=Oravey2.MapGen"
+             x:Class="Oravey2.MapGen.App.Views.AssetsStepView"
+             x:DataType="vm:AssetsStepViewModel">
+    <ScrollView>
+        <VerticalStackLayout Spacing="16" Padding="8">
+
+            <!-- Header -->
+            <Label Text="⑦ 3D Assets" Style="{StaticResource HeaderLabel}" />
+            <Label Text="Generate unique 3D assets via Meshy API, or assign dummy primitives for immediate preview."
+                   TextColor="{StaticResource OnSurfaceVariant}" />
+            <Button Text="Next →"
+                    Command="{Binding NextCommand}"
+                    Style="{StaticResource PrimaryButton}"
+                    HorizontalOptions="Start" />
+
+            <!-- Master–Detail Grid -->
+            <Grid ColumnDefinitions="320,16,*" MinimumHeightRequest="600">
+
+                <!-- LEFT COLUMN: Town tree + actions -->
+                <VerticalStackLayout Grid.Column="0" Spacing="8">
+
+                    <!-- Filter bar -->
+                    <HorizontalStackLayout Spacing="8">
+                        <Label Text="Filter:" TextColor="{StaticResource OnSurfaceVariant}" VerticalOptions="Center" />
+                        <Picker ItemsSource="{Binding FilterModes}"
+                                SelectedItem="{Binding FilterMode}"
+                                WidthRequest="120" />
+                    </HorizontalStackLayout>
+
+                    <!-- Town-grouped building list -->
+                    <ScrollView HeightRequest="440">
+                        <VerticalStackLayout Spacing="4"
+                                             BindableLayout.ItemsSource="{Binding FilteredTowns}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="vm:TownAssetGroup">
+                                    <VerticalStackLayout Spacing="2">
+                                        <!-- Town header -->
+                                        <Border BackgroundColor="{StaticResource SurfaceVariant}"
+                                                Padding="8,6" Margin="0,4,0,0">
+                                            <Border.StrokeShape><RoundRectangle CornerRadius="6" /></Border.StrokeShape>
+                                            <HorizontalStackLayout Spacing="8">
+                                                <Label Text="▼" FontSize="12"
+                                                       TextColor="{StaticResource OnSurfaceVariant}"
+                                                       VerticalOptions="Center" />
+                                                <Label Text="{Binding TownName}" FontSize="14"
+                                                       FontAttributes="Bold"
+                                                       TextColor="{StaticResource OnSurface}" />
+                                                <Label Text="{Binding CompletionText}" FontSize="12"
+                                                       TextColor="{StaticResource OnSurfaceVariant}"
+                                                       VerticalOptions="Center" />
+                                            </HorizontalStackLayout>
+                                        </Border>
+
+                                        <!-- Buildings in this town -->
+                                        <VerticalStackLayout Spacing="2"
+                                                             BindableLayout.ItemsSource="{Binding Buildings}">
+                                            <BindableLayout.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:BuildingItem">
+                                                    <Border Style="{StaticResource CardBorder}" Padding="8,4" Margin="12,0,0,0">
+                                                        <Border.StrokeShape><RoundRectangle CornerRadius="4" /></Border.StrokeShape>
+                                                        <Border.GestureRecognizers>
+                                                            <TapGestureRecognizer
+                                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AssetsStepViewModel}}, Path=SelectBuildingCommand}"
+                                                                CommandParameter="{Binding}" />
+                                                        </Border.GestureRecognizers>
+                                                        <Grid ColumnDefinitions="24,*,24" RowDefinitions="Auto,Auto" ColumnSpacing="4">
+                                                            <Label Grid.RowSpan="2" Text="{Binding RoleIcon}" FontSize="14"
+                                                                   TextColor="{StaticResource OnSurface}"
+                                                                   VerticalOptions="Center" HorizontalTextAlignment="Center" />
+                                                            <Label Grid.Column="1" Text="{Binding Name}" FontSize="13"
+                                                                   FontAttributes="Bold"
+                                                                   TextColor="{StaticResource OnSurface}" />
+                                                            <Label Grid.Column="2" Grid.RowSpan="2" Text="{Binding StatusIcon}" FontSize="12"
+                                                                   TextColor="{StaticResource OnSurface}"
+                                                                   VerticalOptions="Center" HorizontalTextAlignment="Center" />
+                                                            <Label Grid.Column="1" Grid.Row="1"
+                                                                   Text="{Binding PromptSnippet}"
+                                                                   FontSize="10"
+                                                                   TextColor="{StaticResource OnSurfaceVariant}"
+                                                                   LineBreakMode="TailTruncation" />
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </BindableLayout.ItemTemplate>
+                                        </VerticalStackLayout>
+                                    </VerticalStackLayout>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                    </ScrollView>
+
+                    <!-- Summary -->
+                    <Label Text="{Binding SummaryText}" TextColor="{StaticResource OnSurfaceVariant}" FontSize="11"
+                           LineBreakMode="WordWrap" />
+
+                    <!-- Batch actions -->
+                    <Button Text="Generate All Pending"
+                            Command="{Binding GenerateAllCommand}"
+                            BackgroundColor="{StaticResource SurfaceVariant}"
+                            Padding="12,6" />
+
+                    <HorizontalStackLayout Spacing="8">
+                        <CheckBox IsChecked="{Binding AutoAccept}" Color="{StaticResource Success}" />
+                        <Label Text="Auto-accept after generation" TextColor="{StaticResource OnSurfaceVariant}"
+                               VerticalOptions="Center" FontSize="12" />
+                    </HorizontalStackLayout>
+
+                    <!-- Dummy mesh assignment (Step 09b) -->
+                    <Button Text="Assign Dummy Meshes"
+                            Command="{Binding AssignDummyCommand}"
+                            BackgroundColor="{StaticResource SurfaceVariant}"
+                            Padding="12,6" />
+
+                    <HorizontalStackLayout Spacing="8">
+                        <Button Text="Cancel"
+                                Command="{Binding CancelCommand}"
+                                Style="{StaticResource DangerButton}"
+                                Padding="12,6"
+                                IsVisible="{Binding IsRunning}" />
+                        <ActivityIndicator IsRunning="{Binding IsRunning}"
+                                           IsVisible="{Binding IsRunning}"
+                                           HeightRequest="24" WidthRequest="24" />
+                    </HorizontalStackLayout>
+
+                    <Label Text="{Binding StatusText}" TextColor="{StaticResource OnSurfaceVariant}" FontSize="13"
+                           LineBreakMode="WordWrap" />
+                </VerticalStackLayout>
+
+                <!-- RIGHT COLUMN: Building detail -->
+                <ScrollView Grid.Column="2" IsVisible="{Binding HasSelection}">
+                    <VerticalStackLayout Spacing="12"
+                                         BindingContext="{Binding SelectedBuilding}"
+                                         x:DataType="vm:BuildingItem">
+
+                        <!-- Header card -->
+                        <Border Style="{StaticResource CardBorder}">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
+                            <VerticalStackLayout Spacing="6">
+                                <HorizontalStackLayout Spacing="8">
+                                    <Label Text="{Binding RoleIcon}" FontSize="18"
+                                           TextColor="{StaticResource OnSurface}"
+                                           VerticalOptions="Center" />
+                                    <Label Text="{Binding Name}" FontSize="18"
+                                           FontAttributes="Bold" TextColor="{StaticResource OnSurface}" />
+                                    <Label Text="{Binding TownName, StringFormat='— {0}'}" FontSize="14"
+                                           TextColor="{StaticResource OnSurfaceVariant}"
+                                           VerticalOptions="Center" />
+                                </HorizontalStackLayout>
+                                <HorizontalStackLayout Spacing="12">
+                                    <Label Text="{Binding Role, StringFormat='Role: {0}'}"
+                                           FontSize="13" TextColor="{StaticResource OnSurfaceVariant}" />
+                                    <Border Stroke="{StaticResource Outline}" StrokeThickness="1" Padding="6,2"
+                                            BackgroundColor="{StaticResource SurfaceVariant}" StrokeShape="RoundRectangle">
+                                        <Label Text="{Binding SizeCategory}" FontSize="11"
+                                               TextColor="{StaticResource OnSurfaceVariant}" />
+                                    </Border>
+                                    <Label Text="{Binding StatusIcon}" FontSize="14"
+                                           VerticalOptions="Center" />
+                                    <Label Text="{Binding StatusLabel}" FontSize="12"
+                                           TextColor="{StaticResource OnSurfaceVariant}"
+                                           VerticalOptions="Center" />
+                                </HorizontalStackLayout>
+                                <HorizontalStackLayout Spacing="16">
+                                    <Label Text="{Binding Floors, StringFormat='Floors: {0}'}"
+                                           FontSize="12" TextColor="{StaticResource OnSurfaceVariant}" />
+                                    <Label Text="{Binding Condition, StringFormat='Condition: {0:F2}'}"
+                                           FontSize="12" TextColor="{StaticResource OnSurfaceVariant}" />
+                                </HorizontalStackLayout>
+                                <Label Text="{Binding CurrentMeshPath, StringFormat='Mesh: {0}'}"
+                                       FontSize="11" TextColor="{StaticResource OnSurfaceVariant}" />
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Prompt editor card -->
+                        <Border Style="{StaticResource CardBorder}">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
+                            <VerticalStackLayout Spacing="8">
+                                <Label Text="Visual Prompt" FontSize="14" FontAttributes="Bold"
+                                       TextColor="{StaticResource OnSurface}" />
+                                <Editor Text="{Binding VisualDescription}"
+                                        HeightRequest="100"
+                                        BackgroundColor="{StaticResource SurfaceVariant}"
+                                        Placeholder="Describe the 3D asset..."
+                                        PlaceholderColor="{StaticResource OnSurfaceVariant}" />
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Progress card (visible during generation) -->
+                        <Border Style="{StaticResource CardBorder}"
+                                BindingContext="{Binding Source={RelativeSource AncestorType={x:Type vm:AssetsStepViewModel}}}"
+                                x:DataType="vm:AssetsStepViewModel"
+                                IsVisible="{Binding IsRunning}">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
+                            <VerticalStackLayout Spacing="6">
+                                <Label Text="Generation Progress" FontSize="14"
+                                       FontAttributes="Bold" TextColor="{StaticResource OnSurface}" />
+                                <ProgressBar Progress="{Binding Progress, Converter={StaticResource IntToProgressConverter}}" />
+                                <Label Text="{Binding Progress, StringFormat='{0}%'}"
+                                       FontSize="12" TextColor="{StaticResource OnSurfaceVariant}" />
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Action buttons -->
+                        <HorizontalStackLayout Spacing="8"
+                                               BindingContext="{Binding Source={RelativeSource AncestorType={x:Type vm:AssetsStepViewModel}}}"
+                                               x:DataType="vm:AssetsStepViewModel">
+                            <Button Text="Generate"
+                                    Command="{Binding GenerateCommand}"
+                                    Style="{StaticResource SuccessButton}"
+                                    Padding="16,8" />
+                            <Button Text="Accept"
+                                    Command="{Binding AcceptCommand}"
+                                    Style="{StaticResource SuccessButton}"
+                                    Padding="16,8" />
+                            <Button Text="Reject &amp; Re-generate"
+                                    Command="{Binding RejectCommand}"
+                                    Style="{StaticResource DangerButton}"
+                                    Padding="12,6" />
+                        </HorizontalStackLayout>
+
+                    </VerticalStackLayout>
+                </ScrollView>
+
+            </Grid>
+
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentView>

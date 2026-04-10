@@ -1,0 +1,50 @@
+[
+  {
+    "id": "zone_main",
+    "name": "Island Haven",
+    "biome": 0,
+    "radiationLevel": 0,
+    "enemyDifficultyTier": 1,
+    "isFastTravelTarget": true,
+    "chunkStartX": 0,
+    "chunkStartY": 0,
+    "chunkEndX": 1,
+    "chunkEndY": 1
+  },
+  {
+    "id": "zone_hazard_0",
+    "name": "flooding zone",
+    "biome": 1,
+    "radiationLevel": 0.1,
+    "enemyDifficultyTier": 1,
+    "isFastTravelTarget": false,
+    "chunkStartX": 0,
+    "chunkStartY": 1,
+    "chunkEndX": 1,
+    "chunkEndY": 1
+  },
+  {
+    "id": "zone_hazard_1",
+    "name": "collapse zone",
+    "biome": 1,
+    "radiationLevel": 0.1,
+    "enemyDifficultyTier": 1,
+    "isFastTravelTarget": false,
+    "chunkStartX": 0,
+    "chunkStartY": 0,
+    "chunkEndX": 0,
+    "chunkEndY": 1
+  },
+  {
+    "id": "zone_hazard_2",
+    "name": "wildlife zone",
+    "biome": 1,
+    "radiationLevel": 0.1,
+    "enemyDifficultyTier": 1,
+    "isFastTravelTarget": false,
+    "chunkStartX": 0,
+    "chunkStartY": 0,
+    "chunkEndX": 1,
+    "chunkEndY": 0
+  }
+]

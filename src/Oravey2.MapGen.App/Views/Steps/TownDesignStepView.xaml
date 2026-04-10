@@ -9,9 +9,13 @@
         <VerticalStackLayout Spacing="16" Padding="8">
 
             <!-- Header -->
-            <Label Text="⑤ Town Design" FontSize="24" FontAttributes="Bold" />
+            <Label Text="⑤ Town Design" Style="{StaticResource HeaderLabel}" />
             <Label Text="Use LLM to generate a design for each curated town."
-                   TextColor="#AAAAAA" />
+                   TextColor="{StaticResource OnSurfaceVariant}" />
+            <Button Text="Next →"
+                    Command="{Binding NextCommand}"
+                    HorizontalOptions="Start"
+                    Style="{StaticResource PrimaryButton}" />
 
             <!-- Master–Detail Grid -->
             <Grid ColumnDefinitions="280,16,*" MinimumHeightRequest="500">
@@ -29,17 +33,16 @@
                         </CollectionView.ItemsLayout>
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="vm:TownDesignItem">
-                                <Border Stroke="#444444" StrokeThickness="1" Padding="8,6"
-                                        BackgroundColor="#1E1E1E">
+                                <Border Style="{StaticResource CardBorder}" Padding="8,6">
                                     <Border.StrokeShape><RoundRectangle CornerRadius="6" /></Border.StrokeShape>
                                     <HorizontalStackLayout Spacing="8">
                                         <Label Text="{Binding StatusIcon}" FontSize="14"
-                                               VerticalOptions="Center" WidthRequest="24" />
+                                               VerticalOptions="Center" WidthRequest="24" TextColor="{StaticResource OnSurface}" />
                                         <VerticalStackLayout Spacing="1">
                                             <Label Text="{Binding GameName}" FontSize="14"
-                                                   FontAttributes="Bold" TextColor="White" />
+                                                   FontAttributes="Bold" TextColor="{StaticResource OnSurface}" />
                                             <Label Text="{Binding RealName, StringFormat='({0})'}"
-                                                   FontSize="11" TextColor="#888888" />
+                                                   FontSize="11" TextColor="{StaticResource OnSurfaceVariant}" />
                                         </VerticalStackLayout>
                                     </HorizontalStackLayout>
                                 </Border>
@@ -48,29 +51,29 @@
                     </CollectionView>
 
                     <!-- Progress -->
-                    <Label Text="{Binding ProgressText}" TextColor="#888888" FontSize="13" />
+                    <Label Text="{Binding ProgressText}" TextColor="{StaticResource OnSurfaceVariant}" FontSize="13" />
 
                     <!-- Action buttons -->
                     <Button Text="Design Town"
                             Command="{Binding DesignTownCommand}"
-                            BackgroundColor="#238636" TextColor="White"
+                            Style="{StaticResource SuccessButton}"
                             Padding="16,8" />
                     <Button Text="Design All Remaining"
                             Command="{Binding DesignAllCommand}"
-                            BackgroundColor="#2D2D30" TextColor="White"
+                            BackgroundColor="{StaticResource SurfaceVariant}" 
                             Padding="12,6" />
                     <HorizontalStackLayout Spacing="8">
                         <Button Text="Cancel"
                                 Command="{Binding CancelCommand}"
-                                BackgroundColor="#6E3630" TextColor="White"
+                                Style="{StaticResource DangerButton}"
                                 Padding="12,6"
                                 IsVisible="{Binding IsRunning}" />
                         <ActivityIndicator IsRunning="{Binding IsRunning}"
                                            IsVisible="{Binding IsRunning}"
-                                           Color="#0078D4" HeightRequest="24" WidthRequest="24" />
+                                            HeightRequest="24" WidthRequest="24" />
                     </HorizontalStackLayout>
 
-                    <Label Text="{Binding StatusText}" TextColor="#888888" FontSize="13" />
+                    <Label Text="{Binding StatusText}" TextColor="{StaticResource OnSurfaceVariant}" FontSize="13" />
                 </VerticalStackLayout>
 
                 <!-- RIGHT COLUMN: Design detail -->
@@ -80,58 +83,55 @@
                                          x:DataType="vm:TownDesignItem">
 
                         <!-- Town Summary Card -->
-                        <Border Stroke="#444444" StrokeThickness="1" Padding="12"
-                                BackgroundColor="#252530">
+                        <Border Style="{StaticResource CardBorder}" Padding="12">
                             <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
                             <VerticalStackLayout Spacing="4">
                                 <Label Text="{Binding GameName}" FontSize="18"
-                                       FontAttributes="Bold" TextColor="White" />
+                                       FontAttributes="Bold" TextColor="{StaticResource OnSurface}" />
                                 <HorizontalStackLayout Spacing="12">
-                                    <Label Text="{Binding Role}" FontSize="13" TextColor="#AAAAAA" />
-                                    <Label Text="{Binding Faction}" FontSize="13" TextColor="#AAAAAA" />
+                                    <Label Text="{Binding Role}" FontSize="13" TextColor="{StaticResource OnSurfaceVariant}" />
+                                    <Label Text="{Binding Faction}" FontSize="13" TextColor="{StaticResource OnSurfaceVariant}" />
                                     <Label Text="{Binding ThreatLevel, StringFormat='Threat: {0}'}"
-                                           FontSize="13" TextColor="#E5A00D" FontAttributes="Bold" />
+                                           FontSize="13" TextColor="{StaticResource Warning}" FontAttributes="Bold" />
                                 </HorizontalStackLayout>
                                 <Label Text="{Binding Description}" FontSize="12"
-                                       TextColor="#CCCCCC" LineBreakMode="WordWrap" />
+                                        TextColor="{StaticResource OnSurface}" LineBreakMode="WordWrap" />
                             </VerticalStackLayout>
                         </Border>
 
                         <!-- Landmark Card -->
-                        <Border Stroke="#444444" StrokeThickness="1" Padding="12"
-                                BackgroundColor="#1E1E1E"
+                        <Border Style="{StaticResource CardBorder}" Padding="12"
                                 IsVisible="{Binding Design, Converter={StaticResource IsNotNullConverter}}">
                             <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
                             <VerticalStackLayout Spacing="4">
                                 <Label Text="🏛 Landmark" FontSize="15" FontAttributes="Bold"
-                                       TextColor="White" />
+                                       TextColor="{StaticResource OnSurface}" />
                                 <HorizontalStackLayout Spacing="8">
                                     <Label Text="{Binding LandmarkName}" FontSize="14"
-                                           FontAttributes="Bold" TextColor="White" />
-                                    <Border Padding="4,2" BackgroundColor="#2D2D30">
+                                           FontAttributes="Bold" TextColor="{StaticResource OnSurface}" />
+                                    <Border Padding="4,2" BackgroundColor="{StaticResource SurfaceVariant}">
                                         <Border.StrokeShape><RoundRectangle CornerRadius="4" /></Border.StrokeShape>
                                         <Label Text="{Binding Design.Landmark.SizeCategory}"
-                                               FontSize="11" TextColor="#AAAAAA" />
+                                               FontSize="11" TextColor="{StaticResource OnSurfaceVariant}" />
                                     </Border>
                                 </HorizontalStackLayout>
                                 <Label Text="{Binding Design.Landmark.VisualDescription}"
-                                       FontSize="12" TextColor="#CCCCCC" FontAttributes="Italic"
+                                       FontSize="12" TextColor="{StaticResource OnSurface}" FontAttributes="Italic"
                                        LineBreakMode="WordWrap" />
                             </VerticalStackLayout>
                         </Border>
 
                         <!-- Key Locations Card -->
-                        <Border Stroke="#444444" StrokeThickness="1" Padding="12"
-                                BackgroundColor="#1E1E1E"
+                        <Border Style="{StaticResource CardBorder}" Padding="12"
                                 IsVisible="{Binding Design, Converter={StaticResource IsNotNullConverter}}">
                             <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
                             <VerticalStackLayout Spacing="6">
-                                <Label FontSize="15" FontAttributes="Bold" TextColor="White">
+                                <Label FontSize="15" FontAttributes="Bold" >
                                     <Label.FormattedText>
                                         <FormattedString>
-                                            <Span Text="📍 Key Locations (" />
-                                            <Span Text="{Binding KeyLocationCount}" />
-                                            <Span Text=")" />
+                                            <Span Text="📍 Key Locations (" TextColor="{StaticResource OnSurface}" />
+                                            <Span Text="{Binding KeyLocationCount}" TextColor="{StaticResource OnSurface}" />
+                                            <Span Text=")" TextColor="{StaticResource OnSurface}" />
                                         </FormattedString>
                                     </Label.FormattedText>
                                 </Label>
@@ -144,17 +144,17 @@
                                             <VerticalStackLayout Spacing="2" Padding="0,2">
                                                 <HorizontalStackLayout Spacing="8">
                                                     <Label Text="{Binding Name}" FontSize="13"
-                                                           FontAttributes="Bold" TextColor="White" />
+                                                           FontAttributes="Bold" TextColor="{StaticResource OnSurface}" />
                                                     <Label Text="{Binding Purpose}" FontSize="12"
-                                                           TextColor="#AAAAAA" />
-                                                    <Border Padding="4,1" BackgroundColor="#2D2D30">
+                                                           TextColor="{StaticResource OnSurfaceVariant}" />
+                                                    <Border Padding="4,1" BackgroundColor="{StaticResource SurfaceVariant}">
                                                         <Border.StrokeShape><RoundRectangle CornerRadius="3" /></Border.StrokeShape>
                                                         <Label Text="{Binding SizeCategory}"
-                                                               FontSize="10" TextColor="#AAAAAA" />
+                                                               FontSize="10" TextColor="{StaticResource OnSurfaceVariant}" />
                                                     </Border>
                                                 </HorizontalStackLayout>
                                                 <Label Text="{Binding VisualDescription}"
-                                                       FontSize="11" TextColor="#CCCCCC"
+                                                       FontSize="11" TextColor="{StaticResource OnSurface}"
                                                        LineBreakMode="WordWrap" />
                                             </VerticalStackLayout>
                                         </DataTemplate>
@@ -166,28 +166,27 @@
                         <!-- Layout Style Badge -->
                         <HorizontalStackLayout Spacing="8"
                                                IsVisible="{Binding Design, Converter={StaticResource IsNotNullConverter}}">
-                            <Label Text="Layout:" FontSize="14" TextColor="White"
+                            <Label Text="Layout:" FontSize="14" TextColor="{StaticResource OnSurface}"
                                    VerticalOptions="Center" />
-                            <Border Padding="8,4" BackgroundColor="#2D5A27"
-                                    Stroke="#2D5A27" StrokeThickness="0">
+                            <Border Padding="8,4" BackgroundColor="{StaticResource Success}"
+                                    Stroke="{StaticResource Success}" StrokeThickness="0">
                                 <Border.StrokeShape><RoundRectangle CornerRadius="10" /></Border.StrokeShape>
                                 <Label Text="{Binding LayoutStyle}" FontSize="13"
-                                       TextColor="White" FontAttributes="Bold" />
+                                       TextColor="{StaticResource OnSuccess}" FontAttributes="Bold" />
                             </Border>
                         </HorizontalStackLayout>
 
                         <!-- Hazards Card -->
-                        <Border Stroke="#444444" StrokeThickness="1" Padding="12"
-                                BackgroundColor="#1E1E1E"
+                        <Border Style="{StaticResource CardBorder}" Padding="12"
                                 IsVisible="{Binding Design, Converter={StaticResource IsNotNullConverter}}">
                             <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
                             <VerticalStackLayout Spacing="6">
-                                <Label FontSize="15" FontAttributes="Bold" TextColor="White">
+                                <Label FontSize="15" FontAttributes="Bold" >
                                     <Label.FormattedText>
                                         <FormattedString>
-                                            <Span Text="⚠ Hazards (" />
-                                            <Span Text="{Binding HazardCount}" />
-                                            <Span Text=")" />
+                                            <Span Text="⚠ Hazards (" TextColor="{StaticResource OnSurface}" />
+                                            <Span Text="{Binding HazardCount}" TextColor="{StaticResource OnSurface}" />
+                                            <Span Text=")" TextColor="{StaticResource OnSurface}" />
                                         </FormattedString>
                                     </Label.FormattedText>
                                 </Label>
@@ -200,12 +199,12 @@
                                             <VerticalStackLayout Spacing="2" Padding="0,2">
                                                 <HorizontalStackLayout Spacing="8">
                                                     <Label Text="{Binding Type}" FontSize="13"
-                                                           FontAttributes="Bold" TextColor="#E5A00D" />
+                                                           FontAttributes="Bold" TextColor="{StaticResource Warning}" />
                                                     <Label Text="{Binding LocationHint}" FontSize="12"
-                                                           TextColor="#AAAAAA" />
+                                                           TextColor="{StaticResource OnSurfaceVariant}" />
                                                 </HorizontalStackLayout>
                                                 <Label Text="{Binding Description}"
-                                                       FontSize="11" TextColor="#CCCCCC"
+                                                       FontSize="11" TextColor="{StaticResource OnSurface}"
                                                        LineBreakMode="WordWrap" />
                                             </VerticalStackLayout>
                                         </DataTemplate>
@@ -218,11 +217,11 @@
                         <HorizontalStackLayout Spacing="8">
                             <Button Text="Accept"
                                     Command="{Binding AcceptCommand, Source={RelativeSource AncestorType={x:Type vm:TownDesignStepViewModel}}}"
-                                    BackgroundColor="#238636" TextColor="White"
+                                    Style="{StaticResource SuccessButton}"
                                     Padding="12,6" />
                             <Button Text="Re-generate"
                                     Command="{Binding RegenerateCommand, Source={RelativeSource AncestorType={x:Type vm:TownDesignStepViewModel}}}"
-                                    BackgroundColor="#2D2D30" TextColor="White"
+                                    BackgroundColor="{StaticResource SurfaceVariant}" 
                                     Padding="12,6" />
                         </HorizontalStackLayout>
 
@@ -231,7 +230,7 @@
             </Grid>
 
             <!-- LLM Log -->
-            <Label Text="LLM Log" FontAttributes="Bold" TextColor="White" Margin="0,12,0,0" />
+            <Label Text="LLM Log" FontAttributes="Bold"  Margin="0,12,0,0" />
             <CollectionView ItemsSource="{Binding LlmLog}"
                             MaximumHeightRequest="250">
                 <CollectionView.ItemsLayout>
@@ -239,18 +238,17 @@
                 </CollectionView.ItemsLayout>
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="vm:LlmLogEntry">
-                        <Border Stroke="#333333" StrokeThickness="1" Padding="8"
-                                BackgroundColor="#1A1A2E">
+                        <Border Style="{StaticResource CardBorder}" Padding="8">
                             <Border.StrokeShape><RoundRectangle CornerRadius="4" /></Border.StrokeShape>
                             <VerticalStackLayout Spacing="2">
                                 <HorizontalStackLayout Spacing="8">
                                     <Label Text="{Binding Direction}" FontAttributes="Bold"
-                                           TextColor="#0078D4" FontSize="12" />
+                                           TextColor="{StaticResource ActionBlue}" FontSize="12" />
                                     <Label Text="{Binding Timestamp, StringFormat='{0:HH:mm:ss}'}"
-                                           TextColor="#666666" FontSize="11" />
+                                           TextColor="{StaticResource OnSurfaceVariant}" FontSize="11" />
                                 </HorizontalStackLayout>
                                 <Label Text="{Binding Content}" FontSize="11"
-                                       FontFamily="Consolas" TextColor="#CCCCCC"
+                                       FontFamily="Consolas" TextColor="{StaticResource OnSurface}"
                                        LineBreakMode="WordWrap" MaxLines="20" />
                             </VerticalStackLayout>
                         </Border>
@@ -258,13 +256,7 @@
                 </CollectionView.ItemTemplate>
             </CollectionView>
 
-            <!-- Next Button -->
-            <Button Text="Next →"
-                    Command="{Binding NextCommand}"
-                    HorizontalOptions="Start"
-                    BackgroundColor="#0078D4"
-                    TextColor="White"
-                    Margin="0,16,0,0" />
+
         </VerticalStackLayout>
     </ScrollView>
 </ContentView>

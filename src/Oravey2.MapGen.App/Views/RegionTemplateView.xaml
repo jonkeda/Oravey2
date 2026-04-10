@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Oravey2.MapGen.ViewModels;assembly=Oravey2.MapGen"
-             xmlns:wt="clr-namespace:Oravey2.MapGen.ViewModels.RegionTemplate;assembly=Oravey2.MapGen"
+             xmlns:wt="clr-namespace:Oravey2.MapGen.ViewModels.RegionTemplates;assembly=Oravey2.MapGen"
              x:Class="Oravey2.MapGen.App.Views.RegionTemplateView"
              x:DataType="vm:RegionTemplateViewModel"
              Title="Region Template">
@@ -11,7 +11,7 @@
         <VerticalStackLayout Spacing="12">
 
             <!-- ═══ Region & Data Sources ═══ -->
-            <Label Text="Region &amp; Data Sources" FontAttributes="Bold" FontSize="16" />
+            <Label Text="Region &amp; Data Sources" Style="{StaticResource SectionLabel}" />
 
             <!-- Preset row -->
             <HorizontalStackLayout Spacing="8">
@@ -20,16 +20,16 @@
                         SelectedItem="{Binding SelectedPreset}"
                         ItemDisplayBinding="{Binding DisplayName}"
                         WidthRequest="220" />
-                <Button Text="Browse…" Clicked="OnBrowseRegion" Padding="8,4" />
-                <Button Text="Save Preset…" Command="{Binding SavePresetCommand}" Padding="8,4" />
+                <Button Text="Browse…" Clicked="OnBrowseRegion" Style="{StaticResource SecondaryButton}" Padding="8,4" />
+                <Button Text="Save Preset…" Command="{Binding SavePresetCommand}" Style="{StaticResource SecondaryButton}" Padding="8,4" />
             </HorizontalStackLayout>
 
             <!-- SRTM row -->
             <HorizontalStackLayout Spacing="8">
                 <Label Text="SRTM Dir" VerticalOptions="Center" WidthRequest="80" />
                 <Entry Text="{Binding SrtmDirectory}" Placeholder="data/srtm" WidthRequest="300" />
-                <Button Text="Browse" Clicked="OnBrowseSrtm" Padding="8,4" />
-                <Button Text="⬇" Command="{Binding DownloadSrtmCommand}" Padding="8,4"
+                <Button Text="Browse" Clicked="OnBrowseSrtm" Style="{StaticResource SecondaryButton}" Padding="8,4" />
+                <Button Text="⬇" Command="{Binding DownloadSrtmCommand}" Style="{StaticResource SecondaryButton}" Padding="8,4"
                         ToolTipProperties.Text="Download SRTM tiles" />
             </HorizontalStackLayout>
 
@@ -37,8 +37,8 @@
             <HorizontalStackLayout Spacing="8">
                 <Label Text="OSM PBF" VerticalOptions="Center" WidthRequest="80" />
                 <Entry Text="{Binding OsmFilePath}" Placeholder="data/noordholland.osm.pbf" WidthRequest="300" />
-                <Button Text="Browse" Clicked="OnBrowseOsm" Padding="8,4" />
-                <Button Text="⬇" Command="{Binding DownloadOsmCommand}" Padding="8,4"
+                <Button Text="Browse" Clicked="OnBrowseOsm" Style="{StaticResource SecondaryButton}" Padding="8,4" />
+                <Button Text="⬇" Command="{Binding DownloadOsmCommand}" Style="{StaticResource SecondaryButton}" Padding="8,4"
                         ToolTipProperties.Text="Download OSM extract" />
             </HorizontalStackLayout>
 
@@ -49,13 +49,13 @@
             </HorizontalStackLayout>
 
             <!-- Parse button -->
-            <Button Text="Parse Data" Command="{Binding ParseCommand}" HorizontalOptions="Start" />
+            <Button Text="Parse Data" Command="{Binding ParseCommand}" Style="{StaticResource PrimaryButton}" HorizontalOptions="Start" />
 
             <!-- Parsing activity indicator -->
             <HorizontalStackLayout Spacing="8" IsVisible="{Binding IsBusy}">
                 <ActivityIndicator IsRunning="{Binding IsBusy}" WidthRequest="20" HeightRequest="20"
                                    VerticalOptions="Center" />
-                <Label Text="Parsing…" VerticalOptions="Center" FontSize="12" TextColor="Gray" />
+                <Label Text="Parsing…" VerticalOptions="Center" Style="{StaticResource CaptionLabel}" />
             </HorizontalStackLayout>
 
             <!-- ═══ Download Progress ═══ -->
@@ -73,10 +73,10 @@
 
             <!-- ═══ Summary ═══ -->
             <Label Text="{Binding Summary}" FontSize="14" FontAttributes="Italic" />
-            <Label Text="{Binding CulledSummary}" FontSize="12" TextColor="Gray" />
+            <Label Text="{Binding CulledSummary}" Style="{StaticResource CaptionLabel}" />
 
             <!-- ═══ Map Canvas ═══ -->
-            <Label Text="Map Preview" FontAttributes="Bold" FontSize="16" Margin="0,12,0,0" />
+            <Label Text="Map Preview" Style="{StaticResource SectionLabel}" Margin="0,12,0,0" />
 
             <HorizontalStackLayout Spacing="12">
                 <HorizontalStackLayout Spacing="4">
@@ -95,25 +95,25 @@
 
             <GraphicsView x:Name="MapCanvas"
                           HeightRequest="400"
-                          BackgroundColor="#1A1A2E">
+                          BackgroundColor="{StaticResource Background}">
                 <GraphicsView.GestureRecognizers>
                     <PanGestureRecognizer PanUpdated="OnMapPan" />
                 </GraphicsView.GestureRecognizers>
             </GraphicsView>
 
             <!-- ═══ Feature Lists ═══ -->
-            <Label Text="Features" FontAttributes="Bold" FontSize="16" Margin="0,12,0,0" />
+            <Label Text="Features" Style="{StaticResource SectionLabel}" Margin="0,12,0,0" />
 
             <!-- Tab selector -->
             <HorizontalStackLayout Spacing="4">
                 <Button x:Name="BtnTabTowns" Text="Towns" Clicked="OnFeatureTabTowns" Padding="10,4"
-                        BackgroundColor="#512BD4" TextColor="White" />
-                <Button x:Name="BtnTabRoads" Text="Roads" Clicked="OnFeatureTabRoads" Padding="10,4" />
-                <Button x:Name="BtnTabWater" Text="Water" Clicked="OnFeatureTabWater" Padding="10,4" />
+                        Style="{StaticResource PrimaryButton}" />
+                <Button x:Name="BtnTabRoads" Text="Roads" Clicked="OnFeatureTabRoads" Padding="10,4" Style="{StaticResource SecondaryButton}" />
+                <Button x:Name="BtnTabWater" Text="Water" Clicked="OnFeatureTabWater" Padding="10,4" Style="{StaticResource SecondaryButton}" />
                 <BoxView WidthRequest="20" Color="Transparent" />
-                <Button Text="Auto-Cull…" Clicked="OnAutoCull" Padding="10,4" />
-                <Button Text="Select All" Command="{Binding SelectAllCommand}" Padding="10,4" />
-                <Button Text="Select None" Command="{Binding SelectNoneCommand}" Padding="10,4" />
+                <Button Text="Auto-Cull…" Clicked="OnAutoCull" Style="{StaticResource SecondaryButton}" Padding="10,4" />
+                <Button Text="Select All" Command="{Binding SelectAllCommand}" Style="{StaticResource SecondaryButton}" Padding="10,4" />
+                <Button Text="Select None" Command="{Binding SelectNoneCommand}" Style="{StaticResource SecondaryButton}" Padding="10,4" />
             </HorizontalStackLayout>
 
             <!-- Search bar -->
@@ -126,7 +126,7 @@
                             SelectionMode="Single"
                             SelectionChanged="OnTownSelected">
                 <CollectionView.Header>
-                    <Grid ColumnDefinitions="40,*,90,80,70,70" Padding="4,2" BackgroundColor="#2D2D3D">
+                    <Grid ColumnDefinitions="40,*,90,80,70,70" Padding="4,2" BackgroundColor="{StaticResource SurfaceVariant}">
                         <Label Grid.Column="0" Text="☑" FontAttributes="Bold" />
                         <Label Grid.Column="1" Text="Name" FontAttributes="Bold" />
                         <Label Grid.Column="2" Text="Category" FontAttributes="Bold" />
@@ -148,7 +148,7 @@
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
                 <CollectionView.Footer>
-                    <Label x:Name="TownFooter" FontSize="12" TextColor="Gray" Padding="4,2" />
+                    <Label x:Name="TownFooter" Style="{StaticResource CaptionLabel}" Padding="4,2" />
                 </CollectionView.Footer>
             </CollectionView>
 
@@ -160,7 +160,7 @@
                             SelectionMode="Single"
                             SelectionChanged="OnRoadSelected">
                 <CollectionView.Header>
-                    <Grid ColumnDefinitions="40,100,*,80,60" Padding="4,2" BackgroundColor="#2D2D3D">
+                    <Grid ColumnDefinitions="40,100,*,80,60" Padding="4,2" BackgroundColor="{StaticResource SurfaceVariant}">
                         <Label Grid.Column="0" Text="☑" FontAttributes="Bold" />
                         <Label Grid.Column="1" Text="Class" FontAttributes="Bold" />
                         <Label Grid.Column="2" Text="Near Town" FontAttributes="Bold" />
@@ -180,7 +180,7 @@
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
                 <CollectionView.Footer>
-                    <Label x:Name="RoadFooter" FontSize="12" TextColor="Gray" Padding="4,2" />
+                    <Label x:Name="RoadFooter" Style="{StaticResource CaptionLabel}" Padding="4,2" />
                 </CollectionView.Footer>
             </CollectionView>
 
@@ -192,7 +192,7 @@
                             SelectionMode="Single"
                             SelectionChanged="OnWaterSelected">
                 <CollectionView.Header>
-                    <Grid ColumnDefinitions="40,*,80,80" Padding="4,2" BackgroundColor="#2D2D3D">
+                    <Grid ColumnDefinitions="40,*,80,80" Padding="4,2" BackgroundColor="{StaticResource SurfaceVariant}">
                         <Label Grid.Column="0" Text="☑" FontAttributes="Bold" />
                         <Label Grid.Column="1" Text="Name" FontAttributes="Bold" />
                         <Label Grid.Column="2" Text="Type" FontAttributes="Bold" />
@@ -210,28 +210,29 @@
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
                 <CollectionView.Footer>
-                    <Label x:Name="WaterFooter" FontSize="12" TextColor="Gray" Padding="4,2" />
+                    <Label x:Name="WaterFooter" Style="{StaticResource CaptionLabel}" Padding="4,2" />
                 </CollectionView.Footer>
             </CollectionView>
 
             <!-- ═══ Build Section ═══ -->
-            <Label Text="Build" FontAttributes="Bold" FontSize="16" Margin="0,12,0,0" />
+            <Label Text="Build" Style="{StaticResource SectionLabel}" Margin="0,12,0,0" />
 
             <HorizontalStackLayout Spacing="8">
                 <Label Text="Output" VerticalOptions="Center" WidthRequest="80" />
                 <Entry Text="{Binding OutputPath}" Placeholder="content/noordholland.RegionTemplateFile" WidthRequest="300" />
-                <Button Text="Browse" Clicked="OnBrowseOutput" Padding="8,4" />
+                <Button Text="Browse" Clicked="OnBrowseOutput" Style="{StaticResource SecondaryButton}" Padding="8,4" />
             </HorizontalStackLayout>
 
-            <Button Text="Build RegionTemplate" Command="{Binding BuildCommand}" HorizontalOptions="Start" />
+            <Button Text="Build RegionTemplate" Command="{Binding BuildCommand}" Style="{StaticResource SuccessButton}" HorizontalOptions="Start" />
 
             <!-- Log area -->
-            <Label Text="Log" FontAttributes="Bold" Margin="0,8,0,0" />
-            <Frame BorderColor="Gray" Padding="8" HeightRequest="200">
+            <Label Text="Log" Style="{StaticResource SectionLabel}" Margin="0,8,0,0" />
+            <Border Style="{StaticResource LogFrame}" HeightRequest="200">
+                <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
                 <ScrollView>
-                    <Label Text="{Binding LogText}" FontFamily="Consolas" FontSize="12" />
+                    <Label Text="{Binding LogText}" Style="{StaticResource MonospaceLabel}" />
                 </ScrollView>
-            </Frame>
+            </Border>
 
         </VerticalStackLayout>
     </ScrollView>

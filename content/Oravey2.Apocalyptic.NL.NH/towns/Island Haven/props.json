@@ -1,0 +1,158 @@
+[
+  {
+    "id": "prop_0",
+    "meshAsset": "meshes/primitives/sphere.glb",
+    "placement": {
+      "chunkX": 0,
+      "chunkY": 0,
+      "localTileX": 10,
+      "localTileY": 13
+    },
+    "rotation": 135.58267,
+    "scale": 1.0129353,
+    "blocksWalkability": false
+  },
+  {
+    "id": "prop_1",
+    "meshAsset": "meshes/primitives/sphere.glb",
+    "placement": {
+      "chunkX": 0,
+      "chunkY": 1,
+      "localTileX": 12,
+      "localTileY": 9
+    },
+    "rotation": 220.9929,
+    "scale": 0.8161508,
+    "blocksWalkability": true
+  },
+  {
+    "id": "prop_2",
+    "meshAsset": "meshes/primitives/sphere.glb",
+    "placement": {
+      "chunkX": 0,
+      "chunkY": 0,
+      "localTileX": 1,
+      "localTileY": 7
+    },
+    "rotation": 71.964905,
+    "scale": 0.8310555,
+    "blocksWalkability": false
+  },
+  {
+    "id": "prop_3",
+    "meshAsset": "meshes/primitives/sphere.glb",
+    "placement": {
+      "chunkX": 1,
+      "chunkY": 0,
+      "localTileX": 10,
+      "localTileY": 8
+    },
+    "rotation": 46.32742,
+    "scale": 0.90787053,
+    "blocksWalkability": false
+  },
+  {
+    "id": "prop_4",
+    "meshAsset": "meshes/primitives/sphere.glb",
+    "placement": {
+      "chunkX": 0,
+      "chunkY": 1,
+      "localTileX": 12,
+      "localTileY": 8
+    },
+    "rotation": 78.7925,
+    "scale": 1.1818182,
+    "blocksWalkability": true
+  },
+  {
+    "id": "prop_5",
+    "meshAsset": "meshes/primitives/sphere.glb",
+    "placement": {
+      "chunkX": 1,
+      "chunkY": 0,
+      "localTileX": 11,
+      "localTileY": 15
+    },
+    "rotation": 232.75275,
+    "scale": 1.123712,
+    "blocksWalkability": true
+  },
+  {
+    "id": "prop_6",
+    "meshAsset": "meshes/primitives/sphere.glb",
+    "placement": {
+      "chunkX": 0,
+      "chunkY": 0,
+      "localTileX": 3,
+      "localTileY": 0
+    },
+    "rotation": 25.145617,
+    "scale": 0.8279157,
+    "blocksWalkability": true
+  },
+  {
+    "id": "prop_7",
+    "meshAsset": "meshes/primitives/sphere.glb",
+    "placement": {
+      "chunkX": 1,
+      "chunkY": 1,
+      "localTileX": 6,
+      "localTileY": 10
+    },
+    "rotation": 126.26277,
+    "scale": 1.1024262,
+    "blocksWalkability": true
+  },
+  {
+    "id": "prop_8",
+    "meshAsset": "meshes/primitives/sphere.glb",
+    "placement": {
+      "chunkX": 1,
+      "chunkY": 1,
+      "localTileX": 8,
+      "localTileY": 0
+    },
+    "rotation": 341.50586,
+    "scale": 0.8593838,
+    "blocksWalkability": false
+  },
+  {
+    "id": "prop_9",
+    "meshAsset": "meshes/primitives/sphere.glb",
+    "placement": {
+      "chunkX": 1,
+      "chunkY": 0,
+      "localTileX": 11,
+      "localTileY": 6
+    },
+    "rotation": 23.58078,
+    "scale": 0.80010945,
+    "blocksWalkability": false
+  },
+  {
+    "id": "prop_10",
+    "meshAsset": "meshes/primitives/sphere.glb",
+    "placement": {
+      "chunkX": 0,
+      "chunkY": 0,
+      "localTileX": 1,
+      "localTileY": 5
+    },
+    "rotation": 236.72713,
+    "scale": 1.0985342,
+    "blocksWalkability": false
+  },
+  {
+    "id": "prop_11",
+    "meshAsset": "meshes/primitives/sphere.glb",
+    "placement": {
+      "chunkX": 0,
+      "chunkY": 0,
+      "localTileX": 14,
+      "localTileY": 13
+    },
+    "rotation": 228.05453,
+    "scale": 0.8386557,
+    "blocksWalkability": true
+  }
+]

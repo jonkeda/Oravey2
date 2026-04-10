@@ -6,7 +6,7 @@
              x:Class="Oravey2.MapGen.App.Views.RegionPickerDialog"
              x:DataType="vm:RegionPickerViewModel"
              Title="Select Region"
-             BackgroundColor="#1E1E2E">
+             >
 
     <ContentPage.Resources>
         <converters:IndentToThicknessConverter x:Key="IndentConverter" />
@@ -18,9 +18,9 @@
         <Entry Grid.Row="0"
                Text="{Binding SearchText}"
                Placeholder="Search regions…"
-               PlaceholderColor="#6C7086"
-               TextColor="#CDD6F4"
-               BackgroundColor="#2D2D44" />
+               PlaceholderColor="{StaticResource OnSurfaceVariant}"
+               
+               BackgroundColor="{StaticResource Surface}" />
 
         <!-- Tree -->
         <CollectionView Grid.Row="1"
@@ -38,7 +38,7 @@
                         <Label Grid.Column="0"
                                Text="{Binding ExpandIcon}"
                                FontSize="12"
-                               TextColor="#89B4FA"
+                               TextColor="{StaticResource ActionBlue}"
                                WidthRequest="24"
                                VerticalOptions="Center">
                             <Label.GestureRecognizers>
@@ -50,7 +50,7 @@
                         <Label Grid.Column="1"
                                Text="{Binding Region.Name}"
                                FontSize="14"
-                               TextColor="#CDD6F4"
+                               
                                VerticalOptions="Center">
                             <Label.GestureRecognizers>
                                 <TapGestureRecognizer Tapped="OnItemTapped" />
@@ -63,7 +63,7 @@
 
         <!-- Selection info -->
         <VerticalStackLayout Grid.Row="2" Spacing="4" IsVisible="{Binding HasSelection}">
-            <Label FontSize="14" TextColor="#A6E3A1">
+            <Label FontSize="14" TextColor="{StaticResource Success}">
                 <Label.FormattedText>
                     <FormattedString>
                         <Span Text="Selected: " FontAttributes="Bold" />
@@ -71,21 +71,21 @@
                     </FormattedString>
                 </Label.FormattedText>
             </Label>
-            <Label Text="{Binding SelectedPbfUrl}" FontSize="11" TextColor="#6C7086" LineBreakMode="MiddleTruncation" />
-            <Label Text="{Binding SelectedPath}" FontSize="12" TextColor="#89B4FA" />
+            <Label Text="{Binding SelectedPbfUrl}" FontSize="11" TextColor="{StaticResource OnSurfaceVariant}" LineBreakMode="MiddleTruncation" />
+            <Label Text="{Binding SelectedPath}" FontSize="12" TextColor="{StaticResource ActionBlue}" />
         </VerticalStackLayout>
 
         <!-- Buttons -->
         <HorizontalStackLayout Grid.Row="3" Spacing="12" HorizontalOptions="End">
             <Button Text="Cancel"
                     Command="{Binding CancelCommand}"
-                    BackgroundColor="#45475A"
-                    TextColor="#CDD6F4"
+                    BackgroundColor="{StaticResource SurfaceVariant}"
+                    
                     Padding="16,8" />
             <Button Text="Select"
                     Command="{Binding SelectCommand}"
-                    BackgroundColor="#89B4FA"
-                    TextColor="#1E1E2E"
+                    BackgroundColor="{StaticResource ActionBlue}"
+                    TextColor="{StaticResource OnActionBlue}"
                     Padding="16,8"
                     IsEnabled="{Binding HasSelection}" />
         </HorizontalStackLayout>

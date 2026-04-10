@@ -6,16 +6,12 @@
              x:Class="Oravey2.MapGen.App.App">
     <Application.Resources>
         <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/LightPalette.xaml" />
+                <ResourceDictionary Source="Styles/Controls.xaml" />
+            </ResourceDictionary.MergedDictionaries>
             <toolkit:IsNotNullConverter x:Key="IsNotNullConverter" />
             <converters:BoolToColorConverter x:Key="BoolToColorConverter" />
-            <Color x:Key="Primary">#512BD4</Color>
-            <Color x:Key="Secondary">#DFD8F7</Color>
-            <Color x:Key="Tertiary">#2B0B98</Color>
-            <Color x:Key="Background">#1E1E2E</Color>
-            <Color x:Key="Surface">#2D2D3D</Color>
-            <Color x:Key="OnSurface">#CDD6F4</Color>
-            <Color x:Key="Error">#F38BA8</Color>
-            <Color x:Key="Success">#A6E3A1</Color>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

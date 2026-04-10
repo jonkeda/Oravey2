@@ -9,13 +9,13 @@
     <ScrollView Padding="16">
         <VerticalStackLayout Spacing="10">
 
-            <Label Text="Prompt" FontAttributes="Bold" />
+            <Label Text="Prompt" Style="{StaticResource SectionLabel}" />
             <Editor Text="{Binding Prompt}" Placeholder="Describe the character (e.g. a post-apocalyptic warrior)" HeightRequest="80" />
 
-            <Label Text="Image URL (optional)" FontAttributes="Bold" />
+            <Label Text="Image URL (optional)" Style="{StaticResource SectionLabel}" />
             <Entry Text="{Binding ImageUrl}" Placeholder="https://..." />
 
-            <Label Text="Art Style" FontAttributes="Bold" />
+            <Label Text="Art Style" Style="{StaticResource SectionLabel}" />
             <Picker SelectedItem="{Binding ArtStyle}">
                 <Picker.ItemsSource>
                     <x:Array Type="{x:Type x:String}">
@@ -39,13 +39,13 @@
             </HorizontalStackLayout>
 
             <VerticalStackLayout Spacing="4" IsVisible="{Binding ShouldAnimate}">
-                <Label Text="Animation Action ID" FontAttributes="Bold" />
+                <Label Text="Animation Action ID" Style="{StaticResource SectionLabel}" />
                 <Entry Text="{Binding AnimationActionId}" Placeholder="e.g. walk, run, idle" />
             </VerticalStackLayout>
 
             <HorizontalStackLayout Spacing="10" Margin="0,10,0,0">
-                <Button Text="Generate" Command="{Binding GenerateCommand}" />
-                <Button Text="Cancel" Command="{Binding CancelCommand}" BackgroundColor="DarkRed" />
+                <Button Text="Generate" Command="{Binding GenerateCommand}" Style="{StaticResource PrimaryButton}" />
+                <Button Text="Cancel" Command="{Binding CancelCommand}" Style="{StaticResource DangerButton}" />
             </HorizontalStackLayout>
 
             <ActivityIndicator IsRunning="{Binding IsGenerating}" IsVisible="{Binding IsGenerating}" />
@@ -61,16 +61,17 @@
                 </VerticalStackLayout>
             </HorizontalStackLayout>
 
-            <Label Text="Log" FontAttributes="Bold" Margin="0,10,0,0" />
-            <Frame BorderColor="Gray" Padding="8" HeightRequest="200">
+            <Label Text="Log" Style="{StaticResource SectionLabel}" Margin="0,10,0,0" />
+            <Border Style="{StaticResource LogFrame}" HeightRequest="200">
+                <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
                 <ScrollView>
-                    <Label Text="{Binding StreamingLog}" FontFamily="Consolas" FontSize="12" />
+                    <Label Text="{Binding StreamingLog}" Style="{StaticResource MonospaceLabel}" />
                 </ScrollView>
-            </Frame>
+            </Border>
 
             <HorizontalStackLayout Spacing="10">
-                <Button Text="Download GLB" Command="{Binding DownloadGlbCommand}" />
-                <Button Text="Download FBX" Command="{Binding DownloadFbxCommand}" />
+                <Button Text="Download GLB" Command="{Binding DownloadGlbCommand}" Style="{StaticResource SecondaryButton}" />
+                <Button Text="Download FBX" Command="{Binding DownloadFbxCommand}" Style="{StaticResource SecondaryButton}" />
             </HorizontalStackLayout>
 
         </VerticalStackLayout>

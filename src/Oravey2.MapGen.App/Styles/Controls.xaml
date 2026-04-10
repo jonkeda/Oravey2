@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!-- ═══════════════════════════════════════════════════════════
+         Control Styles — Oravey2 Tools
+         References palette keys (Primary, Surface, OnSurface, …).
+         Merge a palette dictionary BEFORE this one in App.xaml.
+         ═══════════════════════════════════════════════════════════ -->
+
+    <!-- ─────────────────────────── Implicit Styles ──────────────────────────── -->
+
+    <!-- All pages get the theme background automatically -->
+    <Style TargetType="ContentPage">
+        <Setter Property="BackgroundColor" Value="{StaticResource Background}" />
+    </Style>
+
+    <!-- Default label appearance -->
+    <Style TargetType="Label">
+        <Setter Property="TextColor" Value="{StaticResource OnSurface}" />
+        <Setter Property="FontFamily" Value="OpenSans-Regular" />
+        <Setter Property="FontSize" Value="14" />
+    </Style>
+
+    <!-- Default entry appearance -->
+    <Style TargetType="Entry">
+        <Setter Property="TextColor" Value="{StaticResource OnSurface}" />
+        <Setter Property="BackgroundColor" Value="{StaticResource Surface}" />
+        <Setter Property="PlaceholderColor" Value="{StaticResource OnSurfaceVariant}" />
+        <Setter Property="FontFamily" Value="OpenSans-Regular" />
+        <Setter Property="FontSize" Value="14" />
+    </Style>
+
+    <!-- Default editor appearance -->
+    <Style TargetType="Editor">
+        <Setter Property="TextColor" Value="{StaticResource OnSurface}" />
+        <Setter Property="BackgroundColor" Value="{StaticResource Surface}" />
+        <Setter Property="PlaceholderColor" Value="{StaticResource OnSurfaceVariant}" />
+        <Setter Property="FontFamily" Value="OpenSans-Regular" />
+        <Setter Property="FontSize" Value="14" />
+    </Style>
+
+    <!-- Default picker appearance -->
+    <Style TargetType="Picker">
+        <Setter Property="TextColor" Value="{StaticResource OnSurface}" />
+        <Setter Property="BackgroundColor" Value="{StaticResource Surface}" />
+        <Setter Property="FontFamily" Value="OpenSans-Regular" />
+        <Setter Property="FontSize" Value="14" />
+    </Style>
+
+    <!-- Default progress bar -->
+    <Style TargetType="ProgressBar">
+        <Setter Property="ProgressColor" Value="{StaticResource ActionBlue}" />
+    </Style>
+
+    <!-- Default activity indicator -->
+    <Style TargetType="ActivityIndicator">
+        <Setter Property="Color" Value="{StaticResource ActionBlue}" />
+    </Style>
+
+    <!-- ─────────────────────────── Text Styles ──────────────────────────── -->
+
+    <Style x:Key="HeaderLabel" TargetType="Label">
+        <Setter Property="FontSize" Value="24" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="FontFamily" Value="OpenSans-Semibold" />
+        <Setter Property="TextColor" Value="{StaticResource OnSurface}" />
+    </Style>
+
+    <Style x:Key="SectionLabel" TargetType="Label">
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="FontFamily" Value="OpenSans-Semibold" />
+        <Setter Property="TextColor" Value="{StaticResource OnSurface}" />
+    </Style>
+
+    <Style x:Key="CaptionLabel" TargetType="Label">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="TextColor" Value="{StaticResource OnSurfaceVariant}" />
+        <Setter Property="FontFamily" Value="OpenSans-Regular" />
+    </Style>
+
+    <Style x:Key="MonospaceLabel" TargetType="Label">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontFamily" Value="Consolas" />
+        <Setter Property="TextColor" Value="{StaticResource OnSurface}" />
+    </Style>
+
+    <!-- ─────────────────────────── Button Styles ──────────────────────────── -->
+
+    <!-- Base button (not used directly — inherited by specific buttons) -->
+    <Style x:Key="BaseButton" TargetType="Button">
+        <Setter Property="FontFamily" Value="OpenSans-Semibold" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Padding" Value="16,8" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="MinimumHeightRequest" Value="36" />
+    </Style>
+
+    <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
+        <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+        <Setter Property="TextColor" Value="{StaticResource OnPrimary}" />
+    </Style>
+
+    <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
+        <Setter Property="BackgroundColor" Value="{StaticResource SurfaceVariant}" />
+        <Setter Property="TextColor" Value="{StaticResource OnSurface}" />
+        <Setter Property="BorderColor" Value="{StaticResource Outline}" />
+        <Setter Property="BorderWidth" Value="1" />
+    </Style>
+
+    <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
+        <Setter Property="BackgroundColor" Value="{StaticResource Danger}" />
+        <Setter Property="TextColor" Value="{StaticResource OnDanger}" />
+    </Style>
+
+    <Style x:Key="SuccessButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
+        <Setter Property="BackgroundColor" Value="{StaticResource Success}" />
+        <Setter Property="TextColor" Value="{StaticResource OnSuccess}" />
+    </Style>
+
+    <Style x:Key="GhostButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="{StaticResource Primary}" />
+        <Setter Property="BorderWidth" Value="0" />
+    </Style>
+
+    <!-- ─────────────────────────── Container Styles ──────────────────────────── -->
+
+    <Style x:Key="CardBorder" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{StaticResource Surface}" />
+        <Setter Property="Stroke" Value="{StaticResource Outline}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="Padding" Value="16" />
+    </Style>
+
+    <Style x:Key="ElevatedCard" TargetType="Border" BasedOn="{StaticResource CardBorder}">
+        <Setter Property="BackgroundColor" Value="{StaticResource SurfaceVariant}" />
+        <Setter Property="Shadow">
+            <Setter.Value>
+                <Shadow Brush="#20000000" Offset="0,2" Radius="4" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="LogFrame" TargetType="Border" BasedOn="{StaticResource CardBorder}">
+        <Setter Property="BackgroundColor" Value="{StaticResource Surface}" />
+        <Setter Property="MinimumHeightRequest" Value="120" />
+        <Setter Property="MaximumHeightRequest" Value="300" />
+    </Style>
+
+    <!-- ─────────────────────────── Input Styles ──────────────────────────── -->
+
+    <Style x:Key="StandardEntry" TargetType="Entry">
+        <Setter Property="TextColor" Value="{StaticResource OnSurface}" />
+        <Setter Property="BackgroundColor" Value="{StaticResource Surface}" />
+        <Setter Property="PlaceholderColor" Value="{StaticResource OnSurfaceVariant}" />
+        <Setter Property="FontFamily" Value="OpenSans-Regular" />
+        <Setter Property="FontSize" Value="14" />
+    </Style>
+
+    <Style x:Key="StandardEditor" TargetType="Editor">
+        <Setter Property="TextColor" Value="{StaticResource OnSurface}" />
+        <Setter Property="BackgroundColor" Value="{StaticResource Surface}" />
+        <Setter Property="PlaceholderColor" Value="{StaticResource OnSurfaceVariant}" />
+        <Setter Property="FontFamily" Value="OpenSans-Regular" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="MinimumHeightRequest" Value="80" />
+    </Style>
+
+    <Style x:Key="StandardPicker" TargetType="Picker">
+        <Setter Property="TextColor" Value="{StaticResource OnSurface}" />
+        <Setter Property="BackgroundColor" Value="{StaticResource Surface}" />
+        <Setter Property="FontFamily" Value="OpenSans-Regular" />
+        <Setter Property="FontSize" Value="14" />
+    </Style>
+
+</ResourceDictionary>

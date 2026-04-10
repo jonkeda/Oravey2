@@ -42,9 +42,21 @@ public partial class PipelineWizardView : ContentPage
         });
         _viewModel.RegisterStepViewFactory(5, () =>
             new TownDesignStepView(_viewModel.TownDesignStepVM));
-        _viewModel.RegisterStepViewFactory(6, () => new TownMapsStepView());
-        _viewModel.RegisterStepViewFactory(7, () => new AssetsStepView());
-        _viewModel.RegisterStepViewFactory(8, () => new AssemblyStepView());
+        _viewModel.RegisterStepViewFactory(6, () =>
+        {
+            _viewModel.TownMapsStepVM.SetRegionTemplate(_viewModel.ParseStepVM.ParsedTemplate);
+            return new TownMapsStepView(_viewModel.TownMapsStepVM);
+        });
+        _viewModel.RegisterStepViewFactory(7, () =>
+        {
+            _viewModel.AssetsStepVM.Load(_viewModel.GetPipelineState());
+            return new AssetsStepView(_viewModel.AssetsStepVM);
+        });
+        _viewModel.RegisterStepViewFactory(8, () =>
+        {
+            _viewModel.AssemblyStepVM.Load(_viewModel.GetPipelineState());
+            return new AssemblyStepView(_viewModel.AssemblyStepVM);
+        });
     }
 
     private static string FindContentRoot()

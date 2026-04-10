@@ -5,54 +5,50 @@
              x:Class="Oravey2.MapGen.App.Views.DownloadStepView"
              x:DataType="vm:DownloadStepViewModel">
     <VerticalStackLayout Spacing="16" Padding="8">
-        <Label Text="② Download Data" FontSize="24" FontAttributes="Bold" />
+        <Label Text="② Download Data" Style="{StaticResource HeaderLabel}" />
         <Label Text="Download SRTM elevation tiles and OpenStreetMap PBF extract for the selected region."
-               TextColor="#AAAAAA" />
+               TextColor="{StaticResource OnSurfaceVariant}" />
+        <Button Text="Next →"
+                Command="{Binding NextCommand}"
+                HorizontalOptions="Start"
+                Style="{StaticResource PrimaryButton}" />
 
         <!-- Two side-by-side cards -->
         <Grid ColumnDefinitions="*,16,*" Margin="0,8,0,0">
 
             <!-- SRTM Card -->
             <Border Grid.Column="0"
-                    Stroke="#444444"
-                    StrokeThickness="1"
-                    Padding="16"
-                    BackgroundColor="#1E1E1E">
+                    Style="{StaticResource CardBorder}">
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="8" />
                 </Border.StrokeShape>
                 <VerticalStackLayout Spacing="8">
-                    <Label Text="SRTM Elevation Data" FontSize="16" FontAttributes="Bold" />
-                    <Label Text="{Binding SrtmCountText}" TextColor="#AAAAAA" FontSize="13" />
+                    <Label Text="SRTM Elevation Data" Style="{StaticResource SectionLabel}" />
+                    <Label Text="{Binding SrtmCountText}" TextColor="{StaticResource OnSurfaceVariant}" FontSize="13" />
                     <Label Text="{Binding SrtmStatusText}" FontSize="13" />
-                    <ProgressBar Progress="{Binding SrtmProgress}" ProgressColor="#0078D4" />
+                    <ProgressBar Progress="{Binding SrtmProgress}" />
                     <Button Text="Download SRTM"
                             Command="{Binding DownloadSrtmCommand}"
                             HorizontalOptions="Start"
-                            BackgroundColor="#2D2D30"
-                            TextColor="White" />
+                            Style="{StaticResource SecondaryButton}" />
                 </VerticalStackLayout>
             </Border>
 
             <!-- OSM Card -->
             <Border Grid.Column="2"
-                    Stroke="#444444"
-                    StrokeThickness="1"
-                    Padding="16"
-                    BackgroundColor="#1E1E1E">
+                    Style="{StaticResource CardBorder}">
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="8" />
                 </Border.StrokeShape>
                 <VerticalStackLayout Spacing="8">
-                    <Label Text="OpenStreetMap Extract" FontSize="16" FontAttributes="Bold" />
-                    <Label Text="{Binding OsmFileName}" TextColor="#AAAAAA" FontSize="13" />
+                    <Label Text="OpenStreetMap Extract" Style="{StaticResource SectionLabel}" />
+                    <Label Text="{Binding OsmFileName}" TextColor="{StaticResource OnSurfaceVariant}" FontSize="13" />
                     <Label Text="{Binding OsmStatusText}" FontSize="13" />
-                    <ProgressBar Progress="{Binding OsmProgress}" ProgressColor="#0078D4" />
+                    <ProgressBar Progress="{Binding OsmProgress}" />
                     <Button Text="Download OSM"
                             Command="{Binding DownloadOsmCommand}"
                             HorizontalOptions="Start"
-                            BackgroundColor="#2D2D30"
-                            TextColor="White" />
+                            Style="{StaticResource SecondaryButton}" />
                 </VerticalStackLayout>
             </Border>
         </Grid>
@@ -62,15 +58,8 @@
                 Command="{Binding CancelCommand}"
                 IsVisible="{Binding IsDownloading}"
                 HorizontalOptions="Start"
-                BackgroundColor="#D32F2F"
-                TextColor="White" />
+                Style="{StaticResource DangerButton}" />
 
-        <!-- Next Button -->
-        <Button Text="Next →"
-                Command="{Binding NextCommand}"
-                HorizontalOptions="Start"
-                BackgroundColor="#0078D4"
-                TextColor="White"
-                Margin="0,8,0,0" />
+
     </VerticalStackLayout>
 </ContentView>

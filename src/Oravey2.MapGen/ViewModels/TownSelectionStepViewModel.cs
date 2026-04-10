@@ -134,7 +134,7 @@ public class TownSelectionStepViewModel : BaseViewModel
     public Action? StepCompleted { get; set; }
 
     // --- Parsed template from previous step ---
-    internal RegionTemplates.RegionTemplate? ParsedTemplate { get; set; }
+    internal RegionTemplate? ParsedTemplate { get; set; }
 
     public TownSelectionStepViewModel()
     {
@@ -182,7 +182,7 @@ public class TownSelectionStepViewModel : BaseViewModel
         _toolCall = toolCall;
     }
 
-    public void SetParsedTemplate(RegionTemplates.RegionTemplate? template)
+    public void SetParsedTemplate(RegionTemplate? template)
     {
         ParsedTemplate = template;
     }

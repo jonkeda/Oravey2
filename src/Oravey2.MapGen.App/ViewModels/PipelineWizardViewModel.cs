@@ -19,6 +19,9 @@ public sealed class PipelineWizardViewModel : AppBaseViewModel
     public ParseStepViewModel ParseStepVM { get; }
     public TownSelectionStepViewModel TownSelectionStepVM { get; }
     public TownDesignStepViewModel TownDesignStepVM { get; }
+    public TownMapsStepViewModel TownMapsStepVM { get; }
+    public AssetsStepViewModel AssetsStepVM { get; }
+    public AssemblyStepViewModel AssemblyStepVM { get; }
     public string ContentRoot { get; set; } = string.Empty;
 
     public ObservableCollection<PipelineStepInfo> Steps { get; } = [];
@@ -63,6 +66,9 @@ public sealed class PipelineWizardViewModel : AppBaseViewModel
         ParseStepViewModel parseStepVM,
         TownSelectionStepViewModel townSelectionStepVM,
         TownDesignStepViewModel townDesignStepVM,
+        TownMapsStepViewModel townMapsStepVM,
+        AssetsStepViewModel assetsStepVM,
+        AssemblyStepViewModel assemblyStepVM,
         CopilotLlmService llmService)
     {
         _stateService = stateService;
@@ -74,12 +80,18 @@ public sealed class PipelineWizardViewModel : AppBaseViewModel
         ParseStepVM = parseStepVM;
         TownSelectionStepVM = townSelectionStepVM;
         TownDesignStepVM = townDesignStepVM;
+        TownMapsStepVM = townMapsStepVM;
+        AssetsStepVM = assetsStepVM;
+        AssemblyStepVM = assemblyStepVM;
 
         RegionStepVM.StepCompleted = OnStepCompleted;
         DownloadStepVM.StepCompleted = OnStepCompleted;
         ParseStepVM.StepCompleted = OnStepCompleted;
         TownSelectionStepVM.StepCompleted = OnStepCompleted;
         TownDesignStepVM.StepCompleted = OnStepCompleted;
+        TownMapsStepVM.StepCompleted = OnStepCompleted;
+        AssetsStepVM.StepCompleted = OnStepCompleted;
+        AssemblyStepVM.StepCompleted = OnStepCompleted;
 
         var toolSystemMsg = """
             You are a JSON-only RPG town generator. When asked to generate towns,
@@ -157,6 +169,7 @@ public sealed class PipelineWizardViewModel : AppBaseViewModel
         ParseStepVM.TemplateLoaded = t => TownSelectionStepVM.SetParsedTemplate(t);
         TownSelectionStepVM.Initialize(_stateService.DataRoot, _generationParams);
         TownDesignStepVM.Initialize(_stateService.DataRoot);
+        TownMapsStepVM.Initialize(_stateService.DataRoot);
     }
 
     private void LoadStep(int stepNumber)
@@ -178,6 +191,16 @@ public sealed class PipelineWizardViewModel : AppBaseViewModel
                 break;
             case 5:
                 TownDesignStepVM.Load(_pipelineState);
+                break;
+            case 6:
+                TownMapsStepVM.SetRegionTemplate(ParseStepVM.ParsedTemplate);
+                TownMapsStepVM.Load(_pipelineState);
+                break;
+            case 7:
+                AssetsStepVM.Load(_pipelineState);
+                break;
+            case 8:
+                AssemblyStepVM.Load(_pipelineState);
                 break;
         }
     }

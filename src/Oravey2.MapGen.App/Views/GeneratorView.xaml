@@ -9,13 +9,13 @@
     <ScrollView Padding="16">
         <VerticalStackLayout Spacing="10">
 
-            <Label Text="Location" FontAttributes="Bold" />
+            <Label Text="Location" Style="{StaticResource SectionLabel}" />
             <Entry Text="{Binding LocationName}" Placeholder="e.g. Portland, Oregon" />
 
-            <Label Text="Geography" FontAttributes="Bold" />
+            <Label Text="Geography" Style="{StaticResource SectionLabel}" />
             <Editor Text="{Binding GeographyDescription}" Placeholder="Describe the terrain..." HeightRequest="80" />
 
-            <Label Text="Post-Apocalyptic Context" FontAttributes="Bold" />
+            <Label Text="Post-Apocalyptic Context" Style="{StaticResource SectionLabel}" />
             <Editor Text="{Binding PostApocContext}" Placeholder="Describe the destruction..." HeightRequest="80" />
 
             <HorizontalStackLayout Spacing="10">
@@ -37,10 +37,10 @@
                 </VerticalStackLayout>
             </HorizontalStackLayout>
 
-            <Label Text="Difficulty" FontAttributes="Bold" />
+            <Label Text="Difficulty" Style="{StaticResource SectionLabel}" />
             <Entry Text="{Binding DifficultyDescription}" Placeholder="e.g. Moderate" />
 
-            <Label Text="Factions (comma-separated)" FontAttributes="Bold" />
+            <Label Text="Factions (comma-separated)" Style="{StaticResource SectionLabel}" />
             <Entry Text="{Binding Factions}" Placeholder="e.g. Settlers, Raiders, Tech Cult" />
 
             <HorizontalStackLayout Spacing="10">
@@ -76,23 +76,24 @@
             </HorizontalStackLayout>
 
             <HorizontalStackLayout Spacing="10" Margin="0,10,0,0">
-                <Button Text="Generate" Command="{Binding GenerateCommand}" />
-                <Button Text="Cancel" Command="{Binding CancelCommand}" BackgroundColor="DarkRed" />
+                <Button Text="Generate" Command="{Binding GenerateCommand}" Style="{StaticResource PrimaryButton}" />
+                <Button Text="Cancel" Command="{Binding CancelCommand}" Style="{StaticResource DangerButton}" />
             </HorizontalStackLayout>
 
-            <Label Text="Streaming Log" FontAttributes="Bold" Margin="0,10,0,0" />
-            <Frame BorderColor="Gray" Padding="8" HeightRequest="200">
+            <Label Text="Streaming Log" Style="{StaticResource SectionLabel}" Margin="0,10,0,0" />
+            <Border Style="{StaticResource LogFrame}" HeightRequest="200">
+                <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
                 <ScrollView>
-                    <Label Text="{Binding StreamingLog}" FontFamily="Consolas" FontSize="12" />
+                    <Label Text="{Binding StreamingLog}" Style="{StaticResource MonospaceLabel}" />
                 </ScrollView>
-            </Frame>
+            </Border>
 
             <Label Text="{Binding StatusMessage}" FontAttributes="Italic" />
 
             <HorizontalStackLayout Spacing="10">
-                <Button Text="Save Blueprint" Command="{Binding SaveBlueprintCommand}" />
-                <Button Text="Copy JSON" Command="{Binding CopyJsonCommand}" />
-                <Button Text="Compile to Pack" Command="{Binding CompileBlueprintCommand}" BackgroundColor="#238636" TextColor="White" />
+                <Button Text="Save Blueprint" Command="{Binding SaveBlueprintCommand}" Style="{StaticResource SecondaryButton}" />
+                <Button Text="Copy JSON" Command="{Binding CopyJsonCommand}" Style="{StaticResource SecondaryButton}" />
+                <Button Text="Compile to Pack" Command="{Binding CompileBlueprintCommand}" Style="{StaticResource SuccessButton}" />
             </HorizontalStackLayout>
 
         </VerticalStackLayout>

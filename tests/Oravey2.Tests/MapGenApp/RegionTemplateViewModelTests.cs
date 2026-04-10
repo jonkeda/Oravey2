@@ -1,7 +1,7 @@
 using System.Numerics;
 using Oravey2.MapGen.Download;
 using Oravey2.MapGen.ViewModels;
-using Oravey2.MapGen.ViewModels.RegionTemplate;
+using Oravey2.MapGen.ViewModels.RegionTemplates;
 using Oravey2.MapGen.RegionTemplates;
 using Xunit;
 

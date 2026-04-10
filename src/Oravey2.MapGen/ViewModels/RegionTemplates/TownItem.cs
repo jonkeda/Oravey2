@@ -1,6 +1,6 @@
 using Oravey2.MapGen.RegionTemplates;
 
-namespace Oravey2.MapGen.ViewModels.RegionTemplate;
+namespace Oravey2.MapGen.ViewModels.RegionTemplates;
 
 public class TownItem : ViewModelBase
 {

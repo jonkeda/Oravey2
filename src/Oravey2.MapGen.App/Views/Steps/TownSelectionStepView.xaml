@@ -6,28 +6,32 @@
              x:DataType="vm:TownSelectionStepViewModel">
     <ScrollView>
         <VerticalStackLayout Spacing="16" Padding="8">
-            <Label Text="④ Town Selection" FontSize="24" FontAttributes="Bold" />
+            <Label Text="④ Town Selection" Style="{StaticResource HeaderLabel}" />
             <Label Text="Use LLM to select or discover towns for the region."
-                   TextColor="#AAAAAA" />
+                   TextColor="{StaticResource OnSurfaceVariant}" />
+            <Button Text="Save &amp; Next →"
+                    Command="{Binding SaveNextCommand}"
+                    HorizontalOptions="Start"
+                    Style="{StaticResource PrimaryButton}" />
 
             <!-- Mode Toggle -->
-            <Border Stroke="#444444" StrokeThickness="1" Padding="12,8" BackgroundColor="#252530">
+            <Border Style="{StaticResource CardBorder}" Padding="12,8">
                 <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
                 <VerticalStackLayout Spacing="8">
-                    <Label Text="Mode" FontSize="15" FontAttributes="Bold" TextColor="White" />
+                    <Label Text="Mode" FontSize="15" FontAttributes="Bold"  />
                     <HorizontalStackLayout Spacing="16">
                         <RadioButton Content="A — Discover"
                                      IsChecked="{Binding IsModeA}" GroupName="Mode"
-                                     TextColor="White" />
+                                      />
                         <RadioButton Content="B — Select from list"
                                      IsChecked="{Binding IsModeB}" GroupName="Mode"
-                                     TextColor="White" />
+                                      />
                     </HorizontalStackLayout>
-                    <Label Text="{Binding ModeDescription}" TextColor="#888888" FontSize="12" />
+                    <Label Text="{Binding ModeDescription}" TextColor="{StaticResource OnSurfaceVariant}" FontSize="12" />
 
                     <HorizontalStackLayout Spacing="8">
-                        <Label Text="Seed:" VerticalOptions="Center" TextColor="White" />
-                        <Entry Text="{Binding Seed}" Keyboard="Numeric" WidthRequest="80" TextColor="White" />
+                        <Label Text="Seed:" VerticalOptions="Center"  />
+                        <Entry Text="{Binding Seed}" Keyboard="Numeric" WidthRequest="80"  />
                     </HorizontalStackLayout>
                 </VerticalStackLayout>
             </Border>
@@ -36,32 +40,32 @@
             <HorizontalStackLayout Spacing="8">
                 <Button Text="Run LLM"
                         Command="{Binding RunLlmCommand}"
-                        BackgroundColor="#238636" TextColor="White"
+                        Style="{StaticResource SuccessButton}"
                         Padding="16,8" />
                 <Button Text="Re-roll All"
                         Command="{Binding RerollAllCommand}"
-                        BackgroundColor="#2D2D30" TextColor="White"
+                        Style="{StaticResource SecondaryButton}"
                         Padding="12,6" />
                 <Button Text="Add Town"
                         Command="{Binding AddTownCommand}"
-                        BackgroundColor="#2D2D30" TextColor="White"
+                        Style="{StaticResource SecondaryButton}"
                         Padding="12,6" />
                 <Button Text="Cancel"
                         Command="{Binding CancelCommand}"
-                        BackgroundColor="#6E3630" TextColor="White"
+                        Style="{StaticResource DangerButton}"
                         Padding="12,6"
                         IsVisible="{Binding IsRunning}" />
                 <ActivityIndicator IsRunning="{Binding IsRunning}" IsVisible="{Binding IsRunning}"
-                                   Color="#0078D4" HeightRequest="24" WidthRequest="24" />
+                                    HeightRequest="24" WidthRequest="24" />
             </HorizontalStackLayout>
 
-            <Label Text="{Binding StatusText}" TextColor="#888888" FontSize="13" />
+            <Label Text="{Binding StatusText}" TextColor="{StaticResource OnSurfaceVariant}" FontSize="13" />
 
             <!-- Validation Panel -->
             <Border IsVisible="{Binding HasResults}"
-                    Stroke="#444444" StrokeThickness="1" Padding="12,8" BackgroundColor="#252530">
+                    Style="{StaticResource CardBorder}" Padding="12,8">
                 <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
-                <Label Text="{Binding ValidationSummary}" FontSize="14" TextColor="White" />
+                <Label Text="{Binding ValidationSummary}" FontSize="14"  />
             </Border>
 
             <!-- Town Cards -->
@@ -72,7 +76,7 @@
                 </CollectionView.ItemsLayout>
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="vm:TownSelectionItem">
-                        <Border Stroke="#444444" StrokeThickness="1" Padding="12" BackgroundColor="#1E1E1E">
+                        <Border Style="{StaticResource CardBorder}" Padding="12">
                             <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
                             <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
 
@@ -82,47 +86,47 @@
                                 <!-- Display mode (not editing) -->
                                 <VerticalStackLayout Grid.Column="1" IsVisible="{Binding IsNotEditing}" Spacing="2">
                                     <HorizontalStackLayout Spacing="8">
-                                        <Label Text="{Binding GameName}" FontSize="16" FontAttributes="Bold" TextColor="White" />
-                                        <Label Text="{Binding RealName, StringFormat='({0})'}" FontSize="13" TextColor="#888888" VerticalOptions="Center" />
+                                        <Label Text="{Binding GameName}" FontSize="16" FontAttributes="Bold" TextColor="{StaticResource OnSurface}" />
+                                        <Label Text="{Binding RealName, StringFormat='({0})'}" FontSize="13" TextColor="{StaticResource OnSurfaceVariant}" VerticalOptions="Center" />
                                     </HorizontalStackLayout>
                                     <HorizontalStackLayout Spacing="12">
-                                        <Label Text="{Binding Role}" FontSize="12" TextColor="#AAAAAA" />
-                                        <Label Text="{Binding Faction}" FontSize="12" TextColor="#AAAAAA" />
+                                        <Label Text="{Binding Role}" FontSize="12" TextColor="{StaticResource OnSurfaceVariant}" />
+                                        <Label Text="{Binding Faction}" FontSize="12" TextColor="{StaticResource OnSurfaceVariant}" />
                                         <Label Text="{Binding ThreatLevel, StringFormat='Threat: {0}'}" FontSize="12" TextColor="{Binding ThreatColor}" FontAttributes="Bold" />
                                     </HorizontalStackLayout>
-                                    <Label Text="{Binding Description}" FontSize="12" TextColor="#CCCCCC" />
+                                    <Label Text="{Binding Description}" FontSize="12" TextColor="{StaticResource OnSurface}" />
                                 </VerticalStackLayout>
 
                                 <!-- Edit mode -->
                                 <VerticalStackLayout Grid.Column="1" IsVisible="{Binding IsEditing}" Spacing="4">
                                     <HorizontalStackLayout Spacing="8">
-                                        <Label Text="Game Name:" VerticalOptions="Center" TextColor="White" WidthRequest="90" />
-                                        <Entry Text="{Binding GameName}" WidthRequest="200" TextColor="White" />
+                                        <Label Text="Game Name:" VerticalOptions="Center" TextColor="{StaticResource OnSurface}" WidthRequest="90" />
+                                        <Entry Text="{Binding GameName}" WidthRequest="200"  />
                                     </HorizontalStackLayout>
                                     <HorizontalStackLayout Spacing="8">
-                                        <Label Text="Real Name:" VerticalOptions="Center" TextColor="White" WidthRequest="90" />
-                                        <Entry Text="{Binding RealName}" WidthRequest="200" TextColor="White" />
+                                        <Label Text="Real Name:" VerticalOptions="Center" TextColor="{StaticResource OnSurface}" WidthRequest="90" />
+                                        <Entry Text="{Binding RealName}" WidthRequest="200"  />
                                     </HorizontalStackLayout>
                                     <HorizontalStackLayout Spacing="8">
-                                        <Label Text="Role:" VerticalOptions="Center" TextColor="White" WidthRequest="90" />
-                                        <Entry Text="{Binding Role}" WidthRequest="200" TextColor="White" />
+                                        <Label Text="Role:" VerticalOptions="Center" TextColor="{StaticResource OnSurface}" WidthRequest="90" />
+                                        <Entry Text="{Binding Role}" WidthRequest="200"  />
                                     </HorizontalStackLayout>
                                     <HorizontalStackLayout Spacing="8">
-                                        <Label Text="Faction:" VerticalOptions="Center" TextColor="White" WidthRequest="90" />
-                                        <Entry Text="{Binding Faction}" WidthRequest="200" TextColor="White" />
+                                        <Label Text="Faction:" VerticalOptions="Center" TextColor="{StaticResource OnSurface}" WidthRequest="90" />
+                                        <Entry Text="{Binding Faction}" WidthRequest="200"  />
                                     </HorizontalStackLayout>
                                     <HorizontalStackLayout Spacing="8">
-                                        <Label Text="Threat (1-10):" VerticalOptions="Center" TextColor="White" WidthRequest="90" />
-                                        <Entry Text="{Binding ThreatLevel}" Keyboard="Numeric" WidthRequest="60" TextColor="White" />
+                                        <Label Text="Threat (1-10):" VerticalOptions="Center" TextColor="{StaticResource OnSurface}" WidthRequest="90" />
+                                        <Entry Text="{Binding ThreatLevel}" Keyboard="Numeric" WidthRequest="60"  />
                                     </HorizontalStackLayout>
                                     <HorizontalStackLayout Spacing="8">
-                                        <Label Text="Lat / Lon:" VerticalOptions="Center" TextColor="White" WidthRequest="90" />
-                                        <Entry Text="{Binding Latitude}" Keyboard="Numeric" WidthRequest="90" TextColor="White" />
-                                        <Entry Text="{Binding Longitude}" Keyboard="Numeric" WidthRequest="90" TextColor="White" />
+                                        <Label Text="Lat / Lon:" VerticalOptions="Center" TextColor="{StaticResource OnSurface}" WidthRequest="90" />
+                                        <Entry Text="{Binding Latitude}" Keyboard="Numeric" WidthRequest="90"  />
+                                        <Entry Text="{Binding Longitude}" Keyboard="Numeric" WidthRequest="90"  />
                                     </HorizontalStackLayout>
                                     <HorizontalStackLayout Spacing="8">
-                                        <Label Text="Description:" VerticalOptions="Center" TextColor="White" WidthRequest="90" />
-                                        <Entry Text="{Binding Description}" WidthRequest="350" TextColor="White" />
+                                        <Label Text="Description:" VerticalOptions="Center" TextColor="{StaticResource OnSurface}" WidthRequest="90" />
+                                        <Entry Text="{Binding Description}" WidthRequest="350"  />
                                     </HorizontalStackLayout>
                                 </VerticalStackLayout>
 
@@ -130,11 +134,11 @@
                                 <HorizontalStackLayout Grid.Column="2" Spacing="4" VerticalOptions="Start">
                                     <Button Text="Edit"
                                             Clicked="OnEditToggle"
-                                            BackgroundColor="#2D2D30" TextColor="White"
+                                            Style="{StaticResource SecondaryButton}"
                                             Padding="8,4" FontSize="11" />
                                     <Button Text="Re-roll"
                                             Clicked="OnReroll"
-                                            BackgroundColor="#2D2D30" TextColor="White"
+                                            Style="{StaticResource SecondaryButton}"
                                             Padding="8,4" FontSize="11" />
                                 </HorizontalStackLayout>
                             </Grid>
@@ -144,7 +148,7 @@
             </CollectionView>
 
             <!-- LLM Log -->
-            <Label Text="LLM Log" FontAttributes="Bold" TextColor="White"
+            <Label Text="LLM Log" FontAttributes="Bold" 
                    IsVisible="{Binding HasResults}" Margin="0,12,0,0" />
             <CollectionView ItemsSource="{Binding LlmLog}"
                             IsVisible="{Binding HasResults}"
@@ -154,17 +158,17 @@
                 </CollectionView.ItemsLayout>
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="vm:LlmLogEntry">
-                        <Border Stroke="#333333" StrokeThickness="1" Padding="8" BackgroundColor="#1A1A2E">
+                        <Border Style="{StaticResource CardBorder}" Padding="8">
                             <Border.StrokeShape><RoundRectangle CornerRadius="4" /></Border.StrokeShape>
                             <VerticalStackLayout Spacing="2">
                                 <HorizontalStackLayout Spacing="8">
                                     <Label Text="{Binding Direction}" FontAttributes="Bold"
-                                           TextColor="#0078D4" FontSize="12" />
+                                           TextColor="{StaticResource ActionBlue}" FontSize="12" />
                                     <Label Text="{Binding Timestamp, StringFormat='{0:HH:mm:ss}'}"
-                                           TextColor="#666666" FontSize="11" />
+                                           TextColor="{StaticResource OnSurfaceVariant}" FontSize="11" />
                                 </HorizontalStackLayout>
                                 <Label Text="{Binding Content}" FontSize="11"
-                                       FontFamily="Consolas" TextColor="#CCCCCC"
+                                       FontFamily="Consolas" TextColor="{StaticResource OnSurface}"
                                        LineBreakMode="WordWrap" MaxLines="20" />
                             </VerticalStackLayout>
                         </Border>
@@ -172,13 +176,7 @@
                 </CollectionView.ItemTemplate>
             </CollectionView>
 
-            <!-- Save & Next -->
-            <Button Text="Save &amp; Next →"
-                    Command="{Binding SaveNextCommand}"
-                    HorizontalOptions="Start"
-                    BackgroundColor="#0078D4"
-                    TextColor="White"
-                    Margin="0,16,0,0" />
+
         </VerticalStackLayout>
     </ScrollView>
 </ContentView>

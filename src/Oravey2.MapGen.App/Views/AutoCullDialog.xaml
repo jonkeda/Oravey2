@@ -10,7 +10,7 @@
         <VerticalStackLayout Spacing="10" WidthRequest="500">
 
             <!-- ═══ Town Culling ═══ -->
-            <Label Text="Town Culling" FontAttributes="Bold" FontSize="16" />
+            <Label Text="Town Culling" Style="{StaticResource SectionLabel}" />
 
             <HorizontalStackLayout Spacing="8">
                 <Label Text="Min Category" VerticalOptions="Center" WidthRequest="140" />
@@ -49,7 +49,7 @@
             </HorizontalStackLayout>
 
             <!-- ═══ Road Culling ═══ -->
-            <Label Text="Road Culling" FontAttributes="Bold" FontSize="16" Margin="0,12,0,0" />
+            <Label Text="Road Culling" Style="{StaticResource SectionLabel}" Margin="0,12,0,0" />
 
             <HorizontalStackLayout Spacing="8">
                 <Label Text="Min Road Class" VerticalOptions="Center" WidthRequest="140" />
@@ -93,7 +93,7 @@
             </HorizontalStackLayout>
 
             <!-- ═══ Water Culling ═══ -->
-            <Label Text="Water Culling" FontAttributes="Bold" FontSize="16" Margin="0,12,0,0" />
+            <Label Text="Water Culling" Style="{StaticResource SectionLabel}" Margin="0,12,0,0" />
 
             <HorizontalStackLayout Spacing="8">
                 <Label Text="Min Area (km²)" VerticalOptions="Center" WidthRequest="140" />
@@ -115,15 +115,15 @@
             </HorizontalStackLayout>
 
             <!-- ═══ Preview ═══ -->
-            <Label Text="{Binding PreviewText}" FontAttributes="Italic" TextColor="Gray" Margin="0,8,0,0" />
+            <Label Text="{Binding PreviewText}" FontAttributes="Italic" TextColor="{StaticResource OnSurfaceVariant}" Margin="0,8,0,0" />
 
             <!-- ═══ Actions ═══ -->
             <HorizontalStackLayout Spacing="8" Margin="0,12,0,0">
-                <Button Text="Load…" Clicked="OnLoad" Padding="8,4" />
-                <Button Text="Save…" Clicked="OnSave" Padding="8,4" />
-                <Button Text="Preview" Command="{Binding PreviewCommand}" Padding="8,4" />
-                <Button Text="Apply" Command="{Binding ApplyCommand}" Padding="8,4" BackgroundColor="#238636" TextColor="White" />
-                <Button Text="Cancel" Command="{Binding CancelCommand}" Padding="8,4" BackgroundColor="DarkRed" TextColor="White" />
+                <Button Text="Load…" Clicked="OnLoad" Style="{StaticResource SecondaryButton}" Padding="8,4" />
+                <Button Text="Save…" Clicked="OnSave" Style="{StaticResource SecondaryButton}" Padding="8,4" />
+                <Button Text="Preview" Command="{Binding PreviewCommand}" Style="{StaticResource SecondaryButton}" Padding="8,4" />
+                <Button Text="Apply" Command="{Binding ApplyCommand}" Style="{StaticResource SuccessButton}" Padding="8,4" />
+                <Button Text="Cancel" Command="{Binding CancelCommand}" Style="{StaticResource DangerButton}" Padding="8,4" />
             </HorizontalStackLayout>
 
         </VerticalStackLayout>

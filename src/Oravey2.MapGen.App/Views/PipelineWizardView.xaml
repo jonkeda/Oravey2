@@ -9,17 +9,17 @@
     <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,*,Auto">
 
         <!-- Header -->
-        <Grid Grid.Row="0" Grid.ColumnSpan="2" Padding="16,8" BackgroundColor="#1E1E2E"
+        <Grid Grid.Row="0" Grid.ColumnSpan="2" Padding="16,8" BackgroundColor="{StaticResource Background}"
               ColumnDefinitions="*,Auto">
             <Label Text="Generation Pipeline v3" FontSize="20" FontAttributes="Bold"
-                   TextColor="White" VerticalOptions="Center" />
+                    VerticalOptions="Center" />
             <Button Grid.Column="1" Text="⚙ Settings" Command="{Binding OpenSettingsCommand}"
-                    BackgroundColor="Transparent" TextColor="#AAAAAA" FontSize="14" />
+                    Style="{StaticResource GhostButton}" TextColor="{StaticResource OnSurfaceVariant}" FontSize="14" />
         </Grid>
 
         <!-- Sidebar step list -->
         <CollectionView Grid.Row="1" Grid.Column="0" ItemsSource="{Binding Steps}"
-                        SelectionMode="Single" BackgroundColor="#252535" Margin="0">
+                        SelectionMode="Single" BackgroundColor="{StaticResource SurfaceVariant}" Margin="0">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="vm:PipelineStepInfo">
                     <Grid Padding="12,10" ColumnDefinitions="*,Auto">
@@ -43,7 +43,7 @@
 
         <!-- Status bar -->
         <Label Grid.Row="2" Grid.ColumnSpan="2" Text="{Binding StatusMessage}"
-               Padding="16,8" FontSize="12" TextColor="#888888" BackgroundColor="#1A1A2A" />
+               Padding="16,8" FontSize="12" TextColor="{StaticResource OnSurfaceVariant}" BackgroundColor="{StaticResource Background}" />
     </Grid>
 
 </ContentPage>

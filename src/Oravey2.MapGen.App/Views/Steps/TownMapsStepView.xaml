@@ -1,12 +1,322 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Oravey2.MapGen.App.Views.TownMapsStepView">
-    <VerticalStackLayout Spacing="16" Padding="8">
-        <Label Text="⑥ Town Maps" FontSize="24" FontAttributes="Bold" />
-        <Label Text="Generate condensed tile maps for each designed town. Preview on demand."
-               TextColor="#AAAAAA" />
-        <Label Text="Not yet implemented — will be completed in step 08." TextColor="#666666" FontSize="12" />
-        <Button Text="Next →" IsEnabled="False" HorizontalOptions="Start" />
-    </VerticalStackLayout>
+             xmlns:vm="clr-namespace:Oravey2.MapGen.ViewModels;assembly=Oravey2.MapGen"
+             xmlns:gen="clr-namespace:Oravey2.MapGen.Generation;assembly=Oravey2.MapGen"
+             x:Class="Oravey2.MapGen.App.Views.TownMapsStepView"
+             x:DataType="vm:TownMapsStepViewModel">
+    <ScrollView>
+        <VerticalStackLayout Spacing="16" Padding="8">
+
+            <!-- Header -->
+            <Label Text="⑥ Town Maps" Style="{StaticResource HeaderLabel}" />
+            <Label Text="Generate condensed tile maps for each designed town."
+                   TextColor="{StaticResource OnSurfaceVariant}" />
+            <Button Text="Next →"
+                    Command="{Binding NextCommand}"
+                    HorizontalOptions="Start"
+                    Style="{StaticResource PrimaryButton}" />
+
+            <!-- Master–Detail Grid -->
+            <Grid ColumnDefinitions="280,16,*" MinimumHeightRequest="500">
+
+                <!-- LEFT COLUMN: Town list + actions -->
+                <VerticalStackLayout Grid.Column="0" Spacing="8">
+
+                    <CollectionView ItemsSource="{Binding Towns}"
+                                    SelectedItem="{Binding SelectedTown}"
+                                    SelectionMode="Single"
+                                    HeightRequest="350">
+                        <CollectionView.ItemsLayout>
+                            <LinearItemsLayout Orientation="Vertical" ItemSpacing="4" />
+                        </CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="vm:TownMapItem">
+                                <Border Style="{StaticResource CardBorder}" Padding="8,6">
+                                    <Border.StrokeShape><RoundRectangle CornerRadius="6" /></Border.StrokeShape>
+                                    <HorizontalStackLayout Spacing="8">
+                                        <Label Text="{Binding StatusIcon}" FontSize="14"
+                                               VerticalOptions="Center" WidthRequest="24" TextColor="{StaticResource OnSurface}" />
+                                        <VerticalStackLayout Spacing="1">
+                                            <Label Text="{Binding GameName}" FontSize="14"
+                                                   FontAttributes="Bold" TextColor="{StaticResource OnSurface}" />
+                                            <Label Text="{Binding RealName, StringFormat='({0})'}"
+                                                   FontSize="11" TextColor="{StaticResource OnSurfaceVariant}" />
+                                        </VerticalStackLayout>
+                                    </HorizontalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                    <!-- Progress -->
+                    <Label Text="{Binding ProgressText}" TextColor="{StaticResource OnSurfaceVariant}" FontSize="13" />
+
+                    <!-- Action buttons -->
+                    <Button Text="Generate Map"
+                            Command="{Binding GenerateMapCommand}"
+                            Style="{StaticResource SuccessButton}"
+                            Padding="16,8" />
+                    <Button Text="Generate All Maps"
+                            Command="{Binding GenerateAllCommand}"
+                            BackgroundColor="{StaticResource SurfaceVariant}" 
+                            Padding="12,6" />
+                    <HorizontalStackLayout Spacing="8">
+                        <Button Text="Cancel"
+                                Command="{Binding CancelCommand}"
+                                Style="{StaticResource DangerButton}"
+                                Padding="12,6"
+                                IsVisible="{Binding IsRunning}" />
+                        <ActivityIndicator IsRunning="{Binding IsRunning}"
+                                           IsVisible="{Binding IsRunning}"
+                                            HeightRequest="24" WidthRequest="24" />
+                    </HorizontalStackLayout>
+
+                    <Label Text="{Binding StatusText}" TextColor="{StaticResource OnSurfaceVariant}" FontSize="13" />
+                </VerticalStackLayout>
+
+                <!-- RIGHT COLUMN: Map detail -->
+                <ScrollView Grid.Column="2" IsVisible="{Binding HasSelection}">
+                    <VerticalStackLayout Spacing="12">
+
+                        <!-- Town Summary Card (binds to selected town) -->
+                        <Border Style="{StaticResource CardBorder}" Padding="12"
+                                BindingContext="{Binding SelectedTown}"
+                                x:DataType="vm:TownMapItem">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="{Binding GameName}" FontSize="18"
+                                       FontAttributes="Bold" TextColor="{StaticResource OnSurface}" />
+                                <HorizontalStackLayout Spacing="12">
+                                    <Label Text="{Binding Role}" FontSize="13" TextColor="{StaticResource OnSurfaceVariant}" />
+                                    <Label Text="{Binding ThreatLevel, StringFormat='Threat: {0}'}"
+                                           FontSize="13" TextColor="{StaticResource Warning}" FontAttributes="Bold" />
+                                </HorizontalStackLayout>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Generation Parameters Card (binds to parent VM) -->
+                        <Border Style="{StaticResource CardBorder}" Padding="12"
+                                x:DataType="vm:TownMapsStepViewModel">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
+                            <VerticalStackLayout Spacing="8">
+                                <Label Text="Generation Parameters" FontSize="15"
+                                       FontAttributes="Bold" TextColor="{StaticResource OnSurface}" />
+
+                                <Grid ColumnDefinitions="Auto,*,16,Auto,*"
+                                      RowDefinitions="Auto,Auto,Auto"
+                                      ColumnSpacing="8" RowSpacing="8">
+
+                                    <!-- Row 0: Grid size + Scale factor -->
+                                    <Label Grid.Row="0" Grid.Column="0" Text="Grid size"
+                                           FontSize="12" TextColor="{StaticResource OnSurfaceVariant}" VerticalOptions="Center" />
+                                    <Picker Grid.Row="0" Grid.Column="1"
+                                            ItemsSource="{Binding GridSizeModes}"
+                                            SelectedItem="{Binding SelectedGridSize}"
+                                             FontSize="12"
+                                            BackgroundColor="{StaticResource SurfaceVariant}" />
+                                    <Label Grid.Row="0" Grid.Column="3" Text="Scale factor"
+                                           FontSize="12" TextColor="{StaticResource OnSurfaceVariant}" VerticalOptions="Center" />
+                                    <Entry Grid.Row="0" Grid.Column="4"
+                                           Text="{Binding ScaleFactor}" Keyboard="Numeric"
+                                            FontSize="12"
+                                           BackgroundColor="{StaticResource SurfaceVariant}" Placeholder="0.01"
+                                           PlaceholderColor="{StaticResource OnSurfaceVariant}" />
+
+                                    <!-- Row 1: Prop density + Max props -->
+                                    <Label Grid.Row="1" Grid.Column="0" Text="Prop density"
+                                           FontSize="12" TextColor="{StaticResource OnSurfaceVariant}" VerticalOptions="Center" />
+                                    <HorizontalStackLayout Grid.Row="1" Grid.Column="1" Spacing="4">
+                                        <Slider Minimum="0" Maximum="100"
+                                                Value="{Binding PropDensity}"
+                                                MinimumTrackColor="{StaticResource Success}"
+                                                MaximumTrackColor="{StaticResource Outline}"
+                                                ThumbColor="{StaticResource Success}"
+                                                HorizontalOptions="FillAndExpand"
+                                                WidthRequest="120" />
+                                        <Label Text="{Binding PropDensity, StringFormat='{0}%'}"
+                                               FontSize="11" TextColor="{StaticResource OnSurfaceVariant}"
+                                               WidthRequest="36" VerticalOptions="Center" />
+                                    </HorizontalStackLayout>
+                                    <Label Grid.Row="1" Grid.Column="3" Text="Max props"
+                                           FontSize="12" TextColor="{StaticResource OnSurfaceVariant}" VerticalOptions="Center" />
+                                    <Entry Grid.Row="1" Grid.Column="4"
+                                           Text="{Binding MaxPropsValue}" Keyboard="Numeric"
+                                            FontSize="12"
+                                           BackgroundColor="{StaticResource SurfaceVariant}" Placeholder="30"
+                                           PlaceholderColor="{StaticResource OnSurfaceVariant}" />
+
+                                    <!-- Row 2: Building fill + Seed -->
+                                    <Label Grid.Row="2" Grid.Column="0" Text="Building fill"
+                                           FontSize="12" TextColor="{StaticResource OnSurfaceVariant}" VerticalOptions="Center" />
+                                    <HorizontalStackLayout Grid.Row="2" Grid.Column="1" Spacing="4">
+                                        <Slider Minimum="0" Maximum="100"
+                                                Value="{Binding BuildingFill}"
+                                                MinimumTrackColor="{StaticResource Success}"
+                                                MaximumTrackColor="{StaticResource Outline}"
+                                                ThumbColor="{StaticResource Success}"
+                                                HorizontalOptions="FillAndExpand"
+                                                WidthRequest="120" />
+                                        <Label Text="{Binding BuildingFill, StringFormat='{0}%'}"
+                                               FontSize="11" TextColor="{StaticResource OnSurfaceVariant}"
+                                               WidthRequest="36" VerticalOptions="Center" />
+                                    </HorizontalStackLayout>
+                                    <Label Grid.Row="2" Grid.Column="3" Text="Seed"
+                                           FontSize="12" TextColor="{StaticResource OnSurfaceVariant}" VerticalOptions="Center" />
+                                    <Entry Grid.Row="2" Grid.Column="4"
+                                           Text="{Binding SeedText}" Keyboard="Numeric"
+                                            FontSize="12"
+                                           BackgroundColor="{StaticResource SurfaceVariant}" Placeholder="(random)"
+                                           PlaceholderColor="{StaticResource OnSurfaceVariant}" />
+                                </Grid>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Stats Card (visible when map generated) -->
+                        <Border Style="{StaticResource CardBorder}" Padding="12"
+                                IsVisible="{Binding SelectedTown.MapResult, Converter={StaticResource IsNotNullConverter}}"
+                                BindingContext="{Binding SelectedTown}"
+                                x:DataType="vm:TownMapItem">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
+                            <VerticalStackLayout Spacing="6">
+                                <Label Text="Map Statistics" FontSize="15"
+                                       FontAttributes="Bold" TextColor="{StaticResource OnSurface}" />
+                                <Label Text="{Binding StatsText}" FontSize="14" TextColor="{StaticResource OnSurface}" />
+
+                                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="16" RowSpacing="4"
+                                      Margin="0,4,0,0">
+                                    <HorizontalStackLayout Grid.Row="0" Grid.Column="0" Spacing="6">
+                                        <Label Text="Grid:" FontSize="12" TextColor="{StaticResource OnSurfaceVariant}" />
+                                        <Label Text="{Binding GridSize}" FontSize="12" TextColor="{StaticResource OnSurface}" />
+                                    </HorizontalStackLayout>
+                                    <HorizontalStackLayout Grid.Row="0" Grid.Column="1" Spacing="6">
+                                        <Label Text="Buildings:" FontSize="12" TextColor="{StaticResource OnSurfaceVariant}" />
+                                        <Label Text="{Binding BuildingCount}" FontSize="12" TextColor="{StaticResource OnSurface}" />
+                                    </HorizontalStackLayout>
+                                    <HorizontalStackLayout Grid.Row="1" Grid.Column="0" Spacing="6">
+                                        <Label Text="Props:" FontSize="12" TextColor="{StaticResource OnSurfaceVariant}" />
+                                        <Label Text="{Binding PropCount}" FontSize="12" TextColor="{StaticResource OnSurface}" />
+                                    </HorizontalStackLayout>
+                                    <HorizontalStackLayout Grid.Row="1" Grid.Column="1" Spacing="6">
+                                        <Label Text="Zones:" FontSize="12" TextColor="{StaticResource OnSurfaceVariant}" />
+                                        <Label Text="{Binding ZoneCount}" FontSize="12" TextColor="{StaticResource OnSurface}" />
+                                    </HorizontalStackLayout>
+                                </Grid>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Map Preview Canvas -->
+                        <Border Style="{StaticResource CardBorder}" Padding="12"
+                                IsVisible="{Binding SelectedTown.MapResult, Converter={StaticResource IsNotNullConverter}}">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
+                            <VerticalStackLayout Spacing="6">
+                                <Label Text="Map Preview" FontSize="15"
+                                       FontAttributes="Bold"  />
+                                <GraphicsView x:Name="MapPreviewGraphicsView"
+                                              HeightRequest="300"
+                                              BackgroundColor="{StaticResource Background}" />
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Building List -->
+                        <Border Style="{StaticResource CardBorder}" Padding="12"
+                                IsVisible="{Binding SelectedTown.MapResult, Converter={StaticResource IsNotNullConverter}}"
+                                BindingContext="{Binding SelectedTown}"
+                                x:DataType="vm:TownMapItem">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
+                            <VerticalStackLayout Spacing="4">
+                                <Label FontSize="15" FontAttributes="Bold" >
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="🏠 Buildings (" TextColor="{StaticResource OnSurface}" />
+                                            <Span Text="{Binding BuildingCount}" TextColor="{StaticResource OnSurface}" />
+                                            <Span Text=")" TextColor="{StaticResource OnSurface}" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                                <CollectionView ItemsSource="{Binding MapResult.Buildings}"
+                                                SelectionMode="None"
+                                                MaximumHeightRequest="200">
+                                    <CollectionView.ItemsLayout>
+                                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="4" />
+                                    </CollectionView.ItemsLayout>
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate x:DataType="gen:PlacedBuilding">
+                                            <Grid BackgroundColor="Transparent" Padding="0,2">
+                                                <HorizontalStackLayout Spacing="8">
+                                                    <Label Text="{Binding Name}" FontSize="12"
+                                                           FontAttributes="Bold" TextColor="{StaticResource OnSurface}" />
+                                                    <Border Padding="4,1" BackgroundColor="{StaticResource SurfaceVariant}"
+                                                            Stroke="Transparent">
+                                                        <Border.StrokeShape><RoundRectangle CornerRadius="3" /></Border.StrokeShape>
+                                                        <Label Text="{Binding SizeCategory}" FontSize="10"
+                                                               TextColor="{StaticResource OnSurfaceVariant}" />
+                                                    </Border>
+                                                    <Label Text="{Binding Floors, StringFormat='{0}F'}"
+                                                           FontSize="11" TextColor="{StaticResource OnSurfaceVariant}" />
+                                                </HorizontalStackLayout>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                </CollectionView>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Zone List -->
+                        <Border Style="{StaticResource CardBorder}" Padding="12"
+                                IsVisible="{Binding SelectedTown.MapResult, Converter={StaticResource IsNotNullConverter}}"
+                                BindingContext="{Binding SelectedTown}"
+                                x:DataType="vm:TownMapItem">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
+                            <VerticalStackLayout Spacing="4">
+                                <Label FontSize="15" FontAttributes="Bold" >
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="🗺 Zones (" TextColor="{StaticResource OnSurface}" />
+                                            <Span Text="{Binding ZoneCount}" TextColor="{StaticResource OnSurface}" />
+                                            <Span Text=")" TextColor="{StaticResource OnSurface}" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                                <CollectionView ItemsSource="{Binding MapResult.Zones}"
+                                                SelectionMode="None"
+                                                MaximumHeightRequest="150">
+                                    <CollectionView.ItemsLayout>
+                                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="4" />
+                                    </CollectionView.ItemsLayout>
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate x:DataType="gen:TownZone">
+                                            <Grid BackgroundColor="Transparent" Padding="0,2">
+                                                <HorizontalStackLayout Spacing="8">
+                                                    <Label Text="{Binding Name}" FontSize="12"
+                                                           FontAttributes="Bold" TextColor="{StaticResource OnSurface}" />
+                                                    <Label Text="{Binding IsFastTravelTarget, StringFormat='Fast Travel: {0}'}"
+                                                           FontSize="11" TextColor="{StaticResource OnSurfaceVariant}" />
+                                                </HorizontalStackLayout>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                </CollectionView>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Detail Action Buttons -->
+                        <HorizontalStackLayout Spacing="8">
+                            <Button Text="Accept"
+                                    Command="{Binding AcceptCommand}"
+                                    Style="{StaticResource SuccessButton}"
+                                    Padding="12,6" />
+                            <Button Text="Re-generate"
+                                    Command="{Binding RegenerateCommand}"
+                                    BackgroundColor="{StaticResource SurfaceVariant}" 
+                                    Padding="12,6" />
+                        </HorizontalStackLayout>
+
+                    </VerticalStackLayout>
+                </ScrollView>
+            </Grid>
+
+
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentView>

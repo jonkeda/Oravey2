@@ -1,0 +1,24 @@
+{
+  "name": "noord-holland",
+  "description": "Overworld map for noord-holland",
+  "source": "noord-holland",
+  "chunksWide": 1,
+  "chunksHigh": 1,
+  "tileSize": 1,
+  "playerStart": {
+    "chunkX": 0,
+    "chunkY": 0,
+    "localTileX": 0,
+    "localTileY": 0
+  },
+  "towns": [
+    {
+      "gameName": "Island Haven",
+      "realName": "Marken",
+      "gameX": 0,
+      "gameY": 0,
+      "role": "survivor_camp",
+      "threatLevel": 2
+    }
+  ]
+}

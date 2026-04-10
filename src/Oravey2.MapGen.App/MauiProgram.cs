@@ -54,6 +54,9 @@ public static class MauiProgram
         builder.Services.AddTransient<ParseStepViewModel>();
         builder.Services.AddTransient<TownSelectionStepViewModel>();
         builder.Services.AddTransient<TownDesignStepViewModel>();
+        builder.Services.AddTransient<TownMapsStepViewModel>();
+        builder.Services.AddTransient<AssetsStepViewModel>();
+        builder.Services.AddTransient<AssemblyStepViewModel>();
         builder.Services.AddTransient<PipelineWizardViewModel>();
         builder.Services.AddTransient<RegionPickerViewModel>();
         builder.Services.AddTransient<RegionTemplateViewModel>();

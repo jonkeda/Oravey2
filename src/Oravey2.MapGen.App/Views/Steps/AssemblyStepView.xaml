@@ -1,12 +1,101 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Oravey2.MapGen.App.Views.AssemblyStepView">
-    <VerticalStackLayout Spacing="16" Padding="8">
-        <Label Text="⑧ Assemble Pack" FontSize="24" FontAttributes="Bold" />
-        <Label Text="Generate metadata, validate integrity, and build the content pack."
-               TextColor="#AAAAAA" />
-        <Label Text="Not yet implemented — will be completed in step 10." TextColor="#666666" FontSize="12" />
-        <Button Text="Build Package" IsEnabled="False" HorizontalOptions="Start" />
-    </VerticalStackLayout>
+             xmlns:vm="clr-namespace:Oravey2.MapGen.ViewModels;assembly=Oravey2.MapGen"
+             x:Class="Oravey2.MapGen.App.Views.AssemblyStepView"
+             x:DataType="vm:AssemblyStepViewModel">
+    <ScrollView>
+        <VerticalStackLayout Spacing="16" Padding="8">
+
+            <!-- Header -->
+            <Label Text="⑧ Assemble Pack" Style="{StaticResource HeaderLabel}" />
+            <Label Text="Generate metadata, validate integrity, and build the content pack."
+                   TextColor="{StaticResource OnSurfaceVariant}" />
+
+            <!-- Status -->
+            <Label Text="{Binding StatusText}" TextColor="{StaticResource OnSurfaceVariant}" />
+
+            <!-- Action buttons -->
+            <FlexLayout Wrap="Wrap" JustifyContent="Start" AlignItems="Center">
+                <Button Text="Generate Scenario"
+                        Command="{Binding GenerateScenarioCommand}"
+                        Style="{StaticResource SecondaryButton}"
+                        Margin="0,0,8,8" />
+                <Button Text="Rebuild Catalog"
+                        Command="{Binding RebuildCatalogCommand}"
+                        Style="{StaticResource SecondaryButton}"
+                        Margin="0,0,8,8" />
+                <Button Text="Update Manifest"
+                        Command="{Binding UpdateManifestCommand}"
+                        Style="{StaticResource SecondaryButton}"
+                        Margin="0,0,8,8" />
+                <Button Text="Validate"
+                        Command="{Binding ValidateCommand}"
+                        Style="{StaticResource PrimaryButton}"
+                        Margin="0,0,8,8" />
+            </FlexLayout>
+
+            <!-- Scenario settings card -->
+            <Border Style="{StaticResource CardBorder}" Padding="16">
+                <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Scenario Settings" Style="{StaticResource SectionLabel}" />
+                    <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="8">
+                        <Label Text="ID:" Grid.Row="0" Grid.Column="0"
+                               TextColor="{StaticResource OnSurfaceVariant}" VerticalOptions="Center" />
+                        <Entry Text="{Binding ScenarioId}" Grid.Row="0" Grid.Column="1" />
+
+                        <Label Text="Name:" Grid.Row="1" Grid.Column="0"
+                               TextColor="{StaticResource OnSurfaceVariant}" VerticalOptions="Center" />
+                        <Entry Text="{Binding ScenarioName}" Grid.Row="1" Grid.Column="1" />
+
+                        <Label Text="Description:" Grid.Row="2" Grid.Column="0"
+                               TextColor="{StaticResource OnSurfaceVariant}" VerticalOptions="Center" />
+                        <Entry Text="{Binding ScenarioDescription}" Grid.Row="2" Grid.Column="1" />
+
+                        <Label Text="Difficulty:" Grid.Row="3" Grid.Column="0"
+                               TextColor="{StaticResource OnSurfaceVariant}" VerticalOptions="Center" />
+                        <Entry Text="{Binding Difficulty}" Grid.Row="3" Grid.Column="1"
+                               Keyboard="Numeric" WidthRequest="80" HorizontalOptions="Start" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Validation results -->
+            <Border Style="{StaticResource CardBorder}" Padding="16" IsVisible="{Binding IsValidated}">
+                <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
+                <VerticalStackLayout Spacing="8">
+                    <HorizontalStackLayout Spacing="12">
+                        <Label Text="Validation Results" Style="{StaticResource SectionLabel}" />
+                        <Label Text="{Binding SummaryText}" Style="{StaticResource CaptionLabel}"
+                               VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+
+                    <VerticalStackLayout Spacing="4"
+                                         BindableLayout.ItemsSource="{Binding ValidationItems}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ValidationItemViewModel">
+                                <HorizontalStackLayout Spacing="8" Padding="4,2">
+                                    <Label Text="{Binding Icon}" FontSize="14" WidthRequest="20"
+                                           TextColor="{StaticResource OnSurface}" />
+                                    <Label Text="{Binding Check}" FontAttributes="Bold" FontSize="13"
+                                           TextColor="{StaticResource OnSurface}" WidthRequest="120" />
+                                    <Label Text="{Binding Detail}" FontSize="13"
+                                           TextColor="{StaticResource OnSurfaceVariant}"
+                                           LineBreakMode="TailTruncation" />
+                                </HorizontalStackLayout>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Complete button -->
+            <Button Text="Complete ✓"
+                    Command="{Binding CompleteCommand}"
+                    Style="{StaticResource SuccessButton}"
+                    HorizontalOptions="Start" />
+
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentView>

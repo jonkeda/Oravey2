@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!-- ═══════════════════════════════════════════════════════════
+         Light Palette — Oravey2 Tools
+         Swap this file for DarkPalette.xaml to switch themes.
+         ═══════════════════════════════════════════════════════════ -->
+
+    <!-- Primary accent -->
+    <Color x:Key="Primary">#6750A4</Color>
+    <Color x:Key="OnPrimary">#FFFFFF</Color>
+
+    <!-- Secondary accent -->
+    <Color x:Key="Secondary">#625B71</Color>
+    <Color x:Key="OnSecondary">#FFFFFF</Color>
+
+    <!-- Tertiary accent -->
+    <Color x:Key="Tertiary">#7D5260</Color>
+
+    <!-- Backgrounds -->
+    <Color x:Key="Background">#F5F5F5</Color>
+    <Color x:Key="Surface">#FFFFFF</Color>
+    <Color x:Key="SurfaceVariant">#E7E0EC</Color>
+
+    <!-- Text -->
+    <Color x:Key="OnSurface">#1C1B1F</Color>
+    <Color x:Key="OnSurfaceVariant">#49454F</Color>
+
+    <!-- Borders -->
+    <Color x:Key="Outline">#CAC4D0</Color>
+    <Color x:Key="OutlineVariant">#E0DBE4</Color>
+
+    <!-- Semantic colors -->
+    <Color x:Key="Error">#B3261E</Color>
+    <Color x:Key="OnError">#FFFFFF</Color>
+    <Color x:Key="Success">#2E7D32</Color>
+    <Color x:Key="OnSuccess">#FFFFFF</Color>
+    <Color x:Key="ActionBlue">#1565C0</Color>
+    <Color x:Key="OnActionBlue">#FFFFFF</Color>
+    <Color x:Key="Danger">#C62828</Color>
+    <Color x:Key="OnDanger">#FFFFFF</Color>
+    <Color x:Key="Warning">#E65100</Color>
+    <Color x:Key="OnWarning">#FFFFFF</Color>
+
+    <!-- Disabled -->
+    <Color x:Key="DisabledBackground">#E0E0E0</Color>
+    <Color x:Key="DisabledText">#9E9E9E</Color>
+
+</ResourceDictionary>

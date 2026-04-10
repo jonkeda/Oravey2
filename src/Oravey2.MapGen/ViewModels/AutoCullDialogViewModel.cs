@@ -1,5 +1,5 @@
 using System.Windows.Input;
-using Oravey2.MapGen.ViewModels.RegionTemplate;
+using Oravey2.MapGen.ViewModels.RegionTemplates;
 using Oravey2.MapGen.RegionTemplates;
 
 namespace Oravey2.MapGen.ViewModels;
