@@ -1,12 +1,270 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Oravey2.MapGen.App.Views.TownDesignStepView">
-    <VerticalStackLayout Spacing="16" Padding="8">
-        <Label Text="⑤ Town Design" FontSize="24" FontAttributes="Bold" />
-        <Label Text="Design each town individually via LLM — landmark, key locations, layout style, hazards."
-               TextColor="#AAAAAA" />
-        <Label Text="Not yet implemented — will be completed in step 07." TextColor="#666666" FontSize="12" />
-        <Button Text="Next →" IsEnabled="False" HorizontalOptions="Start" />
-    </VerticalStackLayout>
+             xmlns:vm="clr-namespace:Oravey2.MapGen.ViewModels;assembly=Oravey2.MapGen"
+             xmlns:gen="clr-namespace:Oravey2.MapGen.Generation;assembly=Oravey2.MapGen"
+             x:Class="Oravey2.MapGen.App.Views.TownDesignStepView"
+             x:DataType="vm:TownDesignStepViewModel">
+    <ScrollView>
+        <VerticalStackLayout Spacing="16" Padding="8">
+
+            <!-- Header -->
+            <Label Text="⑤ Town Design" FontSize="24" FontAttributes="Bold" />
+            <Label Text="Use LLM to generate a design for each curated town."
+                   TextColor="#AAAAAA" />
+
+            <!-- Master–Detail Grid -->
+            <Grid ColumnDefinitions="280,16,*" MinimumHeightRequest="500">
+
+                <!-- LEFT COLUMN: Town list + actions -->
+                <VerticalStackLayout Grid.Column="0" Spacing="8">
+
+                    <!-- Town list -->
+                    <CollectionView ItemsSource="{Binding Towns}"
+                                    SelectedItem="{Binding SelectedTown}"
+                                    SelectionMode="Single"
+                                    HeightRequest="350">
+                        <CollectionView.ItemsLayout>
+                            <LinearItemsLayout Orientation="Vertical" ItemSpacing="4" />
+                        </CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="vm:TownDesignItem">
+                                <Border Stroke="#444444" StrokeThickness="1" Padding="8,6"
+                                        BackgroundColor="#1E1E1E">
+                                    <Border.StrokeShape><RoundRectangle CornerRadius="6" /></Border.StrokeShape>
+                                    <HorizontalStackLayout Spacing="8">
+                                        <Label Text="{Binding StatusIcon}" FontSize="14"
+                                               VerticalOptions="Center" WidthRequest="24" />
+                                        <VerticalStackLayout Spacing="1">
+                                            <Label Text="{Binding GameName}" FontSize="14"
+                                                   FontAttributes="Bold" TextColor="White" />
+                                            <Label Text="{Binding RealName, StringFormat='({0})'}"
+                                                   FontSize="11" TextColor="#888888" />
+                                        </VerticalStackLayout>
+                                    </HorizontalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                    <!-- Progress -->
+                    <Label Text="{Binding ProgressText}" TextColor="#888888" FontSize="13" />
+
+                    <!-- Action buttons -->
+                    <Button Text="Design Town"
+                            Command="{Binding DesignTownCommand}"
+                            BackgroundColor="#238636" TextColor="White"
+                            Padding="16,8" />
+                    <Button Text="Design All Remaining"
+                            Command="{Binding DesignAllCommand}"
+                            BackgroundColor="#2D2D30" TextColor="White"
+                            Padding="12,6" />
+                    <HorizontalStackLayout Spacing="8">
+                        <Button Text="Cancel"
+                                Command="{Binding CancelCommand}"
+                                BackgroundColor="#6E3630" TextColor="White"
+                                Padding="12,6"
+                                IsVisible="{Binding IsRunning}" />
+                        <ActivityIndicator IsRunning="{Binding IsRunning}"
+                                           IsVisible="{Binding IsRunning}"
+                                           Color="#0078D4" HeightRequest="24" WidthRequest="24" />
+                    </HorizontalStackLayout>
+
+                    <Label Text="{Binding StatusText}" TextColor="#888888" FontSize="13" />
+                </VerticalStackLayout>
+
+                <!-- RIGHT COLUMN: Design detail -->
+                <ScrollView Grid.Column="2" IsVisible="{Binding HasSelection}">
+                    <VerticalStackLayout Spacing="12"
+                                         BindingContext="{Binding SelectedTown}"
+                                         x:DataType="vm:TownDesignItem">
+
+                        <!-- Town Summary Card -->
+                        <Border Stroke="#444444" StrokeThickness="1" Padding="12"
+                                BackgroundColor="#252530">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="{Binding GameName}" FontSize="18"
+                                       FontAttributes="Bold" TextColor="White" />
+                                <HorizontalStackLayout Spacing="12">
+                                    <Label Text="{Binding Role}" FontSize="13" TextColor="#AAAAAA" />
+                                    <Label Text="{Binding Faction}" FontSize="13" TextColor="#AAAAAA" />
+                                    <Label Text="{Binding ThreatLevel, StringFormat='Threat: {0}'}"
+                                           FontSize="13" TextColor="#E5A00D" FontAttributes="Bold" />
+                                </HorizontalStackLayout>
+                                <Label Text="{Binding Description}" FontSize="12"
+                                       TextColor="#CCCCCC" LineBreakMode="WordWrap" />
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Landmark Card -->
+                        <Border Stroke="#444444" StrokeThickness="1" Padding="12"
+                                BackgroundColor="#1E1E1E"
+                                IsVisible="{Binding Design, Converter={StaticResource IsNotNullConverter}}">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="🏛 Landmark" FontSize="15" FontAttributes="Bold"
+                                       TextColor="White" />
+                                <HorizontalStackLayout Spacing="8">
+                                    <Label Text="{Binding LandmarkName}" FontSize="14"
+                                           FontAttributes="Bold" TextColor="White" />
+                                    <Border Padding="4,2" BackgroundColor="#2D2D30">
+                                        <Border.StrokeShape><RoundRectangle CornerRadius="4" /></Border.StrokeShape>
+                                        <Label Text="{Binding Design.Landmark.SizeCategory}"
+                                               FontSize="11" TextColor="#AAAAAA" />
+                                    </Border>
+                                </HorizontalStackLayout>
+                                <Label Text="{Binding Design.Landmark.VisualDescription}"
+                                       FontSize="12" TextColor="#CCCCCC" FontAttributes="Italic"
+                                       LineBreakMode="WordWrap" />
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Key Locations Card -->
+                        <Border Stroke="#444444" StrokeThickness="1" Padding="12"
+                                BackgroundColor="#1E1E1E"
+                                IsVisible="{Binding Design, Converter={StaticResource IsNotNullConverter}}">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
+                            <VerticalStackLayout Spacing="6">
+                                <Label FontSize="15" FontAttributes="Bold" TextColor="White">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="📍 Key Locations (" />
+                                            <Span Text="{Binding KeyLocationCount}" />
+                                            <Span Text=")" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                                <CollectionView ItemsSource="{Binding Design.KeyLocations}">
+                                    <CollectionView.ItemsLayout>
+                                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="6" />
+                                    </CollectionView.ItemsLayout>
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate x:DataType="gen:KeyLocation">
+                                            <VerticalStackLayout Spacing="2" Padding="0,2">
+                                                <HorizontalStackLayout Spacing="8">
+                                                    <Label Text="{Binding Name}" FontSize="13"
+                                                           FontAttributes="Bold" TextColor="White" />
+                                                    <Label Text="{Binding Purpose}" FontSize="12"
+                                                           TextColor="#AAAAAA" />
+                                                    <Border Padding="4,1" BackgroundColor="#2D2D30">
+                                                        <Border.StrokeShape><RoundRectangle CornerRadius="3" /></Border.StrokeShape>
+                                                        <Label Text="{Binding SizeCategory}"
+                                                               FontSize="10" TextColor="#AAAAAA" />
+                                                    </Border>
+                                                </HorizontalStackLayout>
+                                                <Label Text="{Binding VisualDescription}"
+                                                       FontSize="11" TextColor="#CCCCCC"
+                                                       LineBreakMode="WordWrap" />
+                                            </VerticalStackLayout>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                </CollectionView>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Layout Style Badge -->
+                        <HorizontalStackLayout Spacing="8"
+                                               IsVisible="{Binding Design, Converter={StaticResource IsNotNullConverter}}">
+                            <Label Text="Layout:" FontSize="14" TextColor="White"
+                                   VerticalOptions="Center" />
+                            <Border Padding="8,4" BackgroundColor="#2D5A27"
+                                    Stroke="#2D5A27" StrokeThickness="0">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="10" /></Border.StrokeShape>
+                                <Label Text="{Binding LayoutStyle}" FontSize="13"
+                                       TextColor="White" FontAttributes="Bold" />
+                            </Border>
+                        </HorizontalStackLayout>
+
+                        <!-- Hazards Card -->
+                        <Border Stroke="#444444" StrokeThickness="1" Padding="12"
+                                BackgroundColor="#1E1E1E"
+                                IsVisible="{Binding Design, Converter={StaticResource IsNotNullConverter}}">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
+                            <VerticalStackLayout Spacing="6">
+                                <Label FontSize="15" FontAttributes="Bold" TextColor="White">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="⚠ Hazards (" />
+                                            <Span Text="{Binding HazardCount}" />
+                                            <Span Text=")" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                                <CollectionView ItemsSource="{Binding Design.Hazards}">
+                                    <CollectionView.ItemsLayout>
+                                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="6" />
+                                    </CollectionView.ItemsLayout>
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate x:DataType="gen:EnvironmentalHazard">
+                                            <VerticalStackLayout Spacing="2" Padding="0,2">
+                                                <HorizontalStackLayout Spacing="8">
+                                                    <Label Text="{Binding Type}" FontSize="13"
+                                                           FontAttributes="Bold" TextColor="#E5A00D" />
+                                                    <Label Text="{Binding LocationHint}" FontSize="12"
+                                                           TextColor="#AAAAAA" />
+                                                </HorizontalStackLayout>
+                                                <Label Text="{Binding Description}"
+                                                       FontSize="11" TextColor="#CCCCCC"
+                                                       LineBreakMode="WordWrap" />
+                                            </VerticalStackLayout>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                </CollectionView>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Detail Action Buttons -->
+                        <HorizontalStackLayout Spacing="8">
+                            <Button Text="Accept"
+                                    Command="{Binding AcceptCommand, Source={RelativeSource AncestorType={x:Type vm:TownDesignStepViewModel}}}"
+                                    BackgroundColor="#238636" TextColor="White"
+                                    Padding="12,6" />
+                            <Button Text="Re-generate"
+                                    Command="{Binding RegenerateCommand, Source={RelativeSource AncestorType={x:Type vm:TownDesignStepViewModel}}}"
+                                    BackgroundColor="#2D2D30" TextColor="White"
+                                    Padding="12,6" />
+                        </HorizontalStackLayout>
+
+                    </VerticalStackLayout>
+                </ScrollView>
+            </Grid>
+
+            <!-- LLM Log -->
+            <Label Text="LLM Log" FontAttributes="Bold" TextColor="White" Margin="0,12,0,0" />
+            <CollectionView ItemsSource="{Binding LlmLog}"
+                            MaximumHeightRequest="250">
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="4" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:LlmLogEntry">
+                        <Border Stroke="#333333" StrokeThickness="1" Padding="8"
+                                BackgroundColor="#1A1A2E">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="4" /></Border.StrokeShape>
+                            <VerticalStackLayout Spacing="2">
+                                <HorizontalStackLayout Spacing="8">
+                                    <Label Text="{Binding Direction}" FontAttributes="Bold"
+                                           TextColor="#0078D4" FontSize="12" />
+                                    <Label Text="{Binding Timestamp, StringFormat='{0:HH:mm:ss}'}"
+                                           TextColor="#666666" FontSize="11" />
+                                </HorizontalStackLayout>
+                                <Label Text="{Binding Content}" FontSize="11"
+                                       FontFamily="Consolas" TextColor="#CCCCCC"
+                                       LineBreakMode="WordWrap" MaxLines="20" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <!-- Next Button -->
+            <Button Text="Next →"
+                    Command="{Binding NextCommand}"
+                    HorizontalOptions="Start"
+                    BackgroundColor="#0078D4"
+                    TextColor="White"
+                    Margin="0,16,0,0" />
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentView>

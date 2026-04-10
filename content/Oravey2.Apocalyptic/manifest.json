@@ -11,5 +11,15 @@
     "primary": "#4A6741",
     "accent": "#C17817",
     "danger": "#8B2500"
+  },
+  "townGeneration": {
+    "genre": "Post-Apocalyptic",
+    "themeDescription": "A ruined civilisation. Survivors fight over scrap, fuel, and clean water. Nature reclaims the ruins.",
+    "settlementNoun": "settlement",
+    "roles": [
+      "trading_hub", "military_outpost", "survivor_camp", "raider_den",
+      "tech_haven", "farming_community", "religious_settlement", "medical_center"
+    ],
+    "namingInstruction": "a post-apocalyptic rename (keep recognizable)"
   }
 }

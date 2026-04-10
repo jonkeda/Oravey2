@@ -99,7 +99,8 @@ public class ParseStepViewModelTests
         state.Parse.FilteredRoadCount = 80;
         state.Parse.FilteredWaterBodyCount = 10;
 
-        vm.Initialize(state, "/tmp");
+        vm.Initialize("/tmp");
+        vm.Load(state);
 
         Assert.Equal(42, vm.RawTownCount);
         Assert.Equal(100, vm.RawRoadCount);
@@ -118,7 +119,8 @@ public class ParseStepViewModelTests
         state.Parse.Completed = true;
         state.Parse.TownCount = 5;
 
-        vm.Initialize(state, "/tmp");
+        vm.Initialize("/tmp");
+        vm.Load(state);
 
         // Template not persisted, so IsParsed stays false until re-parse
         Assert.False(vm.IsParsed);
@@ -131,9 +133,10 @@ public class ParseStepViewModelTests
         var state = MakeState();
         state.Parse.Completed = true;
 
-        vm.Initialize(state, "/tmp");
+        vm.Initialize("/tmp");
+        vm.Load(state);
 
-        Assert.Contains("previously parsed", vm.StatusText);
+        Assert.Contains("Parse again", vm.StatusText);
     }
 
     // --- GetState ---
@@ -143,7 +146,8 @@ public class ParseStepViewModelTests
     {
         var vm = MakeVM();
         var state = MakeState();
-        vm.Initialize(state, "/tmp");
+        vm.Initialize("/tmp");
+        vm.Load(state);
 
         Assert.Same(state, vm.GetState());
     }
@@ -357,5 +361,141 @@ public class ParseStepViewModelTests
         vm.ShowMapPreview = true;
 
         Assert.Contains(nameof(vm.ShowMapPreview), raised);
+    }
+
+    // --- Cache reload (FIX-012) ---
+
+    private static Oravey2.MapGen.RegionTemplates.RegionTemplate MakeTemplate() => new()
+    {
+        Name = "noord-holland",
+        ElevationGrid = new float[1, 1],
+        GridOriginLat = 52.5,
+        GridOriginLon = 4.8,
+        GridCellSizeMetres = 30.0,
+        Towns = [new TownEntry("Amsterdam", 52.37, 4.90, 900_000, new Vector2(100, 200), TownCategory.City)],
+        Roads = [new RoadSegment(RoadClass.Primary, [Vector2.Zero, Vector2.One])],
+        WaterBodies = [new WaterBody(WaterType.Lake, [Vector2.Zero])],
+    };
+
+    [Fact]
+    public async Task Initialize_LoadsCacheWhenFileExists_EvenIfTemplateSavedIsFalse()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        try
+        {
+            var regionDir = Path.Combine(tempDir, "regions", "noord-holland");
+            Directory.CreateDirectory(regionDir);
+            var binPath = Path.Combine(regionDir, "region-template.bin");
+            await RegionTemplateSerializer.SaveAsync(MakeTemplate(), binPath);
+
+            var vm = MakeVM();
+            var state = MakeState();
+            state.Parse.TemplateSaved = false; // key condition
+
+            vm.Initialize(tempDir);
+            vm.Load(state);
+
+            // IsParsed set synchronously before async load
+            Assert.True(vm.IsParsed);
+
+            // Wait for async load to finish
+            await Task.Delay(500);
+
+            // Template should be loaded and TemplateSaved fixed
+            Assert.NotNull(vm.ParsedTemplate);
+            Assert.True(state.Parse.TemplateSaved);
+        }
+        finally
+        {
+            Directory.Delete(tempDir, true);
+        }
+    }
+
+    [Fact]
+    public async Task Initialize_CacheLoad_SetsTemplateSavedTrue()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        try
+        {
+            var regionDir = Path.Combine(tempDir, "regions", "noord-holland");
+            Directory.CreateDirectory(regionDir);
+            var binPath = Path.Combine(regionDir, "region-template.bin");
+            await RegionTemplateSerializer.SaveAsync(MakeTemplate(), binPath);
+
+            var vm = MakeVM();
+            var state = MakeState();
+            state.Parse.TemplateSaved = false;
+
+            vm.Initialize(tempDir);
+            vm.Load(state);
+
+            // Wait briefly for the fire-and-forget to complete
+            await Task.Delay(500);
+
+            Assert.True(state.Parse.TemplateSaved);
+            Assert.NotNull(vm.ParsedTemplate);
+            Assert.Equal("Loaded from cache.", vm.StatusText);
+        }
+        finally
+        {
+            Directory.Delete(tempDir, true);
+        }
+    }
+
+    [Fact]
+    public async Task Initialize_CacheLoad_InvokesTemplateLoadedCallback()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        try
+        {
+            var regionDir = Path.Combine(tempDir, "regions", "noord-holland");
+            Directory.CreateDirectory(regionDir);
+            var binPath = Path.Combine(regionDir, "region-template.bin");
+            await RegionTemplateSerializer.SaveAsync(MakeTemplate(), binPath);
+
+            var vm = MakeVM();
+            var state = MakeState();
+            Oravey2.MapGen.RegionTemplates.RegionTemplate? received = null;
+            vm.TemplateLoaded = t => received = t;
+
+            vm.Initialize(tempDir);
+            vm.Load(state);
+            await Task.Delay(500);
+
+            Assert.NotNull(received);
+            Assert.Equal("noord-holland", received.Name);
+        }
+        finally
+        {
+            Directory.Delete(tempDir, true);
+        }
+    }
+
+    [Fact]
+    public async Task ParseAsync_BlockedWhileCacheLoading()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        try
+        {
+            var regionDir = Path.Combine(tempDir, "regions", "noord-holland");
+            Directory.CreateDirectory(regionDir);
+            var binPath = Path.Combine(regionDir, "region-template.bin");
+            await RegionTemplateSerializer.SaveAsync(MakeTemplate(), binPath);
+
+            var vm = MakeVM();
+            var state = MakeState();
+            vm.Initialize(tempDir);
+            vm.Load(state);
+
+            // ParseAsync should return early without throwing
+            await vm.ParseAsync();
+
+            // IsParsing should remain false (parse never actually started)
+            Assert.False(vm.IsParsing);
+        }
+        finally
+        {
+            Directory.Delete(tempDir, true);
+        }
     }
 }

@@ -86,7 +86,7 @@ public class RegionStepViewModelTests : IDisposable
     {
         var vm = new RegionStepViewModel();
         var state = new PipelineState();
-        vm.Initialize(state);
+        vm.Load(state);
 
         vm.ApplyRegion(MakePreset());
 
@@ -101,7 +101,7 @@ public class RegionStepViewModelTests : IDisposable
     {
         var vm = new RegionStepViewModel();
         var state = new PipelineState();
-        vm.Initialize(state);
+        vm.Load(state);
         vm.ApplyRegion(MakePreset());
         vm.SelectedContentPack = "Oravey2.Apocalyptic.NL.NH";
 
@@ -112,11 +112,31 @@ public class RegionStepViewModelTests : IDisposable
     }
 
     [Fact]
+    public void OnNext_ResolvesFullContentPackPath()
+    {
+        var pack = Path.Combine(_tempDir, "Oravey2.Apocalyptic.NL.NH");
+        Directory.CreateDirectory(pack);
+        File.WriteAllText(Path.Combine(pack, "manifest.json"), "{}");
+
+        var vm = new RegionStepViewModel();
+        var state = new PipelineState();
+        vm.Initialize(_tempDir);
+        vm.Load(state);
+        vm.ApplyRegion(MakePreset());
+        vm.SelectedContentPack = "Oravey2.Apocalyptic.NL.NH";
+
+        vm.NextCommand.Execute(null);
+
+        Assert.True(Path.IsPathRooted(state.ContentPackPath));
+        Assert.Equal(pack, state.ContentPackPath);
+    }
+
+    [Fact]
     public void OnNext_InvokesStepCompletedCallback()
     {
         var vm = new RegionStepViewModel();
         var state = new PipelineState();
-        vm.Initialize(state);
+        vm.Load(state);
         vm.ApplyRegion(MakePreset());
         vm.SelectedContentPack = "Oravey2.Apocalyptic.NL.NH";
 
@@ -147,7 +167,7 @@ public class RegionStepViewModelTests : IDisposable
         };
 
         var vm = new RegionStepViewModel();
-        vm.Initialize(state);
+        vm.Load(state);
 
         Assert.Equal("noord-holland", vm.RegionName);
         Assert.Equal(52.9, vm.NorthLat);

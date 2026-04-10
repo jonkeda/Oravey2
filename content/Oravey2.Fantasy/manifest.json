@@ -11,5 +11,15 @@
     "primary": "#2E4057",
     "accent": "#D4AF37",
     "danger": "#8B0000"
+  },
+  "townGeneration": {
+    "genre": "Fantasy",
+    "themeDescription": "A medieval realm of magic and swordcraft. Kingdoms vie for power while dark forces stir in the wild.",
+    "settlementNoun": "settlement",
+    "roles": [
+      "market_town", "fortress", "wizard_tower", "thieves_guild",
+      "temple_city", "farming_village", "mining_outpost", "harbour"
+    ],
+    "namingInstruction": "a fantasy rename using archaic or elvish-sounding words"
   }
 }

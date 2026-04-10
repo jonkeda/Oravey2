@@ -4,7 +4,7 @@ using System.Windows.Input;
 
 namespace Oravey2.MapGen.App.ViewModels;
 
-public sealed class SettingsViewModel : BaseViewModel
+public sealed class SettingsViewModel : AppBaseViewModel
 {
     private string _selectedModel = "gpt-4.1";
     public string SelectedModel { get => _selectedModel; set => SetProperty(ref _selectedModel, value); }
@@ -40,6 +40,9 @@ public sealed class SettingsViewModel : BaseViewModel
     private string _contentPackPath = string.Empty;
     public string ContentPackPath { get => _contentPackPath; set => SetProperty(ref _contentPackPath, value); }
 
+    private string _dataRoot = string.Empty;
+    public string DataRoot { get => _dataRoot; set => SetProperty(ref _dataRoot, value); }
+
     // --- Earthdata (SRTM) ---
     private string? _earthdataUsername;
     public string? EarthdataUsername { get => _earthdataUsername; set => SetProperty(ref _earthdataUsername, value); }
@@ -70,6 +73,7 @@ public sealed class SettingsViewModel : BaseViewModel
     public ICommand LoginCopilotCommand { get; }
     public ICommand BrowseExportPathCommand { get; }
     public ICommand BrowseContentPackPathCommand { get; }
+    public ICommand BrowseDataRootCommand { get; }
 
     public SettingsViewModel()
     {
@@ -79,6 +83,7 @@ public sealed class SettingsViewModel : BaseViewModel
         LoginCopilotCommand = new Command(LoginCopilot);
         BrowseExportPathCommand = new Command(async () => await BrowseExportPathAsync());
         BrowseContentPackPathCommand = new Command(async () => await BrowseContentPackPathAsync());
+        BrowseDataRootCommand = new Command(async () => await BrowseDataRootAsync());
         LoadSettings();
     }
 
@@ -91,6 +96,7 @@ public sealed class SettingsViewModel : BaseViewModel
         Preferences.Set("CliPath", CliPath ?? string.Empty);
         Preferences.Set("ExportPath", ExportPath);
         Preferences.Set("ContentPackPath", ContentPackPath);
+        Preferences.Set("DataRoot", DataRoot);
         // API key stored securely
         if (ApiKey is not null)
             SecureStorage.SetAsync("ApiKey", ApiKey).ConfigureAwait(false);
@@ -120,6 +126,7 @@ public sealed class SettingsViewModel : BaseViewModel
         ExportPath = Preferences.Get("ExportPath",
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Oravey2", "Blueprints"));
         ContentPackPath = Preferences.Get("ContentPackPath", string.Empty);
+        DataRoot = Preferences.Get("DataRoot", string.Empty);
 
         // Earthdata credentials (loaded async)
         _ = LoadSecureSettingsAsync();
@@ -204,6 +211,26 @@ public sealed class SettingsViewModel : BaseViewModel
     }
     private async Task BrowseExportPathAsync()
     {
+        var path = await BrowseFolderAsync();
+        if (path is not null)
+        {
+            ExportPath = path;
+            StatusMessage = $"Export path set to {ExportPath}";
+        }
+    }
+
+    private async Task BrowseDataRootAsync()
+    {
+        var path = await BrowseFolderAsync();
+        if (path is not null)
+        {
+            DataRoot = path;
+            StatusMessage = $"Data root set to {DataRoot}. Restart to apply.";
+        }
+    }
+
+    private static async Task<string?> BrowseFolderAsync()
+    {
         try
         {
 #if WINDOWS
@@ -211,21 +238,19 @@ public sealed class SettingsViewModel : BaseViewModel
             picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
             picker.FileTypeFilter.Add("*");
 
-            // Initialize the picker with the window handle
             var hwnd = ((MauiWinUIWindow)Application.Current!.Windows[0].Handler!.PlatformView!).WindowHandle;
             WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
 
             var folder = await picker.PickSingleFolderAsync();
-            if (folder is not null)
-            {
-                ExportPath = folder.Path;
-                StatusMessage = $"Export path set to {ExportPath}";
-            }
+            return folder?.Path;
+#else
+            await Task.CompletedTask;
+            return null;
 #endif
         }
-        catch (Exception ex)
+        catch
         {
-            StatusMessage = $"Browse failed: {ex.Message}";
+            return null;
         }
     }
 

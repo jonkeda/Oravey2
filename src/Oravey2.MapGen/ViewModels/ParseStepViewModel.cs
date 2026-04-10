@@ -1,16 +1,12 @@
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Oravey2.MapGen.Pipeline;
 using Oravey2.MapGen.RegionTemplates;
 
 namespace Oravey2.MapGen.ViewModels;
 
-public class ParseStepViewModel : INotifyPropertyChanged
+public class ParseStepViewModel : BaseViewModel
 {
-    public event PropertyChangedEventHandler? PropertyChanged;
-
     private PipelineState _state = new();
     private string _dataRoot = string.Empty;
 
@@ -19,28 +15,28 @@ public class ParseStepViewModel : INotifyPropertyChanged
     public int RawTownCount
     {
         get => _rawTownCount;
-        private set { if (_rawTownCount != value) { _rawTownCount = value; OnPropertyChanged(); } }
+        private set => SetProperty(ref _rawTownCount, value);
     }
 
     private int _rawRoadCount;
     public int RawRoadCount
     {
         get => _rawRoadCount;
-        private set { if (_rawRoadCount != value) { _rawRoadCount = value; OnPropertyChanged(); } }
+        private set => SetProperty(ref _rawRoadCount, value);
     }
 
     private int _rawWaterCount;
     public int RawWaterCount
     {
         get => _rawWaterCount;
-        private set { if (_rawWaterCount != value) { _rawWaterCount = value; OnPropertyChanged(); } }
+        private set => SetProperty(ref _rawWaterCount, value);
     }
 
     private int _srtmTileCount;
     public int SrtmTileCount
     {
         get => _srtmTileCount;
-        private set { if (_srtmTileCount != value) { _srtmTileCount = value; OnPropertyChanged(); } }
+        private set => SetProperty(ref _srtmTileCount, value);
     }
 
     // Filtered counts
@@ -48,21 +44,21 @@ public class ParseStepViewModel : INotifyPropertyChanged
     public int FilteredTownCount
     {
         get => _filteredTownCount;
-        private set { if (_filteredTownCount != value) { _filteredTownCount = value; OnPropertyChanged(); } }
+        private set => SetProperty(ref _filteredTownCount, value);
     }
 
     private int _filteredRoadCount;
     public int FilteredRoadCount
     {
         get => _filteredRoadCount;
-        private set { if (_filteredRoadCount != value) { _filteredRoadCount = value; OnPropertyChanged(); } }
+        private set => SetProperty(ref _filteredRoadCount, value);
     }
 
     private int _filteredWaterCount;
     public int FilteredWaterCount
     {
         get => _filteredWaterCount;
-        private set { if (_filteredWaterCount != value) { _filteredWaterCount = value; OnPropertyChanged(); } }
+        private set => SetProperty(ref _filteredWaterCount, value);
     }
 
     // State
@@ -72,11 +68,11 @@ public class ParseStepViewModel : INotifyPropertyChanged
         get => _isParsing;
         private set
         {
-            if (_isParsing != value)
+            if (SetProperty(ref _isParsing, value))
             {
-                _isParsing = value;
-                OnPropertyChanged();
                 _parseCommand.RaiseCanExecuteChanged();
+                _saveCommand.RaiseCanExecuteChanged();
+                _cullCommand.RaiseCanExecuteChanged();
             }
         }
     }
@@ -87,12 +83,12 @@ public class ParseStepViewModel : INotifyPropertyChanged
         get => _isParsed;
         private set
         {
-            if (_isParsed != value)
+            if (SetProperty(ref _isParsed, value))
             {
-                _isParsed = value;
-                OnPropertyChanged();
                 _parseCommand.RaiseCanExecuteChanged();
                 _nextCommand.RaiseCanExecuteChanged();
+                _saveCommand.RaiseCanExecuteChanged();
+                _cullCommand.RaiseCanExecuteChanged();
             }
         }
     }
@@ -101,7 +97,7 @@ public class ParseStepViewModel : INotifyPropertyChanged
     public string StatusText
     {
         get => _statusText;
-        private set { if (_statusText != value) { _statusText = value; OnPropertyChanged(); } }
+        private set => SetProperty(ref _statusText, value);
     }
 
     public string RawSummary => IsParsed
@@ -112,7 +108,7 @@ public class ParseStepViewModel : INotifyPropertyChanged
     public bool IsCulled
     {
         get => _isCulled;
-        private set { if (_isCulled != value) { _isCulled = value; OnPropertyChanged(); OnPropertyChanged(nameof(FilteredSummary)); } }
+        private set { if (SetProperty(ref _isCulled, value)) OnPropertyChanged(nameof(FilteredSummary)); }
     }
 
     public string FilteredSummary => IsParsed
@@ -126,28 +122,28 @@ public class ParseStepViewModel : INotifyPropertyChanged
     public bool ShowTownList
     {
         get => _showTownList;
-        set { if (_showTownList != value) { _showTownList = value; OnPropertyChanged(); } }
+        set => SetProperty(ref _showTownList, value);
     }
 
     private bool _showSummaryTables;
     public bool ShowSummaryTables
     {
         get => _showSummaryTables;
-        set { if (_showSummaryTables != value) { _showSummaryTables = value; OnPropertyChanged(); } }
+        set => SetProperty(ref _showSummaryTables, value);
     }
 
     private bool _showMapPreview;
     public bool ShowMapPreview
     {
         get => _showMapPreview;
-        set { if (_showMapPreview != value) { _showMapPreview = value; OnPropertyChanged(); } }
+        set => SetProperty(ref _showMapPreview, value);
     }
 
     private bool _showCullSettings;
     public bool ShowCullSettings
     {
         get => _showCullSettings;
-        set { if (_showCullSettings != value) { _showCullSettings = value; OnPropertyChanged(); } }
+        set => SetProperty(ref _showCullSettings, value);
     }
 
     // ---- Cull setting properties (bindable) ----
@@ -155,133 +151,133 @@ public class ParseStepViewModel : INotifyPropertyChanged
     public TownCategory CullTownMinCategory
     {
         get => _townMinCategory;
-        set { if (_townMinCategory != value) { _townMinCategory = value; OnPropertyChanged(); } }
+        set => SetProperty(ref _townMinCategory, value);
     }
 
     private int _townMinPopulation = 50;
     public int CullTownMinPopulation
     {
         get => _townMinPopulation;
-        set { if (_townMinPopulation != value) { _townMinPopulation = value; OnPropertyChanged(); } }
+        set => SetProperty(ref _townMinPopulation, value);
     }
 
     private double _townMinSpacingKm = 1.0;
     public double CullTownMinSpacingKm
     {
         get => _townMinSpacingKm;
-        set { if (_townMinSpacingKm != value) { _townMinSpacingKm = value; OnPropertyChanged(); } }
+        set => SetProperty(ref _townMinSpacingKm, value);
     }
 
     private int _townMaxCount = 200;
     public int CullTownMaxCount
     {
         get => _townMaxCount;
-        set { if (_townMaxCount != value) { _townMaxCount = value; OnPropertyChanged(); } }
+        set => SetProperty(ref _townMaxCount, value);
     }
 
     private CullPriority _townPriority = CullPriority.Category;
     public CullPriority CullTownPriority
     {
         get => _townPriority;
-        set { if (_townPriority != value) { _townPriority = value; OnPropertyChanged(); } }
+        set => SetProperty(ref _townPriority, value);
     }
 
     private bool _townAlwaysKeepCities = true;
     public bool CullTownAlwaysKeepCities
     {
         get => _townAlwaysKeepCities;
-        set { if (_townAlwaysKeepCities != value) { _townAlwaysKeepCities = value; OnPropertyChanged(); } }
+        set => SetProperty(ref _townAlwaysKeepCities, value);
     }
 
     private bool _townAlwaysKeepMetropolis = true;
     public bool CullTownAlwaysKeepMetropolis
     {
         get => _townAlwaysKeepMetropolis;
-        set { if (_townAlwaysKeepMetropolis != value) { _townAlwaysKeepMetropolis = value; OnPropertyChanged(); } }
+        set => SetProperty(ref _townAlwaysKeepMetropolis, value);
     }
 
     private RoadClass _roadMinClass = RoadClass.Tertiary;
     public RoadClass CullRoadMinClass
     {
         get => _roadMinClass;
-        set { if (_roadMinClass != value) { _roadMinClass = value; OnPropertyChanged(); } }
+        set => SetProperty(ref _roadMinClass, value);
     }
 
     private bool _roadAlwaysKeepMotorways = true;
     public bool CullRoadAlwaysKeepMotorways
     {
         get => _roadAlwaysKeepMotorways;
-        set { if (_roadAlwaysKeepMotorways != value) { _roadAlwaysKeepMotorways = value; OnPropertyChanged(); } }
+        set => SetProperty(ref _roadAlwaysKeepMotorways, value);
     }
 
     private bool _roadKeepNearTowns = true;
     public bool CullRoadKeepNearTowns
     {
         get => _roadKeepNearTowns;
-        set { if (_roadKeepNearTowns != value) { _roadKeepNearTowns = value; OnPropertyChanged(); } }
+        set => SetProperty(ref _roadKeepNearTowns, value);
     }
 
     private double _roadTownProximityKm = 2.0;
     public double CullRoadTownProximityKm
     {
         get => _roadTownProximityKm;
-        set { if (_roadTownProximityKm != value) { _roadTownProximityKm = value; OnPropertyChanged(); } }
+        set => SetProperty(ref _roadTownProximityKm, value);
     }
 
     private bool _roadRemoveDeadEnds = true;
     public bool CullRoadRemoveDeadEnds
     {
         get => _roadRemoveDeadEnds;
-        set { if (_roadRemoveDeadEnds != value) { _roadRemoveDeadEnds = value; OnPropertyChanged(); } }
+        set => SetProperty(ref _roadRemoveDeadEnds, value);
     }
 
     private double _roadDeadEndMinKm = 0.5;
     public double CullRoadDeadEndMinKm
     {
         get => _roadDeadEndMinKm;
-        set { if (_roadDeadEndMinKm != value) { _roadDeadEndMinKm = value; OnPropertyChanged(); } }
+        set => SetProperty(ref _roadDeadEndMinKm, value);
     }
 
     private bool _roadSimplifyGeometry = true;
     public bool CullRoadSimplifyGeometry
     {
         get => _roadSimplifyGeometry;
-        set { if (_roadSimplifyGeometry != value) { _roadSimplifyGeometry = value; OnPropertyChanged(); } }
+        set => SetProperty(ref _roadSimplifyGeometry, value);
     }
 
     private double _roadSimplifyToleranceM = 50.0;
     public double CullRoadSimplifyToleranceM
     {
         get => _roadSimplifyToleranceM;
-        set { if (_roadSimplifyToleranceM != value) { _roadSimplifyToleranceM = value; OnPropertyChanged(); } }
+        set => SetProperty(ref _roadSimplifyToleranceM, value);
     }
 
     private double _waterMinAreaKm2 = 0.01;
     public double CullWaterMinAreaKm2
     {
         get => _waterMinAreaKm2;
-        set { if (_waterMinAreaKm2 != value) { _waterMinAreaKm2 = value; OnPropertyChanged(); } }
+        set => SetProperty(ref _waterMinAreaKm2, value);
     }
 
     private double _waterMinRiverLengthKm = 1.0;
     public double CullWaterMinRiverLengthKm
     {
         get => _waterMinRiverLengthKm;
-        set { if (_waterMinRiverLengthKm != value) { _waterMinRiverLengthKm = value; OnPropertyChanged(); } }
+        set => SetProperty(ref _waterMinRiverLengthKm, value);
     }
 
     private bool _waterAlwaysKeepSea = true;
     public bool CullWaterAlwaysKeepSea
     {
         get => _waterAlwaysKeepSea;
-        set { if (_waterAlwaysKeepSea != value) { _waterAlwaysKeepSea = value; OnPropertyChanged(); } }
+        set => SetProperty(ref _waterAlwaysKeepSea, value);
     }
 
     private bool _waterAlwaysKeepLakes = true;
     public bool CullWaterAlwaysKeepLakes
     {
         get => _waterAlwaysKeepLakes;
-        set { if (_waterAlwaysKeepLakes != value) { _waterAlwaysKeepLakes = value; OnPropertyChanged(); } }
+        set => SetProperty(ref _waterAlwaysKeepLakes, value);
     }
 
     // Enum sources for picker binding
@@ -299,6 +295,11 @@ public class ParseStepViewModel : INotifyPropertyChanged
     // The parsed result held in memory for subsequent steps
     public RegionTemplates.RegionTemplate? ParsedTemplate { get; private set; }
     public OsmExtract? RawExtract { get; private set; }
+
+    /// <summary>Invoked when a cached template finishes loading asynchronously.</summary>
+    public Action<RegionTemplates.RegionTemplate>? TemplateLoaded { get; set; }
+
+    private bool _isLoadingCache;
 
     private readonly AsyncRelayCommand _parseCommand;
     private readonly RelayCommand _nextCommand;
@@ -324,7 +325,7 @@ public class ParseStepViewModel : INotifyPropertyChanged
 
     public ParseStepViewModel()
     {
-        _parseCommand = new AsyncRelayCommand(ParseAsync, () => !IsParsing && !IsParsed);
+        _parseCommand = new AsyncRelayCommand(ParseAsync, () => !IsParsing);
         _nextCommand = new RelayCommand(OnNext, () => IsParsed);
         _toggleTownListCommand = new RelayCommand(() => ShowTownList = !ShowTownList);
         _toggleSummaryCommand = new RelayCommand(() => ShowSummaryTables = !ShowSummaryTables);
@@ -334,54 +335,69 @@ public class ParseStepViewModel : INotifyPropertyChanged
         _saveCommand = new AsyncRelayCommand(SaveAsync, () => IsParsed && !IsParsing);
     }
 
-    public void Initialize(PipelineState state, string dataRoot)
+    public void Initialize(string dataRoot)
+    {
+        _dataRoot = dataRoot;
+    }
+
+    public void Load(PipelineState state)
     {
         _state = state;
-        _dataRoot = dataRoot;
 
-        // Restore from state if already parsed
-        if (state.Parse.Completed)
+        var templatePath = GetTemplatePath();
+        if (File.Exists(templatePath))
         {
-            RawTownCount = state.Parse.TownCount;
-            RawRoadCount = state.Parse.RoadCount;
-            RawWaterCount = state.Parse.WaterBodyCount;
-            SrtmTileCount = state.Parse.SrtmTileCount;
-            FilteredTownCount = state.Parse.FilteredTownCount;
-            FilteredRoadCount = state.Parse.FilteredRoadCount;
-            FilteredWaterCount = state.Parse.FilteredWaterBodyCount;
-
-            // Try to load cached template from disk
-            var templatePath = GetTemplatePath();
-            if (state.Parse.TemplateSaved && File.Exists(templatePath))
-            {
-                _ = LoadCachedTemplateAsync(templatePath);
-            }
-            else
-            {
-                IsParsed = false;
-                StatusText = "Data was previously parsed. Parse again to view details.";
-            }
+            RestoreCountsFromState(state.Parse);
+            IsParsed = true;
+            _isLoadingCache = true;
+            StatusText = "Loading cached template...";
+            _ = LoadCachedTemplateAsync(templatePath);
         }
+        else if (state.Parse.Completed)
+        {
+            RestoreCountsFromState(state.Parse);
+            IsParsed = false;
+            StatusText = "Template file missing. Parse again.";
+        }
+    }
+
+    private void RestoreCountsFromState(ParseStepState parse)
+    {
+        RawTownCount = parse.TownCount;
+        RawRoadCount = parse.RoadCount;
+        RawWaterCount = parse.WaterBodyCount;
+        SrtmTileCount = parse.SrtmTileCount;
+        FilteredTownCount = parse.FilteredTownCount;
+        FilteredRoadCount = parse.FilteredRoadCount;
+        FilteredWaterCount = parse.FilteredWaterBodyCount;
     }
 
     private async Task LoadCachedTemplateAsync(string path)
     {
-        StatusText = "Loading cached template...";
-        var template = await RegionTemplateSerializer.LoadAsync(path);
-        if (template is not null)
+        try
         {
-            ParsedTemplate = template;
-            PopulateTownList(template.Towns);
-            PopulateSummaryTables(template.Roads, template.WaterBodies);
-            IsParsed = true;
-            OnPropertyChanged(nameof(RawSummary));
-            OnPropertyChanged(nameof(FilteredSummary));
-            StatusText = "Loaded from cache.";
+            var template = await RegionTemplateSerializer.LoadAsync(path);
+            if (template is not null)
+            {
+                ParsedTemplate = template;
+                PopulateTownList(template.Towns);
+                PopulateSummaryTables(template.Roads, template.WaterBodies);
+                IsParsed = true;
+                _state.Parse.TemplateSaved = true;
+                OnPropertyChanged(nameof(RawSummary));
+                OnPropertyChanged(nameof(FilteredSummary));
+                StatusText = "Loaded from cache.";
+                TemplateLoaded?.Invoke(template);
+            }
+            else
+            {
+                IsParsed = false;
+                StatusText = "Cached template is corrupt. Parse again.";
+            }
         }
-        else
+        finally
         {
-            IsParsed = false;
-            StatusText = "Cached template is corrupt. Parse again.";
+            _isLoadingCache = false;
         }
     }
 
@@ -393,6 +409,8 @@ public class ParseStepViewModel : INotifyPropertyChanged
 
     public async Task ParseAsync()
     {
+        if (_isLoadingCache) return;
+
         IsParsing = true;
         StatusText = "Parsing OSM data...";
 
@@ -602,15 +620,22 @@ public class ParseStepViewModel : INotifyPropertyChanged
 
     public async Task SaveAsync()
     {
-        if (ParsedTemplate is null) return;
+        if (ParsedTemplate is null)
+        {
+            StatusText = "Nothing to save — parse data first.";
+            return;
+        }
 
         IsParsing = true;
         StatusText = "Saving template...";
         try
         {
-            await RegionTemplateSerializer.SaveAsync(ParsedTemplate, GetTemplatePath());
+            var path = GetTemplatePath();
+            var dir = Path.GetDirectoryName(path);
+            if (dir is not null) Directory.CreateDirectory(dir);
+            await RegionTemplateSerializer.SaveAsync(ParsedTemplate, path);
             _state.Parse.TemplateSaved = true;
-            StatusText = "Template saved.";
+            StatusText = $"Template saved to {path}";
         }
         catch (Exception ex)
         {
@@ -646,8 +671,6 @@ public class ParseStepViewModel : INotifyPropertyChanged
         StepCompleted?.Invoke();
     }
 
-    protected void OnPropertyChanged([CallerMemberName] string? name = null)
-        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }
 
 public record TownDisplayItem(string Name, int Population, TownCategory Category, double Lat, double Lon);

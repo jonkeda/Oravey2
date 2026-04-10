@@ -1,15 +1,11 @@
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Oravey2.MapGen.Download;
 using Oravey2.MapGen.Pipeline;
 
 namespace Oravey2.MapGen.ViewModels;
 
-public class DownloadStepViewModel : INotifyPropertyChanged
+public class DownloadStepViewModel : BaseViewModel
 {
-    public event PropertyChangedEventHandler? PropertyChanged;
-
     private readonly IDataDownloadService _downloadService;
     private readonly ISettingsService _settingsService;
     private PipelineState _state = new();
@@ -21,14 +17,14 @@ public class DownloadStepViewModel : INotifyPropertyChanged
     public int RequiredSrtmCount
     {
         get => _requiredSrtmCount;
-        private set { if (_requiredSrtmCount != value) { _requiredSrtmCount = value; OnPropertyChanged(); OnPropertyChanged(nameof(SrtmCountText)); } }
+        private set { if (SetProperty(ref _requiredSrtmCount, value)) OnPropertyChanged(nameof(SrtmCountText)); }
     }
 
     private int _downloadedSrtmCount;
     public int DownloadedSrtmCount
     {
         get => _downloadedSrtmCount;
-        private set { if (_downloadedSrtmCount != value) { _downloadedSrtmCount = value; OnPropertyChanged(); OnPropertyChanged(nameof(SrtmCountText)); } }
+        private set { if (SetProperty(ref _downloadedSrtmCount, value)) OnPropertyChanged(nameof(SrtmCountText)); }
     }
 
     private bool _srtmReady;
@@ -37,10 +33,8 @@ public class DownloadStepViewModel : INotifyPropertyChanged
         get => _srtmReady;
         private set
         {
-            if (_srtmReady != value)
+            if (SetProperty(ref _srtmReady, value))
             {
-                _srtmReady = value;
-                OnPropertyChanged();
                 _downloadSrtmCommand.RaiseCanExecuteChanged();
                 _nextCommand.RaiseCanExecuteChanged();
             }
@@ -58,7 +52,7 @@ public class DownloadStepViewModel : INotifyPropertyChanged
     public string SrtmStatusText
     {
         get => _srtmStatusText;
-        private set { if (_srtmStatusText != value) { _srtmStatusText = value; OnPropertyChanged(); } }
+        private set => SetProperty(ref _srtmStatusText, value);
     }
 
     public string SrtmCountText => $"{DownloadedSrtmCount}/{RequiredSrtmCount} tiles";
@@ -70,10 +64,8 @@ public class DownloadStepViewModel : INotifyPropertyChanged
         get => _osmReady;
         private set
         {
-            if (_osmReady != value)
+            if (SetProperty(ref _osmReady, value))
             {
-                _osmReady = value;
-                OnPropertyChanged();
                 _downloadOsmCommand.RaiseCanExecuteChanged();
                 _nextCommand.RaiseCanExecuteChanged();
             }
@@ -91,14 +83,14 @@ public class DownloadStepViewModel : INotifyPropertyChanged
     public string OsmStatusText
     {
         get => _osmStatusText;
-        private set { if (_osmStatusText != value) { _osmStatusText = value; OnPropertyChanged(); } }
+        private set => SetProperty(ref _osmStatusText, value);
     }
 
     private string _osmFileName = string.Empty;
     public string OsmFileName
     {
         get => _osmFileName;
-        private set { if (_osmFileName != value) { _osmFileName = value; OnPropertyChanged(); } }
+        private set => SetProperty(ref _osmFileName, value);
     }
 
     // Download state
@@ -108,10 +100,8 @@ public class DownloadStepViewModel : INotifyPropertyChanged
         get => _isDownloading;
         private set
         {
-            if (_isDownloading != value)
+            if (SetProperty(ref _isDownloading, value))
             {
-                _isDownloading = value;
-                OnPropertyChanged();
                 _downloadSrtmCommand.RaiseCanExecuteChanged();
                 _downloadOsmCommand.RaiseCanExecuteChanged();
                 _cancelCommand.RaiseCanExecuteChanged();
@@ -143,10 +133,14 @@ public class DownloadStepViewModel : INotifyPropertyChanged
         _nextCommand = new RelayCommand(OnNext, () => CanComplete);
     }
 
-    public void Initialize(PipelineState state, string dataRoot)
+    public void Initialize(string dataRoot)
+    {
+        _dataRoot = dataRoot;
+    }
+
+    public void Load(PipelineState state)
     {
         _state = state;
-        _dataRoot = dataRoot;
         CheckExistingFiles();
     }
 
@@ -288,6 +282,4 @@ public class DownloadStepViewModel : INotifyPropertyChanged
     internal string GetOsmFilePath()
         => Path.Combine(_dataRoot, "regions", _state.RegionName, "osm", $"{_state.RegionName}-latest.osm.pbf");
 
-    protected void OnPropertyChanged([CallerMemberName] string? name = null)
-        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }

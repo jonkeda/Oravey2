@@ -51,6 +51,13 @@
                 <Button Text="Browse..." Command="{Binding BrowseContentPackPathCommand}" />
             </HorizontalStackLayout>
 
+            <Label Text="Data Root (regions folder)" FontAttributes="Bold" Margin="0,10,0,0" />
+            <Label Text="Leave blank to use default AppData location. Requires restart." FontSize="12" TextColor="Gray" />
+            <HorizontalStackLayout Spacing="10">
+                <Entry Text="{Binding DataRoot}" Placeholder="e.g. E:\repos\Private\Oravey2\data" WidthRequest="400" />
+                <Button Text="Browse..." Command="{Binding BrowseDataRootCommand}" />
+            </HorizontalStackLayout>
+
             <BoxView HeightRequest="1" Color="Gray" Margin="0,10" />
 
             <Label Text="Copilot CLI Path (optional)" FontAttributes="Bold" />

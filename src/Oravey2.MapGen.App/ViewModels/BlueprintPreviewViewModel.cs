@@ -3,7 +3,7 @@ using System.Windows.Input;
 
 namespace Oravey2.MapGen.App.ViewModels;
 
-public sealed class BlueprintPreviewViewModel : BaseViewModel
+public sealed class BlueprintPreviewViewModel : AppBaseViewModel
 {
     private string? _blueprintJson;
     public string? BlueprintJson

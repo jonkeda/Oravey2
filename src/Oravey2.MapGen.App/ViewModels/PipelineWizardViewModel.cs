@@ -1,18 +1,24 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Oravey2.MapGen.Generation;
 using Oravey2.MapGen.Pipeline;
+using Oravey2.MapGen.Services;
 using Oravey2.MapGen.ViewModels;
 
 namespace Oravey2.MapGen.App.ViewModels;
 
-public sealed class PipelineWizardViewModel : BaseViewModel
+public sealed class PipelineWizardViewModel : AppBaseViewModel
 {
     private readonly PipelineStateService _stateService;
+    private readonly CopilotLlmService _llmService;
     private PipelineState _pipelineState = new();
+    private TownGenerationParams _generationParams = TownGenerationParams.Apocalyptic;
 
     public RegionStepViewModel RegionStepVM { get; }
     public DownloadStepViewModel DownloadStepVM { get; }
     public ParseStepViewModel ParseStepVM { get; }
+    public TownSelectionStepViewModel TownSelectionStepVM { get; }
+    public TownDesignStepViewModel TownDesignStepVM { get; }
     public string ContentRoot { get; set; } = string.Empty;
 
     public ObservableCollection<PipelineStepInfo> Steps { get; } = [];
@@ -54,21 +60,66 @@ public sealed class PipelineWizardViewModel : BaseViewModel
         PipelineStateService stateService,
         RegionStepViewModel regionStepVM,
         DownloadStepViewModel downloadStepVM,
-        ParseStepViewModel parseStepVM)
+        ParseStepViewModel parseStepVM,
+        TownSelectionStepViewModel townSelectionStepVM,
+        TownDesignStepViewModel townDesignStepVM,
+        CopilotLlmService llmService)
     {
         _stateService = stateService;
+        _llmService = llmService;
+        ConfigureLlmService();
+
         RegionStepVM = regionStepVM;
         DownloadStepVM = downloadStepVM;
         ParseStepVM = parseStepVM;
+        TownSelectionStepVM = townSelectionStepVM;
+        TownDesignStepVM = townDesignStepVM;
 
         RegionStepVM.StepCompleted = OnStepCompleted;
         DownloadStepVM.StepCompleted = OnStepCompleted;
         ParseStepVM.StepCompleted = OnStepCompleted;
+        TownSelectionStepVM.StepCompleted = OnStepCompleted;
+        TownDesignStepVM.StepCompleted = OnStepCompleted;
+
+        var toolSystemMsg = """
+            You are a JSON-only RPG town generator. When asked to generate towns,
+            produce a JSON array and submit it via the submit_towns tool.
+            Do NOT read files, run commands, or perform web searches.
+            Do NOT include explanation text — only the JSON via the tool.
+            """;
+        TownSelectionStepVM.SetLlmCall(
+            _llmService.GetLlmCall(),
+            _llmService.GetToolCallDelegate(toolSystemMsg));
+
+        var designToolSystemMsg = """
+            You are a JSON-only RPG town designer. When asked to design a town,
+            produce the design and submit it via the submit_town_design tool.
+            Do NOT read files, run commands, or perform web searches.
+            Do NOT include explanation text — only the JSON via the tool.
+            """;
+        TownDesignStepVM.SetLlmCall(
+            _llmService.GetLlmCall(),
+            _llmService.GetToolCallDelegate(designToolSystemMsg));
 
         NavigateToStepCommand = new Command<PipelineStepInfo>(OnNavigateToStep);
         OpenSettingsCommand = new Command(OnOpenSettings);
 
         InitializeSteps();
+    }
+
+    private void ConfigureLlmService()
+    {
+        _llmService.Model = Preferences.Get("SelectedModel", "gpt-4.1");
+        _llmService.CliPath = Preferences.Get("CliPath", string.Empty);
+        _llmService.UseBYOK = Preferences.Get("UseBYOK", false);
+        _llmService.ProviderType = Preferences.Get("ProviderType", string.Empty);
+        _llmService.BaseUrl = Preferences.Get("BaseUrl", string.Empty);
+        _ = LoadApiKeyAsync();
+    }
+
+    private async Task LoadApiKeyAsync()
+    {
+        _llmService.ApiKey = await SecureStorage.Default.GetAsync("ApiKey");
     }
 
     public void RegisterStepViewFactory(int stepNumber, Func<ContentView> factory)
@@ -80,7 +131,8 @@ public sealed class PipelineWizardViewModel : BaseViewModel
     {
         _pipelineState = await _stateService.LoadAsync(regionName);
         CurrentStep = _pipelineState.CurrentStep;
-        InitializeStepViewModels();
+        for (var i = 1; i <= CurrentStep; i++)
+            LoadStep(i);
         RefreshStepStatuses();
         UpdateCurrentStepView();
     }
@@ -88,6 +140,7 @@ public sealed class PipelineWizardViewModel : BaseViewModel
     public async Task InitializeDefaultAsync()
     {
         InitializeStepViewModels();
+        LoadStep(1);
         RefreshStepStatuses();
         UpdateCurrentStepView();
         await Task.CompletedTask;
@@ -95,14 +148,44 @@ public sealed class PipelineWizardViewModel : BaseViewModel
 
     private void InitializeStepViewModels()
     {
-        RegionStepVM.Initialize(_pipelineState, ContentRoot);
-        DownloadStepVM.Initialize(_pipelineState, _stateService.DataRoot);
-        ParseStepVM.Initialize(_pipelineState, _stateService.DataRoot);
+        _generationParams = TownGenerationParams.LoadFromManifest(
+            _pipelineState.ContentPackPath);
+
+        RegionStepVM.Initialize(ContentRoot);
+        DownloadStepVM.Initialize(_stateService.DataRoot);
+        ParseStepVM.Initialize(_stateService.DataRoot);
+        ParseStepVM.TemplateLoaded = t => TownSelectionStepVM.SetParsedTemplate(t);
+        TownSelectionStepVM.Initialize(_stateService.DataRoot, _generationParams);
+        TownDesignStepVM.Initialize(_stateService.DataRoot);
+    }
+
+    private void LoadStep(int stepNumber)
+    {
+        switch (stepNumber)
+        {
+            case 1:
+                RegionStepVM.Load(_pipelineState);
+                break;
+            case 2:
+                DownloadStepVM.Load(_pipelineState);
+                break;
+            case 3:
+                ParseStepVM.Load(_pipelineState);
+                TownSelectionStepVM.SetParsedTemplate(ParseStepVM.ParsedTemplate);
+                break;
+            case 4:
+                TownSelectionStepVM.Load(_pipelineState);
+                break;
+            case 5:
+                TownDesignStepVM.Load(_pipelineState);
+                break;
+        }
     }
 
     private void OnStepCompleted()
     {
         AdvanceToNextStep();
+        LoadStep(CurrentStep);
         _ = SaveStateAsync();
     }
 
@@ -175,8 +258,10 @@ public sealed class PipelineWizardViewModel : BaseViewModel
     {
         if (Application.Current?.Windows.FirstOrDefault()?.Page is Page page)
         {
-            await page.Navigation.PushModalAsync(
-                new NavigationPage(new Views.SettingsView()));
+            var settingsPage = new NavigationPage(new Views.SettingsView());
+            await page.Navigation.PushModalAsync(settingsPage);
+            // Re-read preferences after the modal is dismissed
+            settingsPage.Disappearing += (_, _) => ConfigureLlmService();
         }
     }
 }

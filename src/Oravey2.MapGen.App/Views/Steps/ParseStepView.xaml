@@ -10,11 +10,17 @@
             <Label Text="Parse SRTM and OSM data into in-memory structures. Heavy visualizations are on-demand only."
                    TextColor="#AAAAAA" />
 
-            <!-- Parse Button -->
+            <!-- Parse / Save Buttons -->
             <HorizontalStackLayout Spacing="12">
                 <Button Text="Parse Data"
                         Command="{Binding ParseCommand}"
                         BackgroundColor="#2D2D30"
+                        TextColor="White"
+                        HorizontalOptions="Start" />
+                <Button Text="Save Data"
+                        Command="{Binding SaveCommand}"
+                        IsVisible="{Binding IsParsed}"
+                        BackgroundColor="#0078D4"
                         TextColor="White"
                         HorizontalOptions="Start" />
                 <ActivityIndicator IsRunning="{Binding IsParsing}" IsVisible="{Binding IsParsing}"

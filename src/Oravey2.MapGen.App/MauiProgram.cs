@@ -29,6 +29,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<IAssetRegistry, AssetRegistry>();
         builder.Services.AddSingleton<MapGeneratorService>();
         builder.Services.AddSingleton<HttpClient>();
+        builder.Services.AddSingleton<CopilotLlmService>();
         builder.Services.AddSingleton<IDataDownloadService, DataDownloadService>();
         builder.Services.AddSingleton<IGeofabrikService>(sp =>
             new GeofabrikService(
@@ -40,13 +41,19 @@ public static class MauiProgram
             return new MeshyClient(apiKey);
         });
         builder.Services.AddSingleton(sp =>
-            new PipelineStateService(
-                Path.Combine(FileSystem.AppDataDirectory, "data")));
+        {
+            var dataRoot = Preferences.Get("DataRoot", string.Empty);
+            if (string.IsNullOrWhiteSpace(dataRoot))
+                dataRoot = Path.Combine(FileSystem.AppDataDirectory, "data");
+            return new PipelineStateService(dataRoot);
+        });
 
         // ViewModels
         builder.Services.AddTransient<RegionStepViewModel>();
         builder.Services.AddTransient<DownloadStepViewModel>();
         builder.Services.AddTransient<ParseStepViewModel>();
+        builder.Services.AddTransient<TownSelectionStepViewModel>();
+        builder.Services.AddTransient<TownDesignStepViewModel>();
         builder.Services.AddTransient<PipelineWizardViewModel>();
         builder.Services.AddTransient<RegionPickerViewModel>();
         builder.Services.AddTransient<RegionTemplateViewModel>();

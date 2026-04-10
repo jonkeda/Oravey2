@@ -4,7 +4,7 @@ using Oravey2.MapGen.Services;
 
 namespace Oravey2.MapGen.App.ViewModels;
 
-public sealed class FigureGeneratorViewModel : BaseViewModel
+public sealed class FigureGeneratorViewModel : AppBaseViewModel
 {
     private readonly MeshyClient _meshyClient;
     private CancellationTokenSource? _cts;

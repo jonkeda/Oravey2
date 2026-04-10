@@ -24,7 +24,9 @@
 
         <!-- Tree -->
         <CollectionView Grid.Row="1"
+                        x:Name="RegionTreeView"
                         ItemsSource="{Binding FlatItems}"
+                        ItemsUpdatingScrollMode="KeepScrollOffset"
                         SelectionMode="None">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="vm:RegionTreeItem">

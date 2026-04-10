@@ -1,23 +1,20 @@
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Oravey2.MapGen.Pipeline;
 using Oravey2.MapGen.RegionTemplates;
 
 namespace Oravey2.MapGen.ViewModels;
 
-public class RegionStepViewModel : INotifyPropertyChanged
+public class RegionStepViewModel : BaseViewModel
 {
-    public event PropertyChangedEventHandler? PropertyChanged;
-
     private PipelineState _state = new();
+    private string _contentRoot = string.Empty;
 
     private string _regionName = string.Empty;
     public string RegionName
     {
         get => _regionName;
-        private set { if (_regionName != value) { _regionName = value; OnPropertyChanged(); } }
+        private set => SetProperty(ref _regionName, value);
     }
 
     private string _regionDisplayName = string.Empty;
@@ -26,10 +23,8 @@ public class RegionStepViewModel : INotifyPropertyChanged
         get => _regionDisplayName;
         private set
         {
-            if (_regionDisplayName != value)
+            if (SetProperty(ref _regionDisplayName, value))
             {
-                _regionDisplayName = value;
-                OnPropertyChanged();
                 OnPropertyChanged(nameof(HasRegion));
                 OnPropertyChanged(nameof(BoundingBoxText));
                 _nextCommand.RaiseCanExecuteChanged();
@@ -41,35 +36,35 @@ public class RegionStepViewModel : INotifyPropertyChanged
     public double NorthLat
     {
         get => _northLat;
-        private set { if (_northLat != value) { _northLat = value; OnPropertyChanged(); OnPropertyChanged(nameof(BoundingBoxText)); } }
+        private set { if (SetProperty(ref _northLat, value)) OnPropertyChanged(nameof(BoundingBoxText)); }
     }
 
     private double _southLat;
     public double SouthLat
     {
         get => _southLat;
-        private set { if (_southLat != value) { _southLat = value; OnPropertyChanged(); OnPropertyChanged(nameof(BoundingBoxText)); } }
+        private set { if (SetProperty(ref _southLat, value)) OnPropertyChanged(nameof(BoundingBoxText)); }
     }
 
     private double _eastLon;
     public double EastLon
     {
         get => _eastLon;
-        private set { if (_eastLon != value) { _eastLon = value; OnPropertyChanged(); OnPropertyChanged(nameof(BoundingBoxText)); } }
+        private set { if (SetProperty(ref _eastLon, value)) OnPropertyChanged(nameof(BoundingBoxText)); }
     }
 
     private double _westLon;
     public double WestLon
     {
         get => _westLon;
-        private set { if (_westLon != value) { _westLon = value; OnPropertyChanged(); OnPropertyChanged(nameof(BoundingBoxText)); } }
+        private set { if (SetProperty(ref _westLon, value)) OnPropertyChanged(nameof(BoundingBoxText)); }
     }
 
     private string _osmUrl = string.Empty;
     public string OsmUrl
     {
         get => _osmUrl;
-        private set { if (_osmUrl != value) { _osmUrl = value; OnPropertyChanged(); } }
+        private set => SetProperty(ref _osmUrl, value);
     }
 
     public bool HasRegion => !string.IsNullOrEmpty(RegionDisplayName);
@@ -86,12 +81,8 @@ public class RegionStepViewModel : INotifyPropertyChanged
         get => _selectedContentPack;
         set
         {
-            if (_selectedContentPack != value)
-            {
-                _selectedContentPack = value;
-                OnPropertyChanged();
+            if (SetProperty(ref _selectedContentPack, value))
                 _nextCommand.RaiseCanExecuteChanged();
-            }
         }
     }
 
@@ -107,13 +98,20 @@ public class RegionStepViewModel : INotifyPropertyChanged
         _nextCommand = new RelayCommand(OnNext, () => CanComplete);
     }
 
-    public void Initialize(PipelineState state, string? contentRoot = null)
+    public void Initialize(string? contentRoot = null)
+    {
+        if (contentRoot is not null)
+            ScanContentPacks(contentRoot);
+    }
+
+    public void Load(PipelineState state)
     {
         _state = state;
 
         if (!string.IsNullOrEmpty(state.Region.PresetName))
         {
             RegionName = state.Region.PresetName;
+            _state.RegionName = state.Region.PresetName;
             RegionDisplayName = state.Region.PresetName;
             NorthLat = state.Region.NorthLat;
             SouthLat = state.Region.SouthLat;
@@ -123,10 +121,7 @@ public class RegionStepViewModel : INotifyPropertyChanged
         }
 
         if (!string.IsNullOrEmpty(state.ContentPackPath))
-            SelectedContentPack = state.ContentPackPath;
-
-        if (contentRoot is not null)
-            ScanContentPacks(contentRoot);
+            SelectedContentPack = Path.GetFileName(state.ContentPackPath);
     }
 
     public void ApplyRegion(RegionPreset preset)
@@ -151,6 +146,7 @@ public class RegionStepViewModel : INotifyPropertyChanged
     public void ScanContentPacks(string contentRoot)
     {
         ContentPacks.Clear();
+        _contentRoot = contentRoot;
         if (!Directory.Exists(contentRoot)) return;
 
         foreach (var dir in Directory.GetDirectories(contentRoot).Order())
@@ -163,10 +159,10 @@ public class RegionStepViewModel : INotifyPropertyChanged
     private void OnNext()
     {
         _state.Region.Completed = true;
-        _state.ContentPackPath = SelectedContentPack ?? string.Empty;
+        var pack = SelectedContentPack ?? string.Empty;
+        _state.ContentPackPath = !string.IsNullOrEmpty(_contentRoot) && !Path.IsPathRooted(pack)
+            ? Path.Combine(_contentRoot, pack)
+            : pack;
         StepCompleted?.Invoke();
     }
-
-    protected void OnPropertyChanged([CallerMemberName] string? name = null)
-        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }

@@ -4,7 +4,7 @@ using Oravey2.MapGen.Services;
 
 namespace Oravey2.MapGen.App.ViewModels;
 
-public sealed class GeneratorViewModel : BaseViewModel
+public sealed class GeneratorViewModel : AppBaseViewModel
 {
     private readonly MapGeneratorService _service;
     private CancellationTokenSource? _cts;

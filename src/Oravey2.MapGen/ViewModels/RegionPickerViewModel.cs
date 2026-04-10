@@ -1,15 +1,11 @@
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Oravey2.MapGen.RegionTemplates;
 
 namespace Oravey2.MapGen.ViewModels;
 
-public class RegionTreeItem : INotifyPropertyChanged
+public class RegionTreeItem : BaseViewModel
 {
-    public event PropertyChangedEventHandler? PropertyChanged;
-
     public GeofabrikRegion Region { get; }
     public int Depth { get; }
     public bool HasChildren => Region.Children.Count > 0;
@@ -18,14 +14,14 @@ public class RegionTreeItem : INotifyPropertyChanged
     public bool IsExpanded
     {
         get => _isExpanded;
-        set { if (_isExpanded != value) { _isExpanded = value; OnPropertyChanged(); OnPropertyChanged(nameof(ExpandIcon)); } }
+        set { if (SetProperty(ref _isExpanded, value)) OnPropertyChanged(nameof(ExpandIcon)); }
     }
 
     private bool _isSelected;
     public bool IsSelected
     {
         get => _isSelected;
-        set { if (_isSelected != value) { _isSelected = value; OnPropertyChanged(); } }
+        set => SetProperty(ref _isSelected, value);
     }
 
     public string ExpandIcon => HasChildren ? (IsExpanded ? "▼" : "▶") : "  ";
@@ -36,14 +32,10 @@ public class RegionTreeItem : INotifyPropertyChanged
         Region = region;
         Depth = depth;
     }
-
-    protected void OnPropertyChanged([CallerMemberName] string? name = null)
-        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }
 
-public class RegionPickerViewModel : INotifyPropertyChanged
+public class RegionPickerViewModel : BaseViewModel
 {
-    public event PropertyChangedEventHandler? PropertyChanged;
 
     private readonly IGeofabrikService _geofabrikService;
     private GeofabrikIndex? _index;
@@ -57,10 +49,8 @@ public class RegionPickerViewModel : INotifyPropertyChanged
         get => _searchText;
         set
         {
-            if (_searchText != value)
+            if (SetProperty(ref _searchText, value))
             {
-                _searchText = value;
-                OnPropertyChanged();
                 ApplyFilter();
             }
         }
@@ -76,7 +66,7 @@ public class RegionPickerViewModel : INotifyPropertyChanged
             if (_selectedItem is not null) _selectedItem.IsSelected = false;
             _selectedItem = value;
             if (_selectedItem is not null) _selectedItem.IsSelected = true;
-            OnPropertyChanged();
+            OnPropertyChanged(nameof(SelectedItem));
             OnPropertyChanged(nameof(SelectedRegion));
             OnPropertyChanged(nameof(SelectedPath));
             OnPropertyChanged(nameof(SelectedPbfUrl));
@@ -102,7 +92,7 @@ public class RegionPickerViewModel : INotifyPropertyChanged
     public bool IsLoading
     {
         get => _isLoading;
-        set { if (_isLoading != value) { _isLoading = value; OnPropertyChanged(); } }
+        set => SetProperty(ref _isLoading, value);
     }
 
     public ICommand LoadIndexCommand { get; }
@@ -309,7 +299,4 @@ public class RegionPickerViewModel : INotifyPropertyChanged
         parts.Reverse();
         return string.Join(" → ", parts);
     }
-
-    protected void OnPropertyChanged([CallerMemberName] string? name = null)
-        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }

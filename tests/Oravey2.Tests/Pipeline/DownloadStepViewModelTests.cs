@@ -55,7 +55,8 @@ public class DownloadStepViewModelTests : IDisposable
         };
 
         var vm = MakeVM(service);
-        vm.Initialize(MakeState(), _tempDir);
+        vm.Initialize(_tempDir);
+        vm.Load(MakeState());
 
         Assert.Equal(2, vm.RequiredSrtmCount);
         Assert.Equal(1, vm.DownloadedSrtmCount);
@@ -72,7 +73,8 @@ public class DownloadStepViewModelTests : IDisposable
         };
 
         var vm = MakeVM(service);
-        vm.Initialize(MakeState(), _tempDir);
+        vm.Initialize(_tempDir);
+        vm.Load(MakeState());
 
         Assert.True(vm.SrtmReady);
     }
@@ -92,7 +94,8 @@ public class DownloadStepViewModelTests : IDisposable
         File.WriteAllText(Path.Combine(osmDir, "noord-holland-latest.osm.pbf"), "data");
 
         var vm = MakeVM(service);
-        vm.Initialize(MakeState(), _tempDir);
+        vm.Initialize(_tempDir);
+        vm.Load(MakeState());
 
         Assert.True(vm.OsmReady);
         Assert.Equal("noord-holland-latest.osm.pbf", vm.OsmFileName);
@@ -112,7 +115,8 @@ public class DownloadStepViewModelTests : IDisposable
         File.WriteAllText(Path.Combine(osmDir, "noord-holland-latest.osm.pbf"), "data");
 
         var vm = MakeVM(service);
-        vm.Initialize(MakeState(), _tempDir);
+        vm.Initialize(_tempDir);
+        vm.Load(MakeState());
 
         Assert.True(vm.CanComplete);
     }
@@ -132,7 +136,8 @@ public class DownloadStepViewModelTests : IDisposable
 
         var state = MakeState();
         var vm = MakeVM(service);
-        vm.Initialize(state, _tempDir);
+        vm.Initialize(_tempDir);
+        vm.Load(state);
 
         vm.NextCommand.Execute(null);
 
@@ -155,7 +160,8 @@ public class DownloadStepViewModelTests : IDisposable
         File.WriteAllText(Path.Combine(osmDir, "noord-holland-latest.osm.pbf"), "data");
 
         var vm = MakeVM(service);
-        vm.Initialize(MakeState(), _tempDir);
+        vm.Initialize(_tempDir);
+        vm.Load(MakeState());
 
         var invoked = false;
         vm.StepCompleted = () => invoked = true;
@@ -168,7 +174,8 @@ public class DownloadStepViewModelTests : IDisposable
     public void CheckExistingFiles_SkipsWhenNoRegionName()
     {
         var vm = MakeVM();
-        vm.Initialize(new PipelineState(), _tempDir);
+        vm.Initialize(_tempDir);
+        vm.Load(new PipelineState());
 
         Assert.Equal(0, vm.RequiredSrtmCount);
         Assert.Equal("Not checked", vm.SrtmStatusText);
@@ -178,7 +185,8 @@ public class DownloadStepViewModelTests : IDisposable
     public void GetSrtmDirectory_ReturnsCorrectPath()
     {
         var vm = MakeVM();
-        vm.Initialize(MakeState(), _tempDir);
+        vm.Initialize(_tempDir);
+        vm.Load(MakeState());
 
         var expected = Path.Combine(_tempDir, "regions", "noord-holland", "srtm");
         Assert.Equal(expected, vm.GetSrtmDirectory());
@@ -188,7 +196,8 @@ public class DownloadStepViewModelTests : IDisposable
     public void GetOsmFilePath_ReturnsCorrectPath()
     {
         var vm = MakeVM();
-        vm.Initialize(MakeState(), _tempDir);
+        vm.Initialize(_tempDir);
+        vm.Load(MakeState());
 
         var expected = Path.Combine(_tempDir, "regions", "noord-holland", "osm", "noord-holland-latest.osm.pbf");
         Assert.Equal(expected, vm.GetOsmFilePath());

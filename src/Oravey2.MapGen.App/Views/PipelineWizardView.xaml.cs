@@ -35,8 +35,13 @@ public partial class PipelineWizardView : ContentPage
         });
         _viewModel.RegisterStepViewFactory(3, () =>
             new ParseStepView(_viewModel.ParseStepVM));
-        _viewModel.RegisterStepViewFactory(4, () => new TownSelectionStepView());
-        _viewModel.RegisterStepViewFactory(5, () => new TownDesignStepView());
+        _viewModel.RegisterStepViewFactory(4, () =>
+        {
+            _viewModel.TownSelectionStepVM.SetParsedTemplate(_viewModel.ParseStepVM.ParsedTemplate);
+            return new TownSelectionStepView(_viewModel.TownSelectionStepVM);
+        });
+        _viewModel.RegisterStepViewFactory(5, () =>
+            new TownDesignStepView(_viewModel.TownDesignStepVM));
         _viewModel.RegisterStepViewFactory(6, () => new TownMapsStepView());
         _viewModel.RegisterStepViewFactory(7, () => new AssetsStepView());
         _viewModel.RegisterStepViewFactory(8, () => new AssemblyStepView());

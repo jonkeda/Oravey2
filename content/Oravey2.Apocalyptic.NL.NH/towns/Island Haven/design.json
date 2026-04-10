@@ -1,0 +1,70 @@
+{
+  "townName": "Island Haven",
+  "landmark": {
+    "name": "The Beacon",
+    "visualDescription": "A towering 60-foot structure built from reinforced concrete foundation and salvaged maritime steel framework. The upper chamber features a reflective solar array retrofitted where the original lighthouse lens was. Weathered copper plating covers rusted steel sections. Dual watch platforms ring the upper levels for sentry duty and signal relay.",
+    "sizeCategory": "large"
+  },
+  "keyLocations": [
+    {
+      "name": "Harbor Dock",
+      "purpose": "shop",
+      "visualDescription": "A weathered wooden dock complex with salvaged boat hulls repurposed as storage containers. Mooring posts fashioned from reinforced pipes secure fishing vessels and makeshift rafts at anchor. Tarped trade goods and fishing nets cover the pier. Salt-stained wood and corroded metal show the harsh marine environment.",
+      "sizeCategory": "medium"
+    },
+    {
+      "name": "Community Hall",
+      "purpose": "tavern",
+      "visualDescription": "A long structure with a salvaged ship\u0027s hull forming the roof frame. Wooden walls reinforced with corrugated metal panels. Large porthole windows set at intervals. Interior has wooden tables and chairs carved from driftwood, a stone hearth, and walls decorated with nautical salvage and caught specimens.",
+      "sizeCategory": "medium"
+    },
+    {
+      "name": "Boat Works",
+      "purpose": "crafting",
+      "visualDescription": "An open-air workshop with corrugated metal roof supported on heavy timber. Workbenches cluttered with tools, rope coils, and boat components in various states of repair. Stacks of salvaged timber and metal plating organized by type. The air carries salt spray, tar, and machine oil.",
+      "sizeCategory": "medium"
+    },
+    {
+      "name": "Field Clinic",
+      "purpose": "medical",
+      "visualDescription": "A compact structure with whitewashed salvaged metal walls and a red cross marked on the reinforced door. Clean interior with shelves of salvaged medical supplies, dried medicinal herbs hanging from wooden rafters, and a surgical table constructed from welded steel and canvas.",
+      "sizeCategory": "small"
+    },
+    {
+      "name": "Supply Warehouse",
+      "purpose": "storage",
+      "visualDescription": "A massive structure built from layered shipping containers welded and reinforced together. Multiple heavy steel doors provide access points. Exterior weathered gray-blue. Solar panels cover the roof. Stacked crates visible through reinforced windows. Faint hum of climate-control equipment.",
+      "sizeCategory": "large"
+    },
+    {
+      "name": "Guard Garrison",
+      "purpose": "barracks",
+      "visualDescription": "Fortified structure with thick timber walls and heavy reinforced metal shutters. Twin watchtower posts flank the entrance with arrow slits. Small observation ports dot the perimeter. Behind it, a training ground with weathered wooden practice posts and dummies. Weapons racks visible inside open windows.",
+      "sizeCategory": "small"
+    },
+    {
+      "name": "Scrap Yard",
+      "purpose": "other",
+      "visualDescription": "Industrial area with sorting bins organized by salvage type: metal, plastic, electronics. A metal-roofed shed contains a makeshift forge and smelting setup. Rusted machinery parts tower in piles. Ground scattered with metal shavings and dust. Equipment and tools hung on chain-link fencing.",
+      "sizeCategory": "medium"
+    }
+  ],
+  "layoutStyle": "organic",
+  "hazards": [
+    {
+      "type": "flooding",
+      "description": "Seasonal storm surge inundates low-lying ground. Previous severe storms damaged structures and eroded the southern shore. During high tides and storms, areas become impassable.",
+      "locationHint": "south-east waterfront"
+    },
+    {
+      "type": "collapse",
+      "description": "Multiple salvaged bridges connecting the island to the mainland have decaying supports. One bridge is partially collapsed; another is unstable and dangerous to cross after heavy weather.",
+      "locationHint": "western approach to mainland"
+    },
+    {
+      "type": "wildlife",
+      "description": "Mutated aquatic creatures with aggressive territorial behavior occasionally surface near the docks and shoreline. Residents post lookouts and take defensive precautions during activity spikes.",
+      "locationHint": "surrounding waters and northern docks"
+    }
+  ]
+}

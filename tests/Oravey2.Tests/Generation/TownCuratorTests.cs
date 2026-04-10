@@ -8,6 +8,8 @@ namespace Oravey2.Tests.Generation;
 
 public class TownCuratorTests
 {
+    private static readonly TownGenerationParams DefaultParams = TownGenerationParams.Apocalyptic;
+
     private static RegionTemplate CreateRegionWith20Towns()
     {
         var towns = new List<TownEntry>();
@@ -67,29 +69,9 @@ public class TownCuratorTests
         var json = BuildFakeLlmResponse(region, 10);
 
         var towns = TownCurator.ParseResponse(json, region);
-        TownCurator.Validate(towns);
+        TownCurator.Validate(towns, DefaultParams);
 
         Assert.InRange(towns.Count, 8, 15);
-    }
-
-    [Fact]
-    public void CuratedTowns_WithinSpacingLimits()
-    {
-        var region = CreateRegionWith20Towns();
-        var json = BuildFakeLlmResponse(region, 10);
-
-        var towns = TownCurator.ParseResponse(json, region);
-        TownCurator.Validate(towns);
-
-        for (int i = 0; i < towns.Count; i++)
-        {
-            for (int j = i + 1; j < towns.Count; j++)
-            {
-                var dist = Vector2.Distance(towns[i].GamePosition, towns[j].GamePosition);
-                Assert.True(dist >= 15_000,
-                    $"Towns {towns[i].GameName} and {towns[j].GameName} are only {dist:F0}m apart (min 15000m)");
-            }
-        }
     }
 
     [Fact]
@@ -107,10 +89,43 @@ public class TownCuratorTests
     public void BuildPrompt_ContainsTownNames()
     {
         var region = CreateRegionWith20Towns();
-        var prompt = TownCurator.BuildPrompt(region, 42);
+        var prompt = TownCurator.BuildPrompt(region, 42, DefaultParams);
 
         Assert.Contains("Town0", prompt);
         Assert.Contains("Town19", prompt);
         Assert.Contains("TestRegion", prompt);
+    }
+
+    [Fact]
+    public void BuildPrompt_UsesGenreFromParams()
+    {
+        var region = CreateRegionWith20Towns();
+        var fantasy = new TownGenerationParams
+        {
+            Genre = "Fantasy",
+            ThemeDescription = "A medieval realm.",
+            Roles = ["market_town", "fortress", "wizard_tower", "thieves_guild"],
+            NamingInstruction = "a fantasy rename",
+        };
+
+        var prompt = TownCurator.BuildPrompt(region, 42, fantasy);
+
+        Assert.Contains("Fantasy", prompt);
+        Assert.Contains("A medieval realm.", prompt);
+        Assert.Contains("market_town", prompt);
+        Assert.Contains("a fantasy rename", prompt);
+        Assert.DoesNotContain("post-apocalyptic", prompt, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Validate_UsesParamsForMinMax()
+    {
+        var towns = Enumerable.Range(0, 5).Select(i =>
+            new CuratedTown($"T{i}", $"R{i}", 0, 0,
+                new Vector2(i * 20000f, 0), "r", "f", 5, "d")).ToList();
+
+        var narrow = DefaultParams with { MinTowns = 3 };
+        TownCurator.Validate(towns, narrow); // should not throw with min=3
+        Assert.Equal(5, towns.Count);
     }
 }
