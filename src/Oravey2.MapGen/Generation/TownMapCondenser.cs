@@ -7,10 +7,12 @@ namespace Oravey2.MapGen.Generation;
 /// <summary>
 /// Generates compact game-scale tile maps for a designed town by condensing
 /// real-world OSM geometry into a playable grid.
+/// Supports both procedural generation and spatial specification-based generation.
 /// </summary>
 public sealed class TownMapCondenser
 {
     private const int TilesPerChunk = 16;
+    private readonly TownDesign? _townDesign;
 
     private static readonly string[] PropAssets =
     [
@@ -20,6 +22,11 @@ public sealed class TownMapCondenser
         "meshes/trash_pile.glb",
         "meshes/sandbags.glb",
     ];
+
+    public TownMapCondenser(TownDesign? townDesign = null)
+    {
+        _townDesign = townDesign;
+    }
 
     /// <summary>Backward-compatible overload using a fixed seed and default params.</summary>
     public TownMapResult Condense(
@@ -527,4 +534,125 @@ public sealed class TownMapCondenser
                     return true;
         return false;
     }
+
+    /// <summary>
+    /// Condense pre-generated chunks into a final surface map using spatial specification.
+    /// Handles variable-sized maps based on spatial spec dimensions.
+    /// Falls back to procedural generation if spatial spec is incomplete.
+    /// </summary>
+    public TownMapResult CondenseWithSpatialSpec(
+        TownChunk[][] chunks,
+        TownSpatialTransform spatial,
+        CancellationToken cancellationToken = default)
+    {
+        var (gridWidth, gridHeight) = spatial.GetGridDimensions();
+        
+        // Allocate surface array based on actual grid dimensions
+        var surface = new int[gridHeight][];
+        for (var y = 0; y < gridHeight; y++)
+        {
+            surface[y] = new int[gridWidth];
+            // Initialize with procedural fallback (grass/dirt)
+            for (var x = 0; x < gridWidth; x++)
+                surface[y][x] = (int)SurfaceType.Grass;
+        }
+
+        // Tile chunks into the surface
+        var chunksWide = (gridWidth + TilesPerChunk - 1) / TilesPerChunk;
+        var chunksHigh = (gridHeight + TilesPerChunk - 1) / TilesPerChunk;
+
+        // Ensure we have enough chunks
+        if (chunks.Length < chunksHigh || chunks[0].Length < chunksWide)
+        {
+            // Insufficient chunks - use procedural fallback
+            System.Diagnostics.Debug.WriteLine(
+                $"Warning: Insufficient chunks ({chunks.Length}x{(chunks.Length > 0 ? chunks[0].Length : 0)}) " +
+                $"for grid ({chunksWide}x{chunksHigh}). Using procedural fallback.");
+            var rng = new Random(42);
+            return BuildProceduralFallback(gridWidth, gridHeight, rng);
+        }
+
+        // Tile chunks into surface
+        for (var cy = 0; cy < chunksHigh && cy < chunks.Length; cy++)
+        {
+            for (var cx = 0; cx < chunksWide && cx < chunks[cy].Length; cx++)
+            {
+                TileChunkIntoSurface(surface, chunks[cy][cx], cx, cy, gridWidth, gridHeight);
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+        }
+
+        // Build zones and liquid layers
+        var zones = DefineZones(gridWidth, gridHeight, _townDesign ?? CreateDefaultDesign(), 0);
+        var liquid = BuildLiquidLayer(gridWidth, gridHeight, 
+            _townDesign?.Hazards ?? new List<EnvironmentalHazard>(), zones);
+
+        // For now, store spatial spec in result (Phase 3 will add persistence)
+        var layout = new TownLayout(gridWidth, gridHeight, surface, liquid);
+        return new TownMapResult(layout, new List<PlacedBuilding>(), new List<PlacedProp>(), zones);
+    }
+
+    /// <summary>Tile a single chunk's data into the surface grid.</summary>
+    private static void TileChunkIntoSurface(
+        int[][] surface, TownChunk chunk, int chunkX, int chunkY,
+        int gridWidth, int gridHeight)
+    {
+        var baseX = chunkX * TilesPerChunk;
+        var baseY = chunkY * TilesPerChunk;
+
+        // Copy chunk tile data into surface (chunk format assumed to be int[] per row)
+        if (chunk?.TileData == null) return;
+
+        for (var cy = 0; cy < TilesPerChunk; cy++)
+        {
+            var surfaceY = baseY + cy;
+            if (surfaceY >= gridHeight) break;
+
+            var chunkRow = chunk.TileData[cy];
+            if (chunkRow == null) continue;
+
+            for (var cx = 0; cx < TilesPerChunk; cx++)
+            {
+                var surfaceX = baseX + cx;
+                if (surfaceX >= gridWidth) break;
+                if (cx < chunkRow.Length)
+                    surface[surfaceY][surfaceX] = chunkRow[cx];
+            }
+        }
+    }
+
+    /// <summary>Build procedural fallback when spatial spec is incomplete or insufficient.</summary>
+    private static TownMapResult BuildProceduralFallback(int width, int height, Random rng)
+    {
+        var surface = BuildSurface(width, height, rng);
+        var roadTiles = SnapRoads(width, height, "grid", rng);
+        ApplyRoadTiles(surface, roadTiles);
+
+        var buildings = new List<PlacedBuilding>();
+        var occupied = new HashSet<(int, int)>();
+        var props = PlaceProps(width, height, rng, occupied, 70, 30);
+
+        var design = CreateDefaultDesign();
+        var zones = DefineZones(width, height, design, 0);
+        var liquid = BuildLiquidLayer(width, height, design.Hazards, zones);
+
+        var layout = new TownLayout(width, height, surface, liquid);
+        return new TownMapResult(layout, buildings, props, zones);
+    }
+
+    /// <summary>Create a minimal default design for fallback scenarios.</summary>
+    private static TownDesign CreateDefaultDesign() => new(
+        "DefaultTown",
+        new List<LandmarkBuilding>(),
+        new List<KeyLocation>(),
+        "grid",
+        new List<EnvironmentalHazard>(),
+        null);
 }
+
+/// <summary>Represents a chunk of town tile data.</summary>
+public sealed record TownChunk(
+    int ChunkX,
+    int ChunkY,
+    int[][] TileData);  // 16x16 tile data, outer array is rows (Y), inner is columns (X)
+

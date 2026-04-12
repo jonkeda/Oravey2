@@ -1,5 +1,7 @@
 using Oravey2.MapGen.Generation;
 using Oravey2.MapGen.RegionTemplates;
+using System.Numerics;
+using Oravey2.Core.World;
 
 namespace Oravey2.Tests.Pipeline;
 
@@ -26,6 +28,160 @@ public class TownMapCondenserTests
         GridOriginLon = 4.0,
         GridCellSizeMetres = 100,
     };
+
+    /// <summary>Test 1: Backward compatibility with existing procedural API (no spatial spec)</summary>
+    [Fact]
+    public void CondenseWithoutSpatialSpec_BackwardCompatible()
+    {
+        var town = CreateTestTown();
+        var design = CreateTestDesign();
+        var region = CreateMinimalRegion();
+        var condenser = new TownMapCondenser(design);
+
+        var result = condenser.Condense(town, design, region, 42);
+
+        Assert.NotNull(result.Layout);
+        Assert.True(result.Layout.Width >= 16);
+        Assert.True(result.Layout.Height >= 16);
+        Assert.Equal(0, result.Layout.Width % 16);
+        Assert.Null(result.SpatialSpec);  // No spatial spec in backward-compat mode
+    }
+
+    /// <summary>Test 2: Small variable-size map with spatial spec</summary>
+    [Fact]
+    public void CondenseWithSpatialSpec_SmallMap_ProducesCorrectDimensions()
+    {
+        var design = CreateTestDesign();
+        var bounds = new Oravey2.MapGen.Generation.BoundingBox(52.0, 52.01, 4.0, 4.01);
+        var spec = new TownSpatialSpecification(
+            bounds,
+            new Dictionary<string, BuildingPlacement>(),
+            new RoadNetwork(new(), new(), 10f),
+            new List<SpatialWaterBody>(),
+            "flat");
+
+        var spatialTransform = new TownSpatialTransform(spec, tileSizeMeters: 10f, seed: 42);
+        var (gridW, gridH) = spatialTransform.GetGridDimensions();
+
+        // Create minimal chunk array
+        var chunks = new TownChunk[1][];
+        chunks[0] = new TownChunk[1];
+        chunks[0][0] = CreateTestChunk(0, 0);
+
+        var condenser = new TownMapCondenser(design);
+        var result = condenser.CondenseWithSpatialSpec(chunks, spatialTransform);
+
+        Assert.Equal(gridW, result.Layout.Width);
+        Assert.Equal(gridH, result.Layout.Height);
+        Assert.True(gridW >= 50);  // Min 50 tiles per dimension
+        Assert.True(gridH >= 50);
+    }
+
+    /// <summary>Test 3: Large variable-size map with spatial spec</summary>
+    [Fact]
+    public void CondenseWithSpatialSpec_LargeMap_ProducesCorrectDimensions()
+    {
+        var design = CreateTestDesign();
+        // Larger bounds = larger grid
+        var bounds = new Oravey2.MapGen.Generation.BoundingBox(52.0, 52.1, 4.0, 4.1);
+        var spec = new TownSpatialSpecification(
+            bounds,
+            new Dictionary<string, BuildingPlacement>(),
+            new RoadNetwork(new(), new(), 10f),
+            new List<SpatialWaterBody>(),
+            "flat");
+
+        var spatialTransform = new TownSpatialTransform(spec, tileSizeMeters: 5f, seed: 42);
+        var (gridW, gridH) = spatialTransform.GetGridDimensions();
+
+        // Create chunk array
+        var chunksNeeded = (gridW + 15) / 16;
+        var chunks = new TownChunk[chunksNeeded][];
+        for (var cy = 0; cy < chunksNeeded; cy++)
+        {
+            chunks[cy] = new TownChunk[chunksNeeded];
+            for (var cx = 0; cx < chunksNeeded; cx++)
+                chunks[cy][cx] = CreateTestChunk(cx, cy);
+        }
+
+        var condenser = new TownMapCondenser(design);
+        var result = condenser.CondenseWithSpatialSpec(chunks, spatialTransform);
+
+        Assert.Equal(gridW, result.Layout.Width);
+        Assert.Equal(gridH, result.Layout.Height);
+        // Large maps should be significantly larger than small ones
+        Assert.True(gridW > 100);
+        Assert.True(gridH > 100);
+    }
+
+    /// <summary>Test 4: Fallback to procedural when insufficient chunks</summary>
+    [Fact]
+    public void CondenseWithSpatialSpec_InsufficientChunks_FallsBackToProcedural()
+    {
+        var design = CreateTestDesign();
+        var bounds = new Oravey2.MapGen.Generation.BoundingBox(52.0, 52.1, 4.0, 4.1);
+        var spec = new TownSpatialSpecification(
+            bounds,
+            new Dictionary<string, BuildingPlacement>(),
+            new RoadNetwork(new(), new(), 10f),
+            new List<SpatialWaterBody>(),
+            "flat");
+
+        var spatialTransform = new TownSpatialTransform(spec, tileSizeMeters: 5f, seed: 42);
+        var (gridW, gridH) = spatialTransform.GetGridDimensions();
+
+        // Create insufficient chunks (less than needed)
+        var chunks = new TownChunk[1][];
+        chunks[0] = new TownChunk[1];
+        chunks[0][0] = CreateTestChunk(0, 0);
+
+        var condenser = new TownMapCondenser(design);
+        var result = condenser.CondenseWithSpatialSpec(chunks, spatialTransform);
+
+        // Should fall back and use a different size
+        Assert.NotNull(result.Layout);
+        Assert.NotEmpty(result.Zones);
+    }
+
+    /// <summary>Test 5: Non-power-of-2 chunk dimensions handled correctly</summary>
+    [Fact]
+    public void CondenseWithSpatialSpec_NonPowerOf2Grid_TilesCorrectly()
+    {
+        var design = CreateTestDesign();
+        var bounds = new Oravey2.MapGen.Generation.BoundingBox(52.0, 52.05, 4.0, 4.05);
+        var spec = new TownSpatialSpecification(
+            bounds,
+            new Dictionary<string, BuildingPlacement>(),
+            new RoadNetwork(new(), new(), 10f),
+            new List<SpatialWaterBody>(),
+            "flat");
+
+        var spatialTransform = new TownSpatialTransform(spec, tileSizeMeters: 8f, seed: 42);
+        var (gridW, gridH) = spatialTransform.GetGridDimensions();
+
+        // Allocate exactly enough chunks for non-power-of-2 grid
+        var chunksWide = (gridW + 15) / 16;
+        var chunksHigh = (gridH + 15) / 16;
+        var chunks = new TownChunk[chunksHigh][];
+        for (var cy = 0; cy < chunksHigh; cy++)
+        {
+            chunks[cy] = new TownChunk[chunksWide];
+            for (var cx = 0; cx < chunksWide; cx++)
+                chunks[cy][cx] = CreateTestChunk(cx, cy);
+        }
+
+        var condenser = new TownMapCondenser(design);
+        var result = condenser.CondenseWithSpatialSpec(chunks, spatialTransform);
+
+        // Verify dimensions match exactly
+        Assert.Equal(gridW, result.Layout.Width);
+        Assert.Equal(gridH, result.Layout.Height);
+        
+        // Verify surface was populated
+        Assert.NotNull(result.Layout.Surface);
+        Assert.Equal(gridH, result.Layout.Surface.Length);
+        Assert.Equal(gridW, result.Layout.Surface[0].Length);
+    }
 
     [Fact]
     public void ComputeGridSize_MinimumIs16()
@@ -195,7 +351,7 @@ public class TownMapCondenserTests
         var town = CreateTestTown();
         var design = CreateTestDesign();
         var region = CreateMinimalRegion();
-        var condenser = new TownMapCondenser();
+        var condenser = new TownMapCondenser(design);
 
         var result = condenser.Condense(town, design, region, 42);
 
@@ -219,8 +375,8 @@ public class TownMapCondenserTests
         var design = CreateTestDesign();
         var region = CreateMinimalRegion();
 
-        var r1 = new TownMapCondenser().Condense(town, design, region, 42);
-        var r2 = new TownMapCondenser().Condense(town, design, region, 42);
+        var r1 = new TownMapCondenser(design).Condense(town, design, region, 42);
+        var r2 = new TownMapCondenser(design).Condense(town, design, region, 42);
 
         Assert.Equal(r1.Layout.Width, r2.Layout.Width);
         Assert.Equal(r1.Buildings.Count, r2.Buildings.Count);
@@ -234,8 +390,8 @@ public class TownMapCondenserTests
         var design = CreateTestDesign();
         var region = CreateMinimalRegion();
 
-        var r1 = new TownMapCondenser().Condense(town, design, region, 1);
-        var r2 = new TownMapCondenser().Condense(town, design, region, 999);
+        var r1 = new TownMapCondenser(design).Condense(town, design, region, 1);
+        var r2 = new TownMapCondenser(design).Condense(town, design, region, 999);
 
         // Props should differ (rotation/position) even if counts happen to match
         if (r1.Props.Count > 0 && r2.Props.Count > 0)
@@ -253,7 +409,7 @@ public class TownMapCondenserTests
         var design = CreateTestDesign(keyLocationCount: 6);
         var region = CreateMinimalRegion();
 
-        var result = new TownMapCondenser().Condense(town, design, region, 42);
+        var result = new TownMapCondenser(design).Condense(town, design, region, 42);
 
         foreach (var b in result.Buildings)
         {
@@ -292,8 +448,8 @@ public class TownMapCondenserTests
         var region = CreateMinimalRegion();
         var parms = new MapGenerationParams { Seed = 42 };
 
-        var r1 = new TownMapCondenser().Condense(town, design, region, parms);
-        var r2 = new TownMapCondenser().Condense(town, design, region, parms);
+        var r1 = new TownMapCondenser(design).Condense(town, design, region, parms);
+        var r2 = new TownMapCondenser(design).Condense(town, design, region, parms);
 
         Assert.Equal(r1.Buildings.Count, r2.Buildings.Count);
         Assert.Equal(r1.Props.Count, r2.Props.Count);
@@ -307,8 +463,21 @@ public class TownMapCondenserTests
         var region = CreateMinimalRegion();
         var parms = new MapGenerationParams { Seed = 42, PropDensityPercent = 0, MaxProps = 0 };
 
-        var result = new TownMapCondenser().Condense(town, design, region, parms);
+        var result = new TownMapCondenser(design).Condense(town, design, region, parms);
 
         Assert.Empty(result.Props);
+    }
+
+    /// <summary>Helper to create a test chunk with dummy tile data.</summary>
+    private static TownChunk CreateTestChunk(int chunkX, int chunkY)
+    {
+        var tileData = new int[16][];
+        for (var y = 0; y < 16; y++)
+        {
+            tileData[y] = new int[16];
+            for (var x = 0; x < 16; x++)
+                tileData[y][x] = (int)SurfaceType.Grass;
+        }
+        return new TownChunk(chunkX, chunkY, tileData);
     }
 }

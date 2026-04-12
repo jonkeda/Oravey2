@@ -4,7 +4,8 @@ public sealed record TownMapResult(
     TownLayout Layout,
     List<PlacedBuilding> Buildings,
     List<PlacedProp> Props,
-    List<TownZone> Zones);
+    List<TownZone> Zones,
+    TownSpatialSpecification? SpatialSpec = null);
 
 public sealed record TownLayout(
     int Width,
