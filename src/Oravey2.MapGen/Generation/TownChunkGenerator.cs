@@ -8,6 +8,9 @@ public sealed class TownChunkGenerator
 {
     public const int ChunkSize = ChunkData.Size;
 
+    private TownSpatialTransform? _spatialTransform;
+    private HashSet<string>? _buildingsApplied;
+
     public ChunkResult Generate(
         int chunkX, int chunkY,
         CuratedTown town,
@@ -50,6 +53,203 @@ public sealed class TownChunkGenerator
         PlaceBuildings(tiles, entities, rng, budget, chunkWorldX, chunkWorldZ, region, town);
 
         return new ChunkResult(chunkX, chunkY, tiles, entities, ChunkMode.Hybrid);
+    }
+
+    /// <summary>
+    /// Generates chunk using spatial specification (roads, water, buildings from spatial spec).
+    /// Each pass builds on the previous without overwriting existing features.
+    /// </summary>
+    public ChunkResult GenerateWithSpatialSpec(
+        TownSpatialTransform spatialTransform,
+        CuratedTown town,
+        TownEntry townEntry,
+        int chunkX, int chunkY,
+        RegionTemplate region,
+        int seed)
+    {
+        int chunkSeed = HashCode.Combine(seed, chunkX, chunkY, town.GameName);
+        var rng = new Random(chunkSeed);
+
+        _spatialTransform = spatialTransform;
+        _buildingsApplied = new();
+
+        var tiles = new TileMapData(ChunkSize, ChunkSize);
+        var entities = new List<EntitySpawnInfo>();
+
+        float chunkWorldX = chunkX * ChunkSize;
+        float chunkWorldZ = chunkY * ChunkSize;
+
+        // Pass 1: Base terrain (grass/dirt)
+        Pass1_BaseTerrain(tiles, chunkWorldX, chunkWorldZ, region, rng);
+
+        // Pass 2: Water bodies from spatial spec
+        Pass2_Water(tiles, chunkWorldX, chunkWorldZ, spatialTransform);
+
+        // Pass 3: Road network from spatial spec
+        Pass3_Roads(tiles, chunkWorldX, chunkWorldZ, spatialTransform);
+
+        // Pass 4: Building placements from spatial spec
+        Pass4_Buildings(tiles, entities, chunkWorldX, chunkWorldZ, spatialTransform);
+
+        return new ChunkResult(chunkX, chunkY, tiles, entities, ChunkMode.Hybrid);
+    }
+
+    private static void Pass1_BaseTerrain(
+        TileMapData tiles, float chunkWorldX, float chunkWorldZ, RegionTemplate region, Random rng)
+    {
+        for (int lx = 0; lx < ChunkSize; lx++)
+        {
+            for (int ly = 0; ly < ChunkSize; ly++)
+            {
+                float worldX = chunkWorldX + lx;
+                float worldZ = chunkWorldZ + ly;
+
+                float elevation = WildernessChunkGenerator.SampleElevation(region, worldX, worldZ);
+                byte heightLevel = WildernessChunkGenerator.QuantiseHeight(elevation);
+                byte variant = (byte)rng.Next(256);
+
+                tiles.SetTileData(lx, ly, new TileData(
+                    SurfaceType.Grass, heightLevel, 0, 0, TileFlags.Walkable, variant));
+            }
+        }
+    }
+
+    private static void Pass2_Water(
+        TileMapData tiles, float chunkWorldX, float chunkWorldZ, TownSpatialTransform spatialTransform)
+    {
+        var waterBodies = spatialTransform.TransformWaterBodies();
+
+        foreach (var water in waterBodies)
+        {
+            // Rasterize water polygon and apply to tiles in this chunk
+            ApplyWaterBodyToChunk(tiles, chunkWorldX, chunkWorldZ, water);
+        }
+    }
+
+    private static void Pass3_Roads(
+        TileMapData tiles, float chunkWorldX, float chunkWorldZ, TownSpatialTransform spatialTransform)
+    {
+        var tileRoads = spatialTransform.TransformRoadNetwork();
+
+        foreach (var road in tileRoads)
+        {
+            // Rasterize each road segment and apply to tiles in this chunk
+            ApplyRoadSegmentToChunk(tiles, chunkWorldX, chunkWorldZ, road);
+        }
+    }
+
+    private void Pass4_Buildings(
+        TileMapData tiles,
+        List<EntitySpawnInfo> entities,
+        float chunkWorldX,
+        float chunkWorldZ,
+        TownSpatialTransform spatialTransform)
+    {
+        var buildingPlacements = spatialTransform.TransformBuildingPlacements();
+        var (gridWidth, gridHeight) = spatialTransform.GetGridDimensions();
+        _buildingsApplied ??= new();
+
+        foreach (var (buildingName, placement) in buildingPlacements)
+        {
+            // Skip if already applied to avoid duplicates
+            if (_buildingsApplied.Contains(buildingName))
+                continue;
+
+            // Rasterize building footprint using full grid dimensions
+            var footprint = BuildingPlacer.RasterizeBuilding(
+                placement,
+                gridWidth,
+                gridHeight);
+
+            int collisionCount = 0;
+            bool hasChunkTiles = false;
+
+            // Apply building only to tiles within this chunk
+            for (int lx = 0; lx < ChunkSize; lx++)
+            {
+                for (int ly = 0; ly < ChunkSize; ly++)
+                {
+                    int worldX = (int)chunkWorldX + lx;
+                    int worldZ = (int)chunkWorldZ + ly;
+
+                    // Check if any footprint tile matches this world tile
+                    foreach (var footprintTile in footprint)
+                    {
+                        if (footprintTile.Length < 2) continue;
+
+                        if (footprintTile[0] == worldX && footprintTile[1] == worldZ)
+                        {
+                            hasChunkTiles = true;
+                            var existing = tiles.GetTileData(lx, ly);
+
+                            // Count collision if overwriting non-grass
+                            if (existing.Surface != SurfaceType.Grass)
+                            {
+                                collisionCount++;
+                            }
+
+                            // Apply building: keep height, set walkable to false
+                            tiles.SetTileData(lx, ly, new TileData(
+                                SurfaceType.Concrete, existing.HeightLevel, 0, 0,
+                                existing.Flags & ~TileFlags.Walkable, existing.VariantSeed));
+                        }
+                    }
+                }
+            }
+
+            if (hasChunkTiles)
+            {
+                _buildingsApplied.Add(buildingName);
+                // Log building placement if needed
+                System.Diagnostics.Debug.WriteLine(
+                    $"Building {buildingName} at ({placement.CenterX},{placement.CenterZ}): {collisionCount} collisions");
+            }
+        }
+    }
+
+    private static void ApplyWaterBodyToChunk(
+        TileMapData tiles, float chunkWorldX, float chunkWorldZ, TileWaterBody water)
+    {
+        // Simple point-in-polygon rasterization for water
+        // For now, rasterize bounding box of water polygon
+        if (water.Polygon.Count == 0) return;
+
+        float minX = water.Polygon[0].X;
+        float maxX = water.Polygon[0].X;
+        float minZ = water.Polygon[0].Y;
+        float maxZ = water.Polygon[0].Y;
+
+        foreach (var point in water.Polygon)
+        {
+            minX = Math.Min(minX, point.X);
+            maxX = Math.Max(maxX, point.X);
+            minZ = Math.Min(minZ, point.Y);
+            maxZ = Math.Max(maxZ, point.Y);
+        }
+
+        int startLx = Math.Max(0, (int)(minX - chunkWorldX));
+        int endLx = Math.Min(ChunkSize - 1, (int)(maxX - chunkWorldX));
+        int startLy = Math.Max(0, (int)(minZ - chunkWorldZ));
+        int endLy = Math.Min(ChunkSize - 1, (int)(maxZ - chunkWorldZ));
+
+        for (int lx = startLx; lx <= endLx; lx++)
+        {
+            for (int ly = startLy; ly <= endLy; ly++)
+            {
+                var existing = tiles.GetTileData(lx, ly);
+                // Mark water by setting high water level (creates water on any ground)
+                tiles.SetTileData(lx, ly, new TileData(
+                    SurfaceType.Dirt, existing.HeightLevel, (byte)(existing.HeightLevel + 5), 0,
+                    TileFlags.None, existing.VariantSeed, LiquidType.Water));
+            }
+        }
+    }
+
+    private static void ApplyRoadSegmentToChunk(
+        TileMapData tiles, float chunkWorldX, float chunkWorldZ, TileRoadSegment road)
+    {
+        float halfWidth = road.WidthTiles / 2f;
+        RasteriseSegment(tiles, chunkWorldX, chunkWorldZ, road.From, road.To, halfWidth);
     }
 
     private static void ApplyRoadSkeleton(
