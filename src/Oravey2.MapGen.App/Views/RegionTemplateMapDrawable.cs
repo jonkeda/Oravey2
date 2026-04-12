@@ -1,4 +1,5 @@
 using System.Numerics;
+using Oravey2.Core.World;
 using Oravey2.MapGen.ViewModels.RegionTemplates;
 using Oravey2.MapGen.RegionTemplates;
 
@@ -203,25 +204,25 @@ public class RegionTemplateMapDrawable : IDrawable
         }
     }
 
-    private static Color RoadColor(RoadClass cls, bool included)
+    private static Color RoadColor(LinearFeatureType cls, bool included)
     {
         float alpha = included ? 1f : 0.3f;
         return cls switch
         {
-            RoadClass.Motorway => Color.FromRgba(1f, 0.2f, 0.2f, alpha),
-            RoadClass.Trunk => Color.FromRgba(1f, 0.6f, 0.2f, alpha),
-            RoadClass.Primary => Color.FromRgba(1f, 1f, 0.3f, alpha),
-            RoadClass.Secondary => Color.FromRgba(1f, 1f, 1f, alpha),
+            LinearFeatureType.Motorway => Color.FromRgba(1f, 0.2f, 0.2f, alpha),
+            LinearFeatureType.Trunk => Color.FromRgba(1f, 0.6f, 0.2f, alpha),
+            LinearFeatureType.Primary => Color.FromRgba(1f, 1f, 0.3f, alpha),
+            LinearFeatureType.Secondary => Color.FromRgba(1f, 1f, 1f, alpha),
             _ => Color.FromRgba(0.5f, 0.5f, 0.5f, alpha)
         };
     }
 
-    private static float RoadWidth(RoadClass cls) => cls switch
+    private static float RoadWidth(LinearFeatureType cls) => cls switch
     {
-        RoadClass.Motorway => 3f,
-        RoadClass.Trunk => 2.5f,
-        RoadClass.Primary => 2f,
-        RoadClass.Secondary => 1.5f,
+        LinearFeatureType.Motorway => 3f,
+        LinearFeatureType.Trunk => 2.5f,
+        LinearFeatureType.Primary => 2f,
+        LinearFeatureType.Secondary => 1.5f,
         _ => 1f
     };
 

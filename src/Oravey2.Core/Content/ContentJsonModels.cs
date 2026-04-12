@@ -155,4 +155,7 @@ public sealed record ContentManifest(
     string Version,
     string? Description = null,
     string? DefaultScenario = null,
-    string[]? Tags = null);
+    string[]? Tags = null,
+    string? Author = null,
+    string? EngineVersion = null,
+    string? Parent = null);

@@ -60,7 +60,8 @@ public class EnemyRespawnTests
     }
 
     /// <summary>
-    /// Mirrors the spawn point building logic from ScenarioLoader.LoadWasteland().
+    /// Mirrors the spawn point building logic from the former ScenarioLoader.LoadWasteland().
+    /// Now seeded via WorldDbSeeder.
     /// </summary>
     private static List<EnemySpawnPoint> BuildWastelandSpawnPoints(QuestLogComponent questLog)
     {

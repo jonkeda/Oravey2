@@ -24,6 +24,7 @@ public class AssemblyStepViewModel : BaseViewModel
                 _generateScenarioCommand.RaiseCanExecuteChanged();
                 _rebuildCatalogCommand.RaiseCanExecuteChanged();
                 _updateManifestCommand.RaiseCanExecuteChanged();
+                _exportToDbCommand.RaiseCanExecuteChanged();
                 _completeCommand.RaiseCanExecuteChanged();
             }
         }
@@ -99,12 +100,14 @@ public class AssemblyStepViewModel : BaseViewModel
     private readonly RelayCommand _generateScenarioCommand;
     private readonly RelayCommand _rebuildCatalogCommand;
     private readonly RelayCommand _updateManifestCommand;
+    private readonly RelayCommand _exportToDbCommand;
     private readonly RelayCommand _completeCommand;
 
     public ICommand ValidateCommand => _validateCommand;
     public ICommand GenerateScenarioCommand => _generateScenarioCommand;
     public ICommand RebuildCatalogCommand => _rebuildCatalogCommand;
     public ICommand UpdateManifestCommand => _updateManifestCommand;
+    public ICommand ExportToDbCommand => _exportToDbCommand;
     public ICommand CompleteCommand => _completeCommand;
 
     public Action? StepCompleted { get; set; }
@@ -115,6 +118,7 @@ public class AssemblyStepViewModel : BaseViewModel
         _generateScenarioCommand = new RelayCommand(RunGenerateScenario, () => !IsRunning);
         _rebuildCatalogCommand = new RelayCommand(RunRebuildCatalog, () => !IsRunning);
         _updateManifestCommand = new RelayCommand(RunUpdateManifest, () => !IsRunning);
+        _exportToDbCommand = new RelayCommand(RunExportToDb, () => !IsRunning);
         _completeCommand = new RelayCommand(OnComplete, () => !IsRunning && IsValidated && ValidationPassed);
     }
 
@@ -245,6 +249,37 @@ public class AssemblyStepViewModel : BaseViewModel
                 Version = "0.1.0",
             });
             StatusText = "Manifest updated.";
+        }
+        finally
+        {
+            IsRunning = false;
+        }
+    }
+
+    internal void RunExportToDb()
+    {
+        if (string.IsNullOrEmpty(_state.ContentPackPath)) return;
+
+        IsRunning = true;
+        StatusText = "Exporting to database...";
+        try
+        {
+            var dbPath = Path.Combine(_state.ContentPackPath, "world.db");
+
+            var exporter = new ContentPackExporter();
+            var result = exporter.Export(_state.ContentPackPath, dbPath);
+
+            var parts = new List<string>();
+            parts.Add($"{result.TownsImported} towns");
+            parts.Add($"{result.ChunksWritten} chunks");
+            parts.Add($"{result.PoisInserted} POIs");
+            parts.Add($"{result.LinearFeaturesInserted} linear features");
+            parts.Add($"{result.EntitySpawnsInserted} entity spawns");
+
+            StatusText = $"Exported '{result.RegionName}' to {Path.GetFileName(dbPath)}: {string.Join(", ", parts)}.";
+
+            if (result.Warnings.Count > 0)
+                StatusText += $" ({result.Warnings.Count} warning(s))";
         }
         finally
         {

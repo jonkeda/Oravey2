@@ -1,4 +1,5 @@
 using System.Numerics;
+using Oravey2.Core.World;
 using Oravey2.MapGen.Pipeline;
 using Oravey2.MapGen.RegionTemplates;
 using Oravey2.MapGen.ViewModels;
@@ -234,9 +235,9 @@ public class ParseStepViewModelTests
         var vm = MakeVM();
         var roads = new List<RoadSegment>
         {
-            new(RoadClass.Primary, [Vector2.Zero, Vector2.One]),
-            new(RoadClass.Primary, [Vector2.Zero, Vector2.One]),
-            new(RoadClass.Tertiary, [Vector2.Zero, Vector2.One]),
+            new(LinearFeatureType.Primary, [Vector2.Zero, Vector2.One]),
+            new(LinearFeatureType.Primary, [Vector2.Zero, Vector2.One]),
+            new(LinearFeatureType.Tertiary, [Vector2.Zero, Vector2.One]),
         };
 
         vm.PopulateSummaryTables(roads, []);
@@ -271,7 +272,7 @@ public class ParseStepViewModelTests
     {
         var vm = MakeVM();
         vm.PopulateSummaryTables(
-            [new(RoadClass.Primary, [Vector2.Zero, Vector2.One])],
+            [new(LinearFeatureType.Primary, [Vector2.Zero, Vector2.One])],
             [new(WaterType.Lake, [Vector2.Zero])]);
 
         vm.PopulateSummaryTables([], []);
@@ -373,7 +374,7 @@ public class ParseStepViewModelTests
         GridOriginLon = 4.8,
         GridCellSizeMetres = 30.0,
         Towns = [new TownEntry("Amsterdam", 52.37, 4.90, 900_000, new Vector2(100, 200), TownCategory.City)],
-        Roads = [new RoadSegment(RoadClass.Primary, [Vector2.Zero, Vector2.One])],
+        Roads = [new RoadSegment(LinearFeatureType.Primary, [Vector2.Zero, Vector2.One])],
         WaterBodies = [new WaterBody(WaterType.Lake, [Vector2.Zero])],
     };
 

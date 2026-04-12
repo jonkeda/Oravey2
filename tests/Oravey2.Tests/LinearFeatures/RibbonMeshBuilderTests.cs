@@ -21,7 +21,7 @@ public class RibbonMeshBuilderTests
     {
         // Straight road from (5,5) to (25,25) in a 32m chunk
         var feature = new LinearFeature(
-            LinearFeatureType.Road, "asphalt", 3f,
+            LinearFeatureType.Secondary, "asphalt", 3f,
             [new LinearFeatureNode(new Vector2(5, 5)), new LinearFeatureNode(new Vector2(25, 25))]);
 
         int vertsPerSide = 33; // Medium quality
@@ -38,7 +38,7 @@ public class RibbonMeshBuilderTests
     public void StraightRoad_UVs_TileCorrectly()
     {
         var feature = new LinearFeature(
-            LinearFeatureType.Road, "asphalt", 3f,
+            LinearFeatureType.Secondary, "asphalt", 3f,
             [new LinearFeatureNode(new Vector2(5, 5)), new LinearFeatureNode(new Vector2(25, 5))]);
 
         int vertsPerSide = 33;
@@ -69,7 +69,7 @@ public class RibbonMeshBuilderTests
     {
         float expectedWidth = 4f;
         var feature = new LinearFeature(
-            LinearFeatureType.Road, "asphalt", expectedWidth,
+            LinearFeatureType.Secondary, "asphalt", expectedWidth,
             [new LinearFeatureNode(new Vector2(10, 16)), new LinearFeatureNode(new Vector2(22, 16))]);
 
         int vertsPerSide = 33;
@@ -95,7 +95,7 @@ public class RibbonMeshBuilderTests
     {
         float overrideHeight = 5f;
         var feature = new LinearFeature(
-            LinearFeatureType.Road, "concrete", 3f,
+            LinearFeatureType.Secondary, "concrete", 3f,
             [
                 new LinearFeatureNode(new Vector2(5, 16), overrideHeight),
                 new LinearFeatureNode(new Vector2(27, 16), overrideHeight),
@@ -119,7 +119,7 @@ public class RibbonMeshBuilderTests
     {
         float terrainHeight = 2f;
         var feature = new LinearFeature(
-            LinearFeatureType.Road, "asphalt", 3f,
+            LinearFeatureType.Secondary, "asphalt", 3f,
             [new LinearFeatureNode(new Vector2(8, 16)), new LinearFeatureNode(new Vector2(24, 16))]);
 
         int vertsPerSide = 33;
@@ -139,7 +139,7 @@ public class RibbonMeshBuilderTests
     public void EmptyFeature_ProducesEmptyMesh()
     {
         var feature = new LinearFeature(
-            LinearFeatureType.Road, "asphalt", 3f,
+            LinearFeatureType.Secondary, "asphalt", 3f,
             [new LinearFeatureNode(new Vector2(10, 10))]);
 
         int vertsPerSide = 33;
@@ -156,7 +156,7 @@ public class RibbonMeshBuilderTests
     public void IndexBuffer_HasCorrectTriangleCount()
     {
         var feature = new LinearFeature(
-            LinearFeatureType.Road, "asphalt", 3f,
+            LinearFeatureType.Secondary, "asphalt", 3f,
             [new LinearFeatureNode(new Vector2(5, 5)), new LinearFeatureNode(new Vector2(25, 25))]);
 
         int vertsPerSide = 33;

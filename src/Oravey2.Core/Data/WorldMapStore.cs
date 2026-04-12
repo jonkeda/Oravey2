@@ -101,6 +101,59 @@ public sealed class WorldMapStore : IDisposable
         return r.Read() ? ReadRegion(r) : null;
     }
 
+    public RegionRecord? GetRegionByName(string name)
+    {
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = "SELECT id, continent_id, name, grid_x, grid_y, biome, base_height, description FROM region WHERE name = $name LIMIT 1;";
+        cmd.Parameters.AddWithValue("$name", name);
+        using var r = cmd.ExecuteReader();
+        return r.Read() ? ReadRegion(r) : null;
+    }
+
+    public IReadOnlyList<RegionRecord> GetAllRegions()
+    {
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = "SELECT id, continent_id, name, grid_x, grid_y, biome, base_height, description FROM region ORDER BY name;";
+        using var r = cmd.ExecuteReader();
+        var results = new List<RegionRecord>();
+        while (r.Read())
+            results.Add(ReadRegion(r));
+        return results;
+    }
+
+    public IReadOnlyList<(long ChunkId, int ChunkX, int ChunkY, EntitySpawnInfo Spawn)> GetEntitySpawnsForRegion(long regionId)
+    {
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = """
+            SELECT c.id, c.grid_x, c.grid_y,
+                   es.prefab_id, es.local_x, es.local_z, es.rotation_y,
+                   es.faction, es.level, es.dialogue_id, es.loot_table, es.persistent, es.condition_flag
+            FROM chunk c
+            INNER JOIN entity_spawn es ON es.chunk_id = c.id
+            WHERE c.region_id = $rid;
+            """;
+        cmd.Parameters.AddWithValue("$rid", regionId);
+        using var r = cmd.ExecuteReader();
+        var results = new List<(long, int, int, EntitySpawnInfo)>();
+        while (r.Read())
+        {
+            var spawn = new EntitySpawnInfo(
+                PrefabId: r.GetString(3),
+                LocalX: r.GetFloat(4),
+                LocalZ: r.GetFloat(5),
+                RotationY: r.GetFloat(6),
+                Faction: r.IsDBNull(7) ? null : r.GetString(7),
+                Level: r.IsDBNull(8) ? null : r.GetInt32(8),
+                DialogueId: r.IsDBNull(9) ? null : r.GetString(9),
+                LootTable: r.IsDBNull(10) ? null : r.GetString(10),
+                Persistent: r.GetInt32(11) != 0,
+                ConditionFlag: r.IsDBNull(12) ? null : r.GetString(12)
+            );
+            results.Add((r.GetInt64(0), r.GetInt32(1), r.GetInt32(2), spawn));
+        }
+        return results;
+    }
+
     // ── Chunk ──────────────────────────────────────────────
 
     public long InsertChunk(long regionId, int gridX, int gridY, byte[] tileData,
@@ -139,6 +192,17 @@ public sealed class WorldMapStore : IDisposable
         cmd.Parameters.AddWithValue("$gy", gridY);
         using var r = cmd.ExecuteReader();
         return r.Read() ? ReadChunk(r) : null;
+    }
+
+    public List<ChunkRecord> GetChunksForRegion(long regionId)
+    {
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = "SELECT id, region_id, grid_x, grid_y, mode, layer, tile_data FROM chunk WHERE region_id = $rid;";
+        cmd.Parameters.AddWithValue("$rid", regionId);
+        using var r = cmd.ExecuteReader();
+        var results = new List<ChunkRecord>();
+        while (r.Read()) results.Add(ReadChunk(r));
+        return results;
     }
 
     // ── Chunk Layer ────────────────────────────────────────
@@ -453,6 +517,67 @@ public sealed class WorldMapStore : IDisposable
         using var cmd = _connection.CreateCommand();
         cmd.CommandText = "DELETE FROM location_description WHERE location_id = $lid;";
         cmd.Parameters.AddWithValue("$lid", locationId);
+        cmd.ExecuteNonQuery();
+    }
+
+    // ── Delete Region (cascade) ───────────────────────────
+
+    /// <summary>
+    /// Deletes a region and all dependent data: chunks, chunk_layers,
+    /// entity_spawn, terrain_modifier, linear_feature, poi, interior.
+    /// Also deletes the parent continent if it has no other regions.
+    /// </summary>
+    public void DeleteRegion(long regionId)
+    {
+        var region = GetRegion(regionId);
+        if (region == null) return;
+
+        using var tx = _connection.BeginTransaction();
+        try
+        {
+            // Delete entity_spawn, chunk_layer, terrain_modifier via chunk
+            ExecCascade("DELETE FROM entity_spawn WHERE chunk_id IN (SELECT id FROM chunk WHERE region_id = $rid);", regionId);
+            ExecCascade("DELETE FROM chunk_layer WHERE chunk_id IN (SELECT id FROM chunk WHERE region_id = $rid);", regionId);
+            ExecCascade("DELETE FROM terrain_modifier WHERE chunk_id IN (SELECT id FROM chunk WHERE region_id = $rid);", regionId);
+            ExecCascade("DELETE FROM chunk WHERE region_id = $rid;", regionId);
+
+            // Delete interior via poi
+            ExecCascade("DELETE FROM interior WHERE poi_id IN (SELECT id FROM poi WHERE region_id = $rid);", regionId);
+            ExecCascade("DELETE FROM poi WHERE region_id = $rid;", regionId);
+
+            // Delete linear features
+            ExecCascade("DELETE FROM linear_feature WHERE region_id = $rid;", regionId);
+
+            // Delete the region itself
+            ExecCascade("DELETE FROM region WHERE id = $rid;", regionId);
+
+            // Delete orphan continent (if no other regions reference it)
+            ExecCascadeParam(
+                "DELETE FROM continent WHERE id = $cid AND NOT EXISTS (SELECT 1 FROM region WHERE continent_id = $cid);",
+                "$cid", region.ContinentId);
+
+            tx.Commit();
+        }
+        catch
+        {
+            tx.Rollback();
+            throw;
+        }
+    }
+
+    private void ExecCascade(string sql, long regionId)
+    {
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = sql;
+        cmd.Parameters.AddWithValue("$rid", regionId);
+        cmd.ExecuteNonQuery();
+    }
+
+    private void ExecCascadeParam(string sql, string param, long value)
+    {
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = sql;
+        cmd.Parameters.AddWithValue(param, value);
         cmd.ExecuteNonQuery();
     }
 

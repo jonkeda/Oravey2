@@ -1,4 +1,5 @@
 using System.Numerics;
+using Oravey2.Core.World;
 
 namespace Oravey2.MapGen.RegionTemplates;
 
@@ -147,7 +148,7 @@ public static class RegionTemplateSerializer
             var roads = new List<RoadSegment>(roadCount);
             for (int i = 0; i < roadCount; i++)
             {
-                var cls = (RoadClass)br.ReadInt32();
+                var cls = (LinearFeatureType)br.ReadInt32();
                 var nodes = ReadVector2Array(br);
                 roads.Add(new RoadSegment(cls, nodes));
             }

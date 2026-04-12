@@ -1,4 +1,5 @@
 using System.Numerics;
+using Oravey2.Core.World;
 
 namespace Oravey2.MapGen.RegionTemplates;
 
@@ -49,13 +50,13 @@ public static class FeatureCuller
     {
         if (roads.Count == 0) return [];
 
-        // 1. Class filter
-        var result = roads.Where(r => r.RoadClass <= settings.RoadMinClass).ToList();
+        // 1. Class filter (higher enum value = more important road)
+        var result = roads.Where(r => r.RoadClass >= settings.RoadMinClass).ToList();
 
         // 2. Motorway protection
         if (settings.RoadAlwaysKeepMotorways)
         {
-            var motorways = roads.Where(r => r.RoadClass == RoadClass.Motorway && !result.Contains(r));
+            var motorways = roads.Where(r => r.RoadClass == LinearFeatureType.Motorway && !result.Contains(r));
             result.AddRange(motorways);
         }
 

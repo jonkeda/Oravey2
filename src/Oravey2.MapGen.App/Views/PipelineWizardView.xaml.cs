@@ -21,7 +21,11 @@ public partial class PipelineWizardView : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        await _viewModel.InitializeDefaultAsync();
+        var autoLoadRegion = Environment.GetEnvironmentVariable("MAPGEN_AUTO_LOAD_REGION");
+        if (!string.IsNullOrEmpty(autoLoadRegion))
+            await _viewModel.LoadStateAsync(autoLoadRegion);
+        else
+            await _viewModel.InitializeDefaultAsync();
     }
 
     private void RegisterStepViewFactories()

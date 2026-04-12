@@ -5,10 +5,10 @@ namespace Oravey2.Tests.World;
 public class SurfaceTypeTests
 {
     [Fact]
-    public void SurfaceType_Has8Values()
+    public void SurfaceType_Has9Values()
     {
         var values = Enum.GetValues<SurfaceType>();
-        Assert.Equal(8, values.Length);
+        Assert.Equal(9, values.Length);
     }
 
     [Theory]
@@ -20,8 +20,23 @@ public class SurfaceTypeTests
     [InlineData(SurfaceType.Mud, 5)]
     [InlineData(SurfaceType.Rock, 6)]
     [InlineData(SurfaceType.Metal, 7)]
-    public void SurfaceType_ByteValues_Sequential(SurfaceType surface, byte expected)
+    [InlineData(SurfaceType.Gravel, 8)]
+    public void SurfaceType_ByteValues_AreCorrect(SurfaceType surface, byte expected)
     {
         Assert.Equal(expected, (byte)surface);
+    }
+
+    [Fact]
+    public void SurfaceType_AllValues_AreUnique()
+    {
+        var values = Enum.GetValues<SurfaceType>();
+        var byteValues = values.Select(v => (byte)v).ToArray();
+        Assert.Equal(byteValues.Length, byteValues.Distinct().Count());
+    }
+
+    [Fact]
+    public void SurfaceType_Gravel_Equals8()
+    {
+        Assert.Equal((byte)8, (byte)SurfaceType.Gravel);
     }
 }

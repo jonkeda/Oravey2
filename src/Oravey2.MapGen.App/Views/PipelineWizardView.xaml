@@ -22,7 +22,8 @@
                         SelectionMode="Single" BackgroundColor="{StaticResource SurfaceVariant}" Margin="0">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="vm:PipelineStepInfo">
-                    <Grid Padding="12,10" ColumnDefinitions="*,Auto">
+                    <Grid Padding="12,10" ColumnDefinitions="*,Auto"
+                          AutomationId="{Binding AutomationId}">
                         <Grid.GestureRecognizers>
                             <TapGestureRecognizer
                                 Command="{Binding Source={RelativeSource AncestorType={x:Type vm:PipelineWizardViewModel}}, Path=NavigateToStepCommand}"
@@ -39,7 +40,11 @@
 
         <!-- Main content area -->
         <ContentView Grid.Row="1" Grid.Column="1" Content="{Binding CurrentStepView}"
-                     Padding="16" />
+                     AutomationId="WizardStepContent" Padding="16" />
+
+        <!-- IsBusy sentinel for Brinell.Maui test synchronization -->
+        <Label Grid.Row="2" Grid.Column="1" AutomationId="UITest_IsBusy"
+               Text="{Binding IsBusy}" HeightRequest="1" WidthRequest="1" Opacity="0.01" />
 
         <!-- Status bar -->
         <Label Grid.Row="2" Grid.ColumnSpan="2" Text="{Binding StatusMessage}"

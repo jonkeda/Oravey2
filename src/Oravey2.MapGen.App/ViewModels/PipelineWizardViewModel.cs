@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows.Input;
 using Oravey2.MapGen.Generation;
 using Oravey2.MapGen.Pipeline;
@@ -93,6 +94,9 @@ public sealed class PipelineWizardViewModel : AppBaseViewModel
         AssetsStepVM.StepCompleted = OnStepCompleted;
         AssemblyStepVM.StepCompleted = OnStepCompleted;
 
+        // Forward step IsRunning → wizard IsBusy for UITest_IsBusy sentinel
+        AssemblyStepVM.PropertyChanged += OnStepPropertyChanged;
+
         var toolSystemMsg = """
             You are a JSON-only RPG town generator. When asked to generate towns,
             produce a JSON array and submit it via the submit_towns tool.
@@ -141,20 +145,37 @@ public sealed class PipelineWizardViewModel : AppBaseViewModel
 
     public async Task LoadStateAsync(string regionName)
     {
-        _pipelineState = await _stateService.LoadAsync(regionName);
-        CurrentStep = _pipelineState.CurrentStep;
-        for (var i = 1; i <= CurrentStep; i++)
-            LoadStep(i);
-        RefreshStepStatuses();
-        UpdateCurrentStepView();
+        IsBusy = true;
+        try
+        {
+            _pipelineState = await _stateService.LoadAsync(regionName);
+            InitializeStepViewModels();
+            CurrentStep = _pipelineState.CurrentStep;
+            for (var i = 1; i <= CurrentStep; i++)
+                LoadStep(i);
+            RefreshStepStatuses();
+            UpdateCurrentStepView();
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     public async Task InitializeDefaultAsync()
     {
-        InitializeStepViewModels();
-        LoadStep(1);
-        RefreshStepStatuses();
-        UpdateCurrentStepView();
+        IsBusy = true;
+        try
+        {
+            InitializeStepViewModels();
+            LoadStep(1);
+            RefreshStepStatuses();
+            UpdateCurrentStepView();
+        }
+        finally
+        {
+            IsBusy = false;
+        }
         await Task.CompletedTask;
     }
 
@@ -275,6 +296,12 @@ public sealed class PipelineWizardViewModel : AppBaseViewModel
 
         CurrentStep = step.Number;
         UpdateCurrentStepView();
+    }
+
+    private void OnStepPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(AssemblyStepViewModel.IsRunning))
+            IsBusy = AssemblyStepVM.IsRunning;
     }
 
     private async void OnOpenSettings()

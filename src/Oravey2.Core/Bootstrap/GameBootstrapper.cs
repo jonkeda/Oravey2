@@ -2,10 +2,12 @@ using Brinell.Automation;
 using Microsoft.Extensions.Logging;
 using Oravey2.Core.Audio;
 using Oravey2.Core.Automation;
+using Oravey2.Core.Bootstrap.Spawners;
 using Oravey2.Core.Camera;
 using Oravey2.Core.Character.Level;
 using Oravey2.Core.Character.Stats;
 using Oravey2.Core.Content;
+using Oravey2.Core.Data;
 using Oravey2.Core.Framework.Events;
 using Oravey2.Core.Framework.Logging;
 using Oravey2.Core.Framework.Services;
@@ -84,14 +86,52 @@ public sealed class GameBootstrapper
         };
         cameraEntity.Add(cameraScript);
 
-        // --- Scenario loader ---
+        // --- Scenario state holder ---
         var scenarioLoader = new ScenarioLoader { Font = font };
         scenarioLoader.InitializeQuestSystem(eventBus);
+
+        // --- World DB stores + RegionLoader (sole loading path) ---
+        WorldMapStore? worldStore = null;
+        var worldDbPath = WorldDbPaths.GetUserWorldDbPath();
+        var debugDbPath = Path.Combine(AppContext.BaseDirectory, "debug.db");
+        logger.LogInformation("World DB path: {Path}", worldDbPath);
+        if (File.Exists(worldDbPath))
+            worldStore = new WorldMapStore(worldDbPath);
+
+        // Auto-seed debug.db with built-in scenarios if it doesn't exist
+        if (!File.Exists(debugDbPath))
+        {
+            using var seedStore = new WorldMapStore(debugDbPath);
+            new WorldDbSeeder(seedStore).SeedAll();
+            logger.LogInformation("Seeded debug.db with built-in scenarios");
+        }
+        var debugStore = new WorldMapStore(debugDbPath);
+
+        var worldStores = new List<WorldMapStore>();
+        if (worldStore != null) worldStores.Add(worldStore);
+        worldStores.Add(debugStore);
+
+        var spawnerFactories = new IEntitySpawnerFactory[]
+        {
+            new NpcSpawnerFactory(game),
+            new EnemySpawnerFactory(game),
+            new ZoneExitSpawnerFactory(game),
+            new BuildingSpawnerFactory(game),
+            new PropSpawnerFactory(game),
+        };
+        var spawnerDispatcher = new EntitySpawnerDispatcher(spawnerFactories);
+        var saveDbPath = Path.Combine(AppContext.BaseDirectory, "save.db");
+        var saveStateStore = new SaveStateStore(saveDbPath);
+        var regionLoader = new RegionLoader(worldStores, saveStateStore, spawnerDispatcher) { Font = font };
+
         var zoneManager = new ZoneManager(scenarioLoader);
+        zoneManager.RegionLoader = regionLoader;
+        zoneManager.SaveStateStore = saveStateStore;
 
         // --- Content pack discovery ---
         var contentPackService = new ContentPackService();
         contentPackService.DiscoverPacks();
+        var contentPackImportService = new ContentPackImportService(contentPackService);
         if (contentPackService.Packs.Count > 0)
         {
             contentPackService.SetActivePack(contentPackService.Packs[0].Manifest.Id);
@@ -126,8 +166,9 @@ public sealed class GameBootstrapper
         // Helper: load a scenario and wire automation refs
         void LoadAndWireScenario(string scenarioId)
         {
-            scenarioLoader.Load(scenarioId, rootScene, game,
+            regionLoader.LoadRegion(scenarioId, rootScene, game,
                 cameraEntity, gameStateManager, eventBus, inputProvider, logger);
+            scenarioLoader.SyncFromRegion(regionLoader);
 
             // Track the current zone
             var zoneId = scenarioId switch { "m0_combat" => "wasteland", _ => scenarioId };
@@ -227,12 +268,15 @@ public sealed class GameBootstrapper
             Font = font,
         };
 
-        // Scenario selector overlay
         var scenarioSelectorEntity = new Entity("ScenarioSelector");
         var scenarioSelectorScript = new ScenarioSelectorScript
         {
             Font = font,
             ContentPacks = contentPackService,
+            ImportService = contentPackImportService,
+            WorldStore = worldStore,
+            DebugStore = debugStore,
+            OnStoreAdded = store => regionLoader.AddStore(store),
         };
         scenarioSelectorScript.OnBack = () =>
         {
@@ -256,8 +300,27 @@ public sealed class GameBootstrapper
         startMenuScript.OnContinue = () =>
         {
             startMenuScript.Hide();
-            LoadAndWireScenario("town");
-            ApplyLoadedSave();
+
+            // Check if save state tracks a current region for the data-driven path
+            var savedRegion = saveStateStore.GetCurrentRegion();
+            if (savedRegion != null)
+            {
+                // Restore saved position for the region
+                var savedPos = saveStateStore.GetPlayerPosition(savedRegion);
+                Vector3? spawnOverride = savedPos.HasValue
+                    ? new Vector3(savedPos.Value.X, savedPos.Value.Y, savedPos.Value.Z)
+                    : null;
+                regionLoader.LoadRegion(savedRegion, rootScene, game,
+                    cameraEntity, gameStateManager, eventBus, inputProvider, logger, spawnOverride);
+                scenarioLoader.SyncFromRegion(regionLoader);
+                gameStateManager.TransitionTo(GameState.Exploring);
+            }
+            else
+            {
+                LoadAndWireScenario("town");
+                ApplyLoadedSave();
+            }
+
             logger.LogInformation("Game loaded from save");
         };
         startMenuEntity.Add(startMenuScript);

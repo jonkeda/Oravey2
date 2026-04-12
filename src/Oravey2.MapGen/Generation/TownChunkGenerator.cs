@@ -59,9 +59,9 @@ public sealed class TownChunkGenerator
         {
             float halfWidth = road.RoadClass switch
             {
-                RoadClass.Motorway => 6f,
-                RoadClass.Trunk => 4f,
-                RoadClass.Primary => 3f,
+                LinearFeatureType.Motorway => 6f,
+                LinearFeatureType.Trunk => 4f,
+                LinearFeatureType.Primary => 3f,
                 _ => 2f
             };
 

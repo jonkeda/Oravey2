@@ -16,7 +16,7 @@ public sealed class RoadSelector
         foreach (var road in region.Roads)
         {
             // Keep all motorways
-            if (road.RoadClass == RoadClass.Motorway)
+            if (road.RoadClass == LinearFeatureType.Motorway)
             {
                 result.Add(ToFeature(road));
                 continue;
@@ -27,7 +27,7 @@ public sealed class RoadSelector
             {
                 var smoothed = CatmullRomSmooth(road.Nodes);
                 result.Add(new LinearFeatureData(
-                    MapRoadClass(road.RoadClass),
+                    road.RoadClass,
                     RoadWidth(road.RoadClass),
                     smoothed));
             }
@@ -83,21 +83,13 @@ public sealed class RoadSelector
     }
 
     private static LinearFeatureData ToFeature(RoadSegment road) =>
-        new(MapRoadClass(road.RoadClass), RoadWidth(road.RoadClass), road.Nodes);
+        new(road.RoadClass, RoadWidth(road.RoadClass), road.Nodes);
 
-    private static LinearFeatureType MapRoadClass(RoadClass rc) => rc switch
+    private static float RoadWidth(LinearFeatureType rc) => rc switch
     {
-        RoadClass.Motorway => LinearFeatureType.Highway,
-        RoadClass.Trunk => LinearFeatureType.Road,
-        RoadClass.Primary => LinearFeatureType.Road,
-        _ => LinearFeatureType.DirtRoad
-    };
-
-    private static float RoadWidth(RoadClass rc) => rc switch
-    {
-        RoadClass.Motorway => 12f,
-        RoadClass.Trunk => 8f,
-        RoadClass.Primary => 6f,
+        LinearFeatureType.Motorway => 12f,
+        LinearFeatureType.Trunk => 8f,
+        LinearFeatureType.Primary => 6f,
         _ => 4f
     };
 }

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Oravey2.Core.Content;
+using Oravey2.Core.Data;
 using Oravey2.Core.World.Serialization;
 using Stride.Engine;
 using Stride.Graphics;
@@ -27,14 +28,27 @@ public class ScenarioSelectorScript : SyncScript
     /// <summary>Content pack service for sourcing pack-specific scenarios.</summary>
     public ContentPackService? ContentPacks { get; set; }
 
+    /// <summary>World database store for region-based scenarios.</summary>
+    public WorldMapStore? WorldStore { get; set; }
+
+    /// <summary>Debug database store for debug region scenarios.</summary>
+    public WorldMapStore? DebugStore { get; set; }
+
+    /// <summary>Service for importing content pack regions.</summary>
+    public ContentPackImportService? ImportService { get; set; }
+
     /// <summary>Fires with the chosen scenario ID when Start is clicked.</summary>
     public Action<string>? OnScenarioSelected { get; set; }
 
     /// <summary>Fires when Cancel is clicked.</summary>
     public Action? OnBack { get; set; }
 
+    /// <summary>Fires when a new WorldMapStore is opened after import.</summary>
+    public Action<WorldMapStore>? OnStoreAdded { get; set; }
+
     private UIComponent? _uiComponent;
     private Border? _overlay;
+    private Canvas? _rootCanvas;
     private string? _selectedId;
     private TextBlock? _detailTitle;
     private TextBlock? _detailDescription;
@@ -217,7 +231,26 @@ public class ScenarioSelectorScript : SyncScript
             Children = { listPanel, detailPanel },
         };
 
-        // --- Bottom bar: Start + Cancel ---
+        // --- Bottom bar: Import Region + Start + Cancel ---
+        var importButton = new Button
+        {
+            Content = new TextBlock
+            {
+                Text = "Import Region",
+                Font = Font,
+                TextSize = 24,
+                TextColor = Color.White,
+                HorizontalAlignment = HorizontalAlignment.Center,
+            },
+            BackgroundColor = new Color(80, 60, 40, 255),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            MinimumWidth = 200,
+            MinimumHeight = 50,
+            Margin = new Thickness(0, 8, 20, 8),
+        };
+        importButton.Click += (_, _) => ShowImportOverlay();
+        ButtonLabels.Add("Import Region");
+
         _startButton = new Button
         {
             Content = new TextBlock
@@ -265,7 +298,7 @@ public class ScenarioSelectorScript : SyncScript
             Orientation = Orientation.Horizontal,
             HorizontalAlignment = HorizontalAlignment.Center,
             Margin = new Thickness(0, 20, 0, 0),
-            Children = { _startButton, cancelButton },
+            Children = { importButton, _startButton, cancelButton },
         };
 
         // --- Root layout ---
@@ -286,7 +319,10 @@ public class ScenarioSelectorScript : SyncScript
             Visibility = Visibility.Collapsed,
         };
 
-        var page = new UIPage { RootElement = _overlay };
+        _rootCanvas = new Canvas();
+        _rootCanvas.Children.Add(_overlay);
+
+        var page = new UIPage { RootElement = _rootCanvas };
         _uiComponent = new UIComponent { Page = page };
         Entity.Add(_uiComponent);
 
@@ -356,6 +392,25 @@ public class ScenarioSelectorScript : SyncScript
         };
     }
 
+    /// <summary>
+    /// Discovers region-based scenarios from world database stores.
+    /// Static helper for testability without Stride.
+    /// </summary>
+    public static ScenarioInfo[] DiscoverRegions(WorldMapStore? worldStore, WorldMapStore? debugStore)
+    {
+        var builtInIds = new HashSet<string>(Scenarios.Select(s => s.Id));
+        var scenarios = new List<ScenarioInfo>();
+        if (worldStore != null)
+            foreach (var r in worldStore.GetAllRegions())
+                if (!builtInIds.Contains(r.Name))
+                    scenarios.Add(new ScenarioInfo(r.Name, r.Description ?? r.Name, $"Biome: {r.Biome}", ""));
+        if (debugStore != null)
+            foreach (var r in debugStore.GetAllRegions())
+                if (!builtInIds.Contains(r.Name))
+                    scenarios.Add(new ScenarioInfo(r.Name, $"[DEBUG] {r.Description ?? r.Name}", $"Biome: {r.Biome}", ""));
+        return scenarios.ToArray();
+    }
+
     private ScenarioInfo[] BuildScenarioList()
     {
         var list = new List<ScenarioInfo>();
@@ -363,27 +418,9 @@ public class ScenarioSelectorScript : SyncScript
         // Add built-in scenarios
         list.AddRange(Scenarios);
 
-        // Add content pack scenarios
-        if (ContentPacks?.ActivePack != null)
-        {
-            var packScenarios = ContentPacks.LoadScenarios();
-            foreach (var s in packScenarios)
-            {
-                // Skip if already a built-in ID
-                if (list.Any(e => e.Id == s.Id)) continue;
-
-                var notes = $"Pack: {ContentPacks.ActivePack.Manifest.Name}";
-                if (s.Features?.Length > 0)
-                    notes += $"\nFeatures: {string.Join(", ", s.Features)}";
-                if (s.Difficulty > 0)
-                    notes += $"\nDifficulty: {s.Difficulty}";
-
-                list.Add(new ScenarioInfo(s.Id, s.Name, s.Description, notes));
-            }
-        }
-
-        // Add custom compiled maps discovered on disk
-        list.AddRange(DiscoverCustomMaps());
+        // Add database region scenarios (DB is the sole source of truth;
+        // content packs and custom maps must be imported via "Export to Game DB" first)
+        list.AddRange(DiscoverRegions(WorldStore, DebugStore));
 
         return list.ToArray();
     }
@@ -396,8 +433,8 @@ public class ScenarioSelectorScript : SyncScript
         _listPanel.Children.Clear();
         _listButtons.Clear();
 
-        // Remove old scenario button labels (keep Start, Cancel)
-        ButtonLabels.RemoveAll(l => l != "Start" && l != "Cancel");
+        // Remove old scenario button labels (keep Start, Cancel, Import Region)
+        ButtonLabels.RemoveAll(l => l != "Start" && l != "Cancel" && l != "Import Region");
 
         // Rebuild
         _allScenarios = BuildScenarioList();
@@ -410,5 +447,206 @@ public class ScenarioSelectorScript : SyncScript
             _listPanel.Children.Add(btn);
             ButtonLabels.Add(scenario.Name);
         }
+    }
+
+    // ── Import overlay ─────────────────────────────────────
+
+    private Border? _importOverlay;
+    private StackPanel? _importListPanel;
+
+    private void ShowImportOverlay()
+    {
+        if (ImportService == null) return;
+
+        if (_overlay != null) _overlay.Visibility = Visibility.Collapsed;
+
+        if (_importOverlay != null)
+        {
+            RefreshImportList();
+            _importOverlay.Visibility = Visibility.Visible;
+            return;
+        }
+
+        var title = new TextBlock
+        {
+            Text = "IMPORT REGION",
+            Font = Font,
+            TextSize = 36,
+            TextColor = Color.White,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Margin = new Thickness(0, 0, 0, 20),
+        };
+
+        _importListPanel = new StackPanel
+        {
+            Orientation = Orientation.Vertical,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            MinimumWidth = 500,
+        };
+
+        var backButton = new Button
+        {
+            Content = new TextBlock
+            {
+                Text = "Back",
+                Font = Font,
+                TextSize = 24,
+                TextColor = Color.White,
+                HorizontalAlignment = HorizontalAlignment.Center,
+            },
+            BackgroundColor = new Color(60, 60, 80, 200),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            MinimumWidth = 200,
+            MinimumHeight = 50,
+            Margin = new Thickness(0, 20, 0, 0),
+        };
+        backButton.Click += (_, _) => HideImportOverlay();
+        ButtonLabels.Add("Back");
+
+        var rootStack = new StackPanel
+        {
+            Orientation = Orientation.Vertical,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            Children = { title, _importListPanel, backButton },
+        };
+
+        _importOverlay = new Border
+        {
+            BackgroundColor = new Color(10, 10, 15, 230),
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+            Content = rootStack,
+            Visibility = Visibility.Visible,
+        };
+
+        // Add import overlay to the shared root canvas
+        _rootCanvas?.Children.Add(_importOverlay);
+
+        RefreshImportList();
+    }
+
+    private void HideImportOverlay()
+    {
+        if (_importOverlay != null)
+            _importOverlay.Visibility = Visibility.Collapsed;
+
+        // Refresh the scenario list (may have new imported regions) and show main overlay
+        RebuildScenarioList();
+        // Re-open the world store if a new region was imported
+        var worldDbPath = WorldDbPaths.GetUserWorldDbPath();
+        if (File.Exists(worldDbPath) && WorldStore == null)
+        {
+            WorldStore = new WorldMapStore(worldDbPath);
+            OnStoreAdded?.Invoke(WorldStore);
+        }
+
+        if (_overlay != null)
+            _overlay.Visibility = Visibility.Visible;
+
+        if (_allScenarios.Length > 0)
+            SelectScenario(_allScenarios[0].Id);
+    }
+
+    private void RefreshImportList()
+    {
+        if (_importListPanel == null || ImportService == null) return;
+        _importListPanel.Children.Clear();
+
+        var regions = ImportService.GetImportableRegions();
+
+        if (regions.Count == 0)
+        {
+            _importListPanel.Children.Add(new TextBlock
+            {
+                Text = "No content packs with world.db found.\nExport a region from MapGen first.",
+                Font = Font,
+                TextSize = 18,
+                TextColor = Color.Gray,
+                WrapText = true,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 20, 0, 0),
+            });
+            return;
+        }
+
+        foreach (var region in regions)
+        {
+            var imported = ImportService.IsRegionImported(region.RegionName);
+            var card = CreateImportCard(region, imported);
+            _importListPanel.Children.Add(card);
+        }
+    }
+
+    private Border CreateImportCard(ImportableRegion region, bool alreadyImported)
+    {
+        var nameText = new TextBlock
+        {
+            Text = region.RegionName,
+            Font = Font,
+            TextSize = 22,
+            TextColor = Color.White,
+        };
+
+        var descText = new TextBlock
+        {
+            Text = region.Description,
+            Font = Font,
+            TextSize = 16,
+            TextColor = Color.LightGray,
+            WrapText = true,
+        };
+
+        var statusText = new TextBlock
+        {
+            Text = alreadyImported ? "✓ Imported" : "Not imported",
+            Font = Font,
+            TextSize = 14,
+            TextColor = alreadyImported ? new Color(100, 200, 100, 255) : Color.Gray,
+        };
+
+        var importBtn = new Button
+        {
+            Content = new TextBlock
+            {
+                Text = alreadyImported ? "Re-import" : "Import",
+                Font = Font,
+                TextSize = 20,
+                TextColor = Color.White,
+                HorizontalAlignment = HorizontalAlignment.Center,
+            },
+            BackgroundColor = AccentColor,
+            MinimumWidth = 120,
+            MinimumHeight = 40,
+            Margin = new Thickness(20, 0, 0, 0),
+        };
+
+        var packDir = region.PackDirectory;
+        importBtn.Click += (_, _) =>
+        {
+            ImportService!.ImportRegion(packDir);
+            RefreshImportList();
+        };
+
+        var textStack = new StackPanel
+        {
+            Orientation = Orientation.Vertical,
+            Children = { nameText, descText, statusText },
+        };
+
+        var row = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            VerticalAlignment = VerticalAlignment.Center,
+            Children = { textStack, importBtn },
+        };
+
+        return new Border
+        {
+            BackgroundColor = new Color(30, 30, 50, 200),
+            Margin = new Thickness(0, 4, 0, 4),
+            Padding = new Thickness(12, 8, 12, 8),
+            Content = row,
+        };
     }
 }

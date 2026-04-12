@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using System.Numerics;
+using Oravey2.Core.World;
 using Oravey2.MapGen.RegionTemplates;
 using Xunit;
 
@@ -20,7 +21,7 @@ public class RegionTemplateBuilderTests
             ],
             Roads:
             [
-                new RoadSegment(RoadClass.Primary, [new Vector2(0, 0), new Vector2(100, 100)])
+                new RoadSegment(LinearFeatureType.Primary, [new Vector2(0, 0), new Vector2(100, 100)])
             ],
             WaterBodies:
             [
@@ -67,7 +68,7 @@ public class RegionTemplateBuilderTests
         Assert.Equal(TownCategory.Town, region.Towns[0].Category);
 
         Assert.Single(region.Roads);
-        Assert.Equal(RoadClass.Primary, region.Roads[0].RoadClass);
+        Assert.Equal(LinearFeatureType.Primary, region.Roads[0].RoadClass);
 
         Assert.Single(region.WaterBodies);
         Assert.Equal(WaterType.Lake, region.WaterBodies[0].Type);

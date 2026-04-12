@@ -1,4 +1,5 @@
 using System.Numerics;
+using Oravey2.Core.World;
 using Oravey2.MapGen.RegionTemplates;
 
 namespace Oravey2.Tests.Pipeline;
@@ -36,8 +37,8 @@ public class RegionTemplateSerializerTests : IDisposable
         ],
         Roads =
         [
-            new(RoadClass.Motorway, [new Vector2(0, 0), new Vector2(10, 20)]),
-            new(RoadClass.Tertiary, [new Vector2(5, 5), new Vector2(15, 25), new Vector2(30, 40)]),
+            new(LinearFeatureType.Motorway, [new Vector2(0, 0), new Vector2(10, 20)]),
+            new(LinearFeatureType.Tertiary, [new Vector2(5, 5), new Vector2(15, 25), new Vector2(30, 40)]),
         ],
         WaterBodies =
         [
@@ -151,9 +152,9 @@ public class RegionTemplateSerializerTests : IDisposable
 
         Assert.NotNull(loaded);
         Assert.Equal(2, loaded.Roads.Count);
-        Assert.Equal(RoadClass.Motorway, loaded.Roads[0].RoadClass);
+        Assert.Equal(LinearFeatureType.Motorway, loaded.Roads[0].RoadClass);
         Assert.Equal(2, loaded.Roads[0].Nodes.Length);
-        Assert.Equal(RoadClass.Tertiary, loaded.Roads[1].RoadClass);
+        Assert.Equal(LinearFeatureType.Tertiary, loaded.Roads[1].RoadClass);
         Assert.Equal(3, loaded.Roads[1].Nodes.Length);
     }
 

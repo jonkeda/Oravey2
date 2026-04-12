@@ -42,7 +42,8 @@ public static class MauiProgram
         });
         builder.Services.AddSingleton(sp =>
         {
-            var dataRoot = Preferences.Get("DataRoot", string.Empty);
+            var dataRoot = Environment.GetEnvironmentVariable("MAPGEN_DATA_ROOT")
+                ?? Preferences.Get("DataRoot", string.Empty);
             if (string.IsNullOrWhiteSpace(dataRoot))
                 dataRoot = Path.Combine(FileSystem.AppDataDirectory, "data");
             return new PipelineStateService(dataRoot);

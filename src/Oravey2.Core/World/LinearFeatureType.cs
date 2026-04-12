@@ -2,13 +2,23 @@ namespace Oravey2.Core.World;
 
 public enum LinearFeatureType : byte
 {
+    // Roads (from OSM classification, ordered by importance)
     Path = 0,
-    DirtRoad = 1,
-    Road = 2,
-    Highway = 3,
-    Rail = 4,
-    River = 5,
-    Stream = 6,
-    Canal = 7,
-    Pipeline = 8,
+    Residential = 1,
+    Tertiary = 2,
+    Secondary = 3,
+    Primary = 4,
+    Trunk = 5,
+    Motorway = 6,
+
+    // Rail
+    Rail = 10,
+
+    // Water
+    Stream = 20,
+    River = 21,
+    Canal = 22,
+
+    // Infrastructure
+    Pipeline = 30,
 }

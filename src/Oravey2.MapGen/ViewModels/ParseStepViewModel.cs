@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Oravey2.Core.World;
 using Oravey2.MapGen.Pipeline;
 using Oravey2.MapGen.RegionTemplates;
 
@@ -196,8 +197,8 @@ public class ParseStepViewModel : BaseViewModel
         set => SetProperty(ref _townAlwaysKeepMetropolis, value);
     }
 
-    private RoadClass _roadMinClass = RoadClass.Tertiary;
-    public RoadClass CullRoadMinClass
+    private LinearFeatureType _roadMinClass = LinearFeatureType.Tertiary;
+    public LinearFeatureType CullRoadMinClass
     {
         get => _roadMinClass;
         set => SetProperty(ref _roadMinClass, value);
@@ -282,7 +283,7 @@ public class ParseStepViewModel : BaseViewModel
 
     // Enum sources for picker binding
     public TownCategory[] TownCategories { get; } = Enum.GetValues<TownCategory>();
-    public RoadClass[] RoadClasses { get; } = Enum.GetValues<RoadClass>();
+    public LinearFeatureType[] RoadClasses { get; } = Enum.GetValues<LinearFeatureType>();
     public CullPriority[] CullPriorities { get; } = Enum.GetValues<CullPriority>();
 
     // Town list for binding

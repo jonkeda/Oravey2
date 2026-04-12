@@ -50,22 +50,14 @@ public sealed class RegionGenerator
         var linearFeatures = new List<LinearFeatureData>();
         foreach (var road in region.Roads)
         {
-            var featureType = road.RoadClass switch
-            {
-                RoadClass.Motorway => LinearFeatureType.Highway,
-                RoadClass.Trunk => LinearFeatureType.Road,
-                RoadClass.Primary => LinearFeatureType.Road,
-                RoadClass.Secondary => LinearFeatureType.DirtRoad,
-                _ => LinearFeatureType.Path
-            };
             float width = road.RoadClass switch
             {
-                RoadClass.Motorway => 12f,
-                RoadClass.Trunk => 8f,
-                RoadClass.Primary => 6f,
+                LinearFeatureType.Motorway => 12f,
+                LinearFeatureType.Trunk => 8f,
+                LinearFeatureType.Primary => 6f,
                 _ => 4f
             };
-            linearFeatures.Add(new LinearFeatureData(featureType, width, road.Nodes));
+            linearFeatures.Add(new LinearFeatureData(road.RoadClass, width, road.Nodes));
         }
 
         foreach (var water in region.WaterBodies)
@@ -132,4 +124,4 @@ public sealed record RegionData(
 
 public sealed record PoiMarker(string Name, string Type, Vector2 Position, string? Description = null);
 
-public sealed record LinearFeatureData(LinearFeatureType Type, float Width, Vector2[] Nodes);
+public sealed record LinearFeatureData(LinearFeatureType Type, float Width, Vector2[] Nodes, string Style = "default");

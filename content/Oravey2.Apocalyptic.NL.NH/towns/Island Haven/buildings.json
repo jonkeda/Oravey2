@@ -2,7 +2,7 @@
   {
     "id": "building_0",
     "name": "The Beacon",
-    "meshAsset": "meshes/primitives/pyramid.glb",
+    "meshAsset": "assets/meshes/primitives/pyramid.glb",
     "size": "large",
     "footprint": [
       [
@@ -44,6 +44,7 @@
     ],
     "floors": 3,
     "condition": 0.6,
+    "interiorChunkId": null,
     "placement": {
       "chunkX": 0,
       "chunkY": 0,
@@ -54,253 +55,286 @@
   {
     "id": "building_1",
     "name": "Harbor Dock",
-    "meshAsset": "meshes/primitives/cube.glb",
+    "meshAsset": "assets/meshes/primitives/cube.glb",
     "size": "medium",
     "footprint": [
       [
-        10,
-        14
+        30,
+        16
       ],
       [
-        10,
-        15
+        30,
+        17
       ],
       [
-        11,
-        14
+        31,
+        16
       ],
       [
-        11,
-        15
+        31,
+        17
       ]
     ],
     "floors": 2,
-    "condition": 0.45195228,
+    "condition": 0.62990844,
+    "interiorChunkId": null,
     "placement": {
-      "chunkX": 0,
-      "chunkY": 0,
-      "localTileX": 10,
-      "localTileY": 14
+      "chunkX": 1,
+      "chunkY": 1,
+      "localTileX": 14,
+      "localTileY": 0
     }
   },
   {
     "id": "building_2",
     "name": "Community Hall",
-    "meshAsset": "meshes/primitives/cube.glb",
+    "meshAsset": "assets/meshes/primitives/cube.glb",
     "size": "medium",
     "footprint": [
       [
         22,
-        18
+        16
       ],
       [
         22,
-        19
+        17
       ],
       [
         23,
-        18
+        16
       ],
       [
         23,
-        19
+        17
       ]
     ],
     "floors": 2,
-    "condition": 0.65703976,
+    "condition": 0.432183,
+    "interiorChunkId": null,
     "placement": {
       "chunkX": 1,
       "chunkY": 1,
       "localTileX": 6,
-      "localTileY": 2
+      "localTileY": 0
     }
   },
   {
     "id": "building_3",
     "name": "Boat Works",
-    "meshAsset": "meshes/primitives/cube.glb",
+    "meshAsset": "assets/meshes/primitives/cube.glb",
     "size": "medium",
     "footprint": [
       [
-        19,
-        15
+        5,
+        17
       ],
       [
-        19,
-        16
+        5,
+        18
       ],
       [
-        20,
-        15
+        6,
+        17
       ],
       [
-        20,
-        16
+        6,
+        18
       ]
     ],
     "floors": 2,
-    "condition": 0.6161476,
+    "condition": 0.7897358,
+    "interiorChunkId": null,
     "placement": {
-      "chunkX": 1,
-      "chunkY": 0,
-      "localTileX": 3,
-      "localTileY": 15
+      "chunkX": 0,
+      "chunkY": 1,
+      "localTileX": 5,
+      "localTileY": 1
     }
   },
   {
     "id": "building_4",
     "name": "Field Clinic",
-    "meshAsset": "meshes/primitives/cube.glb",
+    "meshAsset": "assets/meshes/primitives/cube.glb",
     "size": "small",
     "footprint": [
       [
-        30,
-        21
+        24,
+        17
       ]
     ],
     "floors": 1,
-    "condition": 0.5786442,
+    "condition": 0.7940583,
+    "interiorChunkId": null,
     "placement": {
       "chunkX": 1,
       "chunkY": 1,
-      "localTileX": 14,
-      "localTileY": 5
+      "localTileX": 8,
+      "localTileY": 1
     }
   },
   {
     "id": "building_5",
     "name": "Supply Warehouse",
-    "meshAsset": "meshes/primitives/cube.glb",
+    "meshAsset": "assets/meshes/primitives/cube.glb",
     "size": "large",
     "footprint": [
       [
-        26,
-        20
+        8,
+        17
       ],
       [
-        26,
-        21
+        8,
+        18
       ],
       [
-        26,
-        22
+        8,
+        19
       ],
       [
-        27,
-        20
+        9,
+        17
       ],
       [
-        27,
-        21
+        9,
+        18
       ],
       [
-        27,
-        22
+        9,
+        19
       ],
       [
-        28,
-        20
+        10,
+        17
       ],
       [
-        28,
-        21
+        10,
+        18
       ],
       [
-        28,
-        22
+        10,
+        19
       ]
     ],
     "floors": 3,
-    "condition": 0.58054334,
+    "condition": 0.47754374,
+    "interiorChunkId": null,
     "placement": {
-      "chunkX": 1,
+      "chunkX": 0,
       "chunkY": 1,
-      "localTileX": 10,
-      "localTileY": 4
+      "localTileX": 8,
+      "localTileY": 1
     }
   },
   {
     "id": "building_6",
     "name": "Guard Garrison",
-    "meshAsset": "meshes/primitives/cube.glb",
+    "meshAsset": "assets/meshes/primitives/cube.glb",
     "size": "small",
     "footprint": [
       [
-        14,
+        12,
         14
       ]
     ],
     "floors": 1,
-    "condition": 0.6441623,
+    "condition": 0.48118433,
+    "interiorChunkId": null,
     "placement": {
       "chunkX": 0,
       "chunkY": 0,
-      "localTileX": 14,
+      "localTileX": 12,
       "localTileY": 14
     }
   },
   {
     "id": "building_7",
     "name": "Scrap Yard",
-    "meshAsset": "meshes/primitives/cube.glb",
+    "meshAsset": "assets/meshes/primitives/cube.glb",
     "size": "medium",
     "footprint": [
       [
-        12,
-        14
+        24,
+        18
       ],
       [
-        12,
-        15
+        24,
+        19
       ],
       [
-        13,
-        14
+        25,
+        18
       ],
       [
-        13,
-        15
+        25,
+        19
       ]
     ],
     "floors": 2,
-    "condition": 0.6024402,
+    "condition": 0.41956088,
+    "interiorChunkId": null,
     "placement": {
-      "chunkX": 0,
-      "chunkY": 0,
-      "localTileX": 12,
-      "localTileY": 14
+      "chunkX": 1,
+      "chunkY": 1,
+      "localTileX": 8,
+      "localTileY": 2
     }
   },
   {
     "id": "building_8",
     "name": "Ruin 8",
-    "meshAsset": "meshes/primitives/cube.glb",
+    "meshAsset": "assets/meshes/primitives/cube.glb",
     "size": "small",
     "footprint": [
       [
-        12,
-        28
+        7,
+        2
       ],
       [
-        12,
-        29
+        7,
+        3
       ],
       [
-        13,
-        28
+        8,
+        2
       ],
       [
-        13,
-        29
+        8,
+        3
       ]
     ],
     "floors": 1,
-    "condition": 0.46973574,
+    "condition": 0.34039068,
+    "interiorChunkId": null,
+    "placement": {
+      "chunkX": 0,
+      "chunkY": 0,
+      "localTileX": 7,
+      "localTileY": 2
+    }
+  },
+  {
+    "id": "building_9",
+    "name": "Ruin 9",
+    "meshAsset": "assets/meshes/primitives/cube.glb",
+    "size": "small",
+    "footprint": [
+      [
+        13,
+        18
+      ],
+      [
+        13,
+        19
+      ]
+    ],
+    "floors": 1,
+    "condition": 0.4218754,
+    "interiorChunkId": null,
     "placement": {
       "chunkX": 0,
       "chunkY": 1,
-      "localTileX": 12,
-      "localTileY": 12
+      "localTileX": 13,
+      "localTileY": 2
     }
   }
 ]

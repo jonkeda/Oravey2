@@ -1,4 +1,5 @@
 using System.Numerics;
+using Oravey2.Core.World;
 using Oravey2.MapGen.RegionTemplates;
 using OsmSharp;
 using OsmSharp.Streams;
@@ -91,7 +92,7 @@ public class OsmParserTests
         var result = parser.ParsePbf(pbf);
 
         Assert.True(result.Roads.Count >= 1);
-        Assert.Contains(result.Roads, r => r.RoadClass == RoadClass.Primary);
+        Assert.Contains(result.Roads, r => r.RoadClass == LinearFeatureType.Primary);
     }
 
     [Fact]

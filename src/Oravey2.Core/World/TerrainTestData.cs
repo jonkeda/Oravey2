@@ -339,7 +339,7 @@ public static class TerrainTestData
         {
             float roadY = 12f * tileSize; // local Y in chunk (tile row 12)
             features.Add(new LinearFeature(
-                LinearFeatureType.Road, "asphalt", 5f,
+                LinearFeatureType.Secondary, "asphalt", 5f,
                 [
                     new LinearFeatureNode(new Vector2(0f, roadY)),
                     new LinearFeatureNode(new Vector2(8f * tileSize, roadY - 2f)),
@@ -366,7 +366,7 @@ public static class TerrainTestData
             float bridgeY = 12f * tileSize;
             float bridgeX = 8f * tileSize;
             features.Add(new LinearFeature(
-                LinearFeatureType.Road, "concrete", 6f,
+                LinearFeatureType.Secondary, "concrete", 6f,
                 [
                     new LinearFeatureNode(new Vector2(bridgeX - 5f, bridgeY), 2.5f),
                     new LinearFeatureNode(new Vector2(bridgeX + 5f, bridgeY), 2.5f),

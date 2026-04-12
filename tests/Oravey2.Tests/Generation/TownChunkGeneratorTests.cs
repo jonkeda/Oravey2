@@ -29,7 +29,7 @@ public class TownChunkGeneratorTests
             GridOriginLon = 4.95,
             GridCellSizeMetres = 30.0,
             Towns = [new TownEntry("TestTown", 52.50, 4.95, 50000, new Vector2(0, 0), TownCategory.Town, boundary)],
-            Roads = [new RoadSegment(RoadClass.Primary, [new Vector2(-50, 0), new Vector2(50, 0)])],
+            Roads = [new RoadSegment(LinearFeatureType.Primary, [new Vector2(-50, 0), new Vector2(50, 0)])],
             WaterBodies = [],
             Railways = [],
             LandUseZones = [new LandUseZone(LandUseType.Residential,

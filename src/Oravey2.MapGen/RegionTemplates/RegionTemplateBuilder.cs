@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using System.Numerics;
+using Oravey2.Core.World;
 
 namespace Oravey2.MapGen.RegionTemplates;
 
@@ -231,7 +232,7 @@ public class RegionTemplateBuilder
         var roads = new List<RoadSegment>(roadCount);
         for (int i = 0; i < roadCount; i++)
         {
-            var cls = (RoadClass)reader.ReadByte();
+            var cls = (LinearFeatureType)reader.ReadByte();
             roads.Add(new RoadSegment(cls, ReadVector2Array(reader)));
         }
 

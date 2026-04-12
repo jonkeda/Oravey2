@@ -162,9 +162,9 @@ public class TileDataTests
             new LinearFeatureNode(new System.Numerics.Vector2(0, 0)),
             new LinearFeatureNode(new System.Numerics.Vector2(10, 5), OverrideHeight: 2.5f)
         };
-        var feature = new LinearFeature(LinearFeatureType.Road, "paved", 3.0f, nodes);
+        var feature = new LinearFeature(LinearFeatureType.Secondary, "paved", 3.0f, nodes);
 
-        Assert.Equal(LinearFeatureType.Road, feature.Type);
+        Assert.Equal(LinearFeatureType.Secondary, feature.Type);
         Assert.Equal("paved", feature.Style);
         Assert.Equal(3.0f, feature.Width);
         Assert.Equal(2, feature.Nodes.Count);

@@ -1,4 +1,5 @@
 using System.Numerics;
+using Oravey2.Core.World;
 using Oravey2.MapGen.Download;
 using Oravey2.MapGen.ViewModels;
 using Oravey2.MapGen.ViewModels.RegionTemplates;
@@ -23,7 +24,7 @@ public class RegionTemplateViewModelTests
             TownMinCategory = TownCategory.Village,
             TownMinPopulation = 1_000,
             TownMaxCount = 30,
-            RoadMinClass = RoadClass.Primary,
+            RoadMinClass = LinearFeatureType.Primary,
             WaterMinAreaKm2 = 0.1
         }
     };
@@ -53,7 +54,7 @@ public class RegionTemplateViewModelTests
         var vm = CreateVm();
 
         vm.Towns.Add(MakeTown("A", 52.0, 4.0, 500, TownCategory.Village));
-        vm.Roads.Add(MakeRoad(RoadClass.Primary));
+        vm.Roads.Add(MakeRoad(LinearFeatureType.Primary));
         vm.WaterBodies.Add(MakeWater(WaterType.Lake));
 
         Assert.NotEmpty(vm.Towns);
@@ -80,7 +81,7 @@ public class RegionTemplateViewModelTests
             TownMaxCount = 100,
             TownAlwaysKeepCities = true,
             TownAlwaysKeepMetropolis = true,
-            RoadMinClass = RoadClass.Primary,
+            RoadMinClass = LinearFeatureType.Primary,
             RoadSimplifyGeometry = false
         };
 
@@ -117,7 +118,7 @@ public class RegionTemplateViewModelTests
     {
         var vm = CreateVm();
         vm.Towns.Add(MakeTown("A", 52.0, 4.0, 100, TownCategory.Village));
-        vm.Roads.Add(MakeRoad(RoadClass.Primary));
+        vm.Roads.Add(MakeRoad(LinearFeatureType.Primary));
         vm.WaterBodies.Add(MakeWater(WaterType.Lake));
 
         vm.SelectNone();
@@ -135,7 +136,7 @@ public class RegionTemplateViewModelTests
         var vm = CreateVm();
         vm.Towns.Add(MakeTown("A", 52.0, 4.0, 100, TownCategory.Village));
         vm.Towns.Add(MakeTown("B", 52.1, 4.1, 200, TownCategory.Town));
-        vm.Roads.Add(MakeRoad(RoadClass.Primary));
+        vm.Roads.Add(MakeRoad(LinearFeatureType.Primary));
 
         Assert.Contains("2 towns", vm.Summary);
         Assert.Contains("1 roads", vm.Summary);
@@ -148,7 +149,7 @@ public class RegionTemplateViewModelTests
         TownCategory cat, Vector2? gamePos = null)
         => new(new TownEntry(name, lat, lon, pop, gamePos ?? Vector2.Zero, cat));
 
-    private static RoadItem MakeRoad(RoadClass cls)
+    private static RoadItem MakeRoad(LinearFeatureType cls)
         => new(new RoadSegment(cls, [Vector2.Zero, new Vector2(1000, 0)]));
 
     private static WaterItem MakeWater(WaterType type)
@@ -157,7 +158,7 @@ public class RegionTemplateViewModelTests
     private static void AddExcluded(RegionTemplateViewModel vm)
     {
         var t = MakeTown("A", 52.0, 4.0, 100, TownCategory.Village); t.IsIncluded = false; vm.Towns.Add(t);
-        var r = MakeRoad(RoadClass.Primary); r.IsIncluded = false; vm.Roads.Add(r);
+        var r = MakeRoad(LinearFeatureType.Primary); r.IsIncluded = false; vm.Roads.Add(r);
         var w = MakeWater(WaterType.Lake); w.IsIncluded = false; vm.WaterBodies.Add(w);
     }
 

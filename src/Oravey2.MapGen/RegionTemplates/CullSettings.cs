@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Oravey2.Core.World;
 
 namespace Oravey2.MapGen.RegionTemplates;
 
@@ -15,7 +16,7 @@ public record CullSettings
     public bool TownAlwaysKeepMetropolis { get; init; } = true;
 
     // ---- Road culling ----
-    public RoadClass RoadMinClass { get; init; } = RoadClass.Primary;
+    public LinearFeatureType RoadMinClass { get; init; } = LinearFeatureType.Primary;
     public bool RoadAlwaysKeepMotorways { get; init; } = true;
     public bool RoadKeepNearTowns { get; init; } = true;
     public double RoadTownProximityKm { get; init; } = 2.0;

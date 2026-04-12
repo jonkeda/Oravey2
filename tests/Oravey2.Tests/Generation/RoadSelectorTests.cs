@@ -27,13 +27,13 @@ public class RoadSelectorTests
             Roads =
             [
                 // Motorway — always kept
-                new RoadSegment(RoadClass.Motorway,
+                new RoadSegment(LinearFeatureType.Motorway,
                     [new Vector2(-5000, 0), new Vector2(20000, 0)]),
                 // Road connecting TownA and TownB — should be kept
-                new RoadSegment(RoadClass.Primary,
+                new RoadSegment(LinearFeatureType.Primary,
                     [new Vector2(0, 0), new Vector2(4000, 5500), new Vector2(8000, 11000)]),
                 // Road only near excluded town — should be dropped
-                new RoadSegment(RoadClass.Secondary,
+                new RoadSegment(LinearFeatureType.Secondary,
                     [new Vector2(49500, 49500), new Vector2(50500, 50500)])
             ],
             WaterBodies = [],

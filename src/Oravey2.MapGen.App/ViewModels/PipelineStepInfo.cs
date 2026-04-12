@@ -28,4 +28,5 @@ public sealed class PipelineStepInfo
     }
 
     public string DisplayText => $"{StepNumbers[Number - 1]} {Icon} {Name}";
+    public string AutomationId => $"WizardStep{Number}";
 }

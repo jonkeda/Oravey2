@@ -13,25 +13,35 @@
                    TextColor="{StaticResource OnSurfaceVariant}" />
 
             <!-- Status -->
-            <Label Text="{Binding StatusText}" TextColor="{StaticResource OnSurfaceVariant}" />
+            <Label Text="{Binding StatusText}" TextColor="{StaticResource OnSurfaceVariant}"
+                   AutomationId="AssemblyStatusText" />
 
             <!-- Action buttons -->
             <FlexLayout Wrap="Wrap" JustifyContent="Start" AlignItems="Center">
                 <Button Text="Generate Scenario"
                         Command="{Binding GenerateScenarioCommand}"
+                        AutomationId="AssemblyGenerateScenarioButton"
                         Style="{StaticResource SecondaryButton}"
                         Margin="0,0,8,8" />
                 <Button Text="Rebuild Catalog"
                         Command="{Binding RebuildCatalogCommand}"
+                        AutomationId="AssemblyCatalogButton"
                         Style="{StaticResource SecondaryButton}"
                         Margin="0,0,8,8" />
                 <Button Text="Update Manifest"
                         Command="{Binding UpdateManifestCommand}"
+                        AutomationId="AssemblyManifestButton"
                         Style="{StaticResource SecondaryButton}"
                         Margin="0,0,8,8" />
                 <Button Text="Validate"
                         Command="{Binding ValidateCommand}"
+                        AutomationId="AssemblyValidateButton"
                         Style="{StaticResource PrimaryButton}"
+                        Margin="0,0,8,8" />
+                <Button Text="Export to Game DB"
+                        Command="{Binding ExportToDbCommand}"
+                        AutomationId="AssemblyExportToDbButton"
+                        Style="{StaticResource SecondaryButton}"
                         Margin="0,0,8,8" />
             </FlexLayout>
 
@@ -43,15 +53,18 @@
                     <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="8">
                         <Label Text="ID:" Grid.Row="0" Grid.Column="0"
                                TextColor="{StaticResource OnSurfaceVariant}" VerticalOptions="Center" />
-                        <Entry Text="{Binding ScenarioId}" Grid.Row="0" Grid.Column="1" />
+                        <Entry Text="{Binding ScenarioId}" Grid.Row="0" Grid.Column="1"
+                               AutomationId="AssemblyScenarioId" />
 
                         <Label Text="Name:" Grid.Row="1" Grid.Column="0"
                                TextColor="{StaticResource OnSurfaceVariant}" VerticalOptions="Center" />
-                        <Entry Text="{Binding ScenarioName}" Grid.Row="1" Grid.Column="1" />
+                        <Entry Text="{Binding ScenarioName}" Grid.Row="1" Grid.Column="1"
+                               AutomationId="AssemblyScenarioName" />
 
                         <Label Text="Description:" Grid.Row="2" Grid.Column="0"
                                TextColor="{StaticResource OnSurfaceVariant}" VerticalOptions="Center" />
-                        <Entry Text="{Binding ScenarioDescription}" Grid.Row="2" Grid.Column="1" />
+                        <Entry Text="{Binding ScenarioDescription}" Grid.Row="2" Grid.Column="1"
+                               AutomationId="AssemblyScenarioDescription" />
 
                         <Label Text="Difficulty:" Grid.Row="3" Grid.Column="0"
                                TextColor="{StaticResource OnSurfaceVariant}" VerticalOptions="Center" />
@@ -68,7 +81,7 @@
                     <HorizontalStackLayout Spacing="12">
                         <Label Text="Validation Results" Style="{StaticResource SectionLabel}" />
                         <Label Text="{Binding SummaryText}" Style="{StaticResource CaptionLabel}"
-                               VerticalOptions="Center" />
+                               AutomationId="AssemblyValidationSummary" VerticalOptions="Center" />
                     </HorizontalStackLayout>
 
                     <VerticalStackLayout Spacing="4"
@@ -93,6 +106,7 @@
             <!-- Complete button -->
             <Button Text="Complete ✓"
                     Command="{Binding CompleteCommand}"
+                    AutomationId="AssemblyCompleteButton"
                     Style="{StaticResource SuccessButton}"
                     HorizontalOptions="Start" />
 

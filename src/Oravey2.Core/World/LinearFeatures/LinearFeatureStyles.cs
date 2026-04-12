@@ -16,13 +16,16 @@ public static class LinearFeatureStyles
         return type switch
         {
             LinearFeatureType.Path => (0.55f, 0.40f, 0.25f, 1f),        // dirt path
-            LinearFeatureType.DirtRoad => (0.50f, 0.35f, 0.18f, 1f),   // dirt road
-            LinearFeatureType.Road => style switch
+            LinearFeatureType.Residential => (0.50f, 0.35f, 0.18f, 1f), // residential road
+            LinearFeatureType.Tertiary => (0.45f, 0.42f, 0.38f, 1f),    // tertiary road
+            LinearFeatureType.Secondary => style switch
             {
                 "concrete" => (0.90f, 0.90f, 0.80f, 1f),               // bright concrete
                 _ => (0.35f, 0.35f, 0.38f, 1f),                        // asphalt grey
             },
-            LinearFeatureType.Highway => (0.30f, 0.30f, 0.33f, 1f),    // dark asphalt
+            LinearFeatureType.Primary => (0.35f, 0.35f, 0.38f, 1f),    // asphalt grey
+            LinearFeatureType.Trunk => (0.32f, 0.32f, 0.35f, 1f),      // dark asphalt
+            LinearFeatureType.Motorway => (0.30f, 0.30f, 0.33f, 1f),   // dark asphalt
             LinearFeatureType.Rail => (0.50f, 0.45f, 0.35f, 1f),       // gravel ballast
             LinearFeatureType.River => (0.20f, 0.35f, 0.55f, 1f),      // murky water
             LinearFeatureType.Stream => (0.25f, 0.40f, 0.55f, 1f),     // shallow water
@@ -40,9 +43,10 @@ public static class LinearFeatureStyles
     {
         return type switch
         {
-            LinearFeatureType.Road => style == "concrete" ? SurfaceType.Concrete : SurfaceType.Asphalt,
-            LinearFeatureType.Highway => SurfaceType.Asphalt,
-            LinearFeatureType.DirtRoad => SurfaceType.Dirt,
+            LinearFeatureType.Secondary => style == "concrete" ? SurfaceType.Concrete : SurfaceType.Asphalt,
+            LinearFeatureType.Primary or LinearFeatureType.Trunk => SurfaceType.Asphalt,
+            LinearFeatureType.Motorway => SurfaceType.Asphalt,
+            LinearFeatureType.Residential => SurfaceType.Dirt,
             LinearFeatureType.Path => SurfaceType.Dirt,
             _ => null,
         };

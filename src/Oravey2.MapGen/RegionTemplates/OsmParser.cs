@@ -1,4 +1,5 @@
 using System.Numerics;
+using Oravey2.Core.World;
 using OsmSharp;
 using OsmSharp.Streams;
 
@@ -121,14 +122,14 @@ public class OsmParser
         return coords.ToArray();
     }
 
-    private static RoadClass? ClassifyRoad(string highway) => highway switch
+    private static LinearFeatureType? ClassifyRoad(string highway) => highway switch
     {
-        "motorway" or "motorway_link" => RoadClass.Motorway,
-        "trunk" or "trunk_link" => RoadClass.Trunk,
-        "primary" or "primary_link" => RoadClass.Primary,
-        "secondary" or "secondary_link" => RoadClass.Secondary,
-        "tertiary" or "tertiary_link" => RoadClass.Tertiary,
-        "residential" or "living_street" => RoadClass.Residential,
+        "motorway" or "motorway_link" => LinearFeatureType.Motorway,
+        "trunk" or "trunk_link" => LinearFeatureType.Trunk,
+        "primary" or "primary_link" => LinearFeatureType.Primary,
+        "secondary" or "secondary_link" => LinearFeatureType.Secondary,
+        "tertiary" or "tertiary_link" => LinearFeatureType.Tertiary,
+        "residential" or "living_street" => LinearFeatureType.Residential,
         _ => null
     };
 

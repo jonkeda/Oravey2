@@ -3,6 +3,9 @@ bin/
 obj/
 [Dd]ebug/
 [Rr]elease/
+
+# Content pack generated databases
+content/**/world.db
 x64/
 x86/
 [Aa][Rr][Mm]/

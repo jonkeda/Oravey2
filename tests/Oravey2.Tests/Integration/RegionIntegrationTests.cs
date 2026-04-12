@@ -1,6 +1,7 @@
 using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
+using Oravey2.Core.World;
 using Oravey2.MapGen.RegionTemplates;
 using Xunit;
 
@@ -110,7 +111,7 @@ public class RegionIntegrationTests
             DefaultCullSettings = new CullSettings
             {
                 TownMinPopulation = 2000,
-                RoadMinClass = RoadClass.Secondary,
+                RoadMinClass = LinearFeatureType.Secondary,
                 WaterMinAreaKm2 = 0.5
             }
         };

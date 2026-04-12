@@ -1,4 +1,5 @@
 using System.Numerics;
+using Oravey2.Core.World;
 using Oravey2.MapGen.Generation;
 using Oravey2.MapGen.RegionTemplates;
 
@@ -84,7 +85,7 @@ public class OverworldGeneratorTests
         var towns = new List<CuratedTown> { MakeTown("haven", 1.0f, 1.0f) };
         var roads = new List<RoadSegment>
         {
-            new(RoadClass.Primary, [new Vector2(1.0f, 1.05f), new Vector2(1.0f, 2.0f)]),
+            new(LinearFeatureType.Primary, [new Vector2(1.0f, 1.05f), new Vector2(1.0f, 2.0f)]),
         };
 
         var result = OverworldGenerator.FilterRoads(roads, towns);
@@ -98,7 +99,7 @@ public class OverworldGeneratorTests
         var towns = new List<CuratedTown> { MakeTown("haven", 1.0f, 1.0f) };
         var roads = new List<RoadSegment>
         {
-            new(RoadClass.Residential, [new Vector2(5.0f, 5.0f), new Vector2(6.0f, 6.0f)]),
+            new(LinearFeatureType.Residential, [new Vector2(5.0f, 5.0f), new Vector2(6.0f, 6.0f)]),
         };
 
         var result = OverworldGenerator.FilterRoads(roads, towns);
@@ -115,7 +116,7 @@ public class OverworldGeneratorTests
         };
         var roads = new List<RoadSegment>
         {
-            new(RoadClass.Secondary, [new Vector2(1.0f, 1.0f), new Vector2(1.0f, 1.1f)]),
+            new(LinearFeatureType.Secondary, [new Vector2(1.0f, 1.0f), new Vector2(1.0f, 1.1f)]),
         };
 
         var result = OverworldGenerator.FilterRoads(roads, towns);
@@ -179,7 +180,7 @@ public class OverworldGeneratorTests
         };
         var roads = new List<RoadSegment>
         {
-            new(RoadClass.Primary, [new Vector2(0.5f, 0.5f), new Vector2(1.5f, 0.5f)]),
+            new(LinearFeatureType.Primary, [new Vector2(0.5f, 0.5f), new Vector2(1.5f, 0.5f)]),
         };
         var water = new List<WaterBody>
         {

@@ -1,4 +1,5 @@
 using System.Numerics;
+using Oravey2.Core.World;
 using Oravey2.MapGen.RegionTemplates;
 using Xunit;
 
@@ -13,7 +14,7 @@ public class RegionTemplateToolCullTests
         {
             TownMinPopulation = 5_000,
             TownMaxCount = 20,
-            RoadMinClass = RoadClass.Secondary,
+            RoadMinClass = LinearFeatureType.Secondary,
             WaterMinAreaKm2 = 0.5
         };
 
@@ -25,7 +26,7 @@ public class RegionTemplateToolCullTests
 
             Assert.Equal(5_000, loaded.TownMinPopulation);
             Assert.Equal(20, loaded.TownMaxCount);
-            Assert.Equal(RoadClass.Secondary, loaded.RoadMinClass);
+            Assert.Equal(LinearFeatureType.Secondary, loaded.RoadMinClass);
             Assert.Equal(0.5, loaded.WaterMinAreaKm2);
         }
         finally
@@ -59,7 +60,7 @@ public class RegionTemplateToolCullTests
             TownMaxCount = 100,
             TownAlwaysKeepCities = true,
             TownAlwaysKeepMetropolis = true,
-            RoadMinClass = RoadClass.Primary,
+            RoadMinClass = LinearFeatureType.Primary,
             RoadKeepNearTowns = false,
             RoadAlwaysKeepMotorways = false,
             RoadSimplifyGeometry = false,
@@ -76,10 +77,10 @@ public class RegionTemplateToolCullTests
 
         var roads = new List<RoadSegment>
         {
-            new(RoadClass.Motorway, [Vector2.Zero, new Vector2(5000, 0)]),
-            new(RoadClass.Residential, [new Vector2(50_000, 0), new Vector2(51_000, 0)]),
-            new(RoadClass.Residential, [new Vector2(60_000, 0), new Vector2(61_000, 0)]),
-            new(RoadClass.Primary, [new Vector2(20_000, 0), new Vector2(25_000, 0)])
+            new(LinearFeatureType.Motorway, [Vector2.Zero, new Vector2(5000, 0)]),
+            new(LinearFeatureType.Residential, [new Vector2(50_000, 0), new Vector2(51_000, 0)]),
+            new(LinearFeatureType.Residential, [new Vector2(60_000, 0), new Vector2(61_000, 0)]),
+            new(LinearFeatureType.Primary, [new Vector2(20_000, 0), new Vector2(25_000, 0)])
         };
 
         var water = new List<WaterBody>
@@ -117,7 +118,7 @@ public class RegionTemplateToolCullTests
         };
         var roads = new List<RoadSegment>
         {
-            new(RoadClass.Residential, [Vector2.Zero, new Vector2(100, 0)])
+            new(LinearFeatureType.Residential, [Vector2.Zero, new Vector2(100, 0)])
         };
         var water = new List<WaterBody>
         {

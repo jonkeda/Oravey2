@@ -4,13 +4,12 @@
   "version": "0.1.0",
   "description": "Post-apocalyptic Noord-Holland region. Flooded polders, ruined canal towns, and fortified coastal settlements.",
   "author": "Oravey2 Team",
-  "engineVersion": ">=0.1.0",
+  "engineVersion": "\u003E=0.1.0",
   "parent": "oravey2.apocalyptic.nl",
-  "tags": ["apocalyptic", "netherlands", "noord-holland"],
-  "defaultScenario": "noord-holland",
-  "palette": {
-    "primary": "#4A6741",
-    "accent": "#C17817",
-    "danger": "#8B2500"
-  }
+  "tags": [
+    "apocalyptic",
+    "netherlands",
+    "noord-holland"
+  ],
+  "defaultScenario": "noord-holland"
 }

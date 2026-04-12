@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Oravey2.Core.World;
 using Oravey2.MapGen.RegionTemplates;
 using Xunit;
 
@@ -19,7 +20,7 @@ public class CullSettingsTests
         Assert.True(settings.TownAlwaysKeepCities);
         Assert.True(settings.TownAlwaysKeepMetropolis);
 
-        Assert.Equal(RoadClass.Primary, settings.RoadMinClass);
+        Assert.Equal(LinearFeatureType.Primary, settings.RoadMinClass);
         Assert.True(settings.RoadAlwaysKeepMotorways);
         Assert.True(settings.RoadKeepNearTowns);
         Assert.Equal(2.0, settings.RoadTownProximityKm);
@@ -46,7 +47,7 @@ public class CullSettingsTests
             TownPriority = CullPriority.Spacing,
             TownAlwaysKeepCities = false,
             TownAlwaysKeepMetropolis = false,
-            RoadMinClass = RoadClass.Tertiary,
+            RoadMinClass = LinearFeatureType.Tertiary,
             RoadAlwaysKeepMotorways = false,
             RoadKeepNearTowns = false,
             RoadTownProximityKm = 5.0,
@@ -114,7 +115,7 @@ public class CullSettingsTests
             Assert.Equal(CullPriority.Population, settings.TownPriority);
             Assert.True(settings.TownAlwaysKeepCities);
             Assert.False(settings.TownAlwaysKeepMetropolis);
-            Assert.Equal(RoadClass.Motorway, settings.RoadMinClass);
+            Assert.Equal(LinearFeatureType.Motorway, settings.RoadMinClass);
             Assert.False(settings.RoadKeepNearTowns);
             Assert.Equal(25.0, settings.RoadSimplifyToleranceM);
             Assert.Equal(1.0, settings.WaterMinAreaKm2);

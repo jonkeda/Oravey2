@@ -32,8 +32,8 @@
     { "id": "terrain/rubble_pile.glb", "description": "Large rubble pile from collapsed structure", "tags": ["urban", "obstacle"] }
   ],
   "primitive": [
-    { "id": "meshes/primitives/pyramid.glb", "description": "Pyramid placeholder for landmark buildings", "tags": ["primitive", "landmark", "placeholder"] },
-    { "id": "meshes/primitives/cube.glb", "description": "Cube placeholder for unique/key buildings", "tags": ["primitive", "building", "placeholder"] },
-    { "id": "meshes/primitives/sphere.glb", "description": "Sphere placeholder for props", "tags": ["primitive", "prop", "placeholder"] }
+    { "id": "assets/meshes/primitives/pyramid.glb", "description": "Pyramid placeholder for landmark buildings", "tags": ["primitive", "landmark", "placeholder"] },
+    { "id": "assets/meshes/primitives/cube.glb", "description": "Cube placeholder for unique/key buildings", "tags": ["primitive", "building", "placeholder"] },
+    { "id": "assets/meshes/primitives/sphere.glb", "description": "Sphere placeholder for props", "tags": ["primitive", "prop", "placeholder"] }
   ]
 }

@@ -1,4 +1,5 @@
 using System.Windows.Input;
+using Oravey2.Core.World;
 using Oravey2.MapGen.ViewModels.RegionTemplates;
 using Oravey2.MapGen.RegionTemplates;
 
@@ -33,8 +34,8 @@ public class AutoCullDialogViewModel : ViewModelBase
     public bool TownAlwaysKeepMetropolis { get => _townAlwaysKeepMetropolis; set => SetProperty(ref _townAlwaysKeepMetropolis, value); }
 
     // --- Road settings ---
-    private RoadClass _roadMinClass;
-    public RoadClass RoadMinClass { get => _roadMinClass; set => SetProperty(ref _roadMinClass, value); }
+    private LinearFeatureType _roadMinClass;
+    public LinearFeatureType RoadMinClass { get => _roadMinClass; set => SetProperty(ref _roadMinClass, value); }
 
     private bool _roadAlwaysKeepMotorways;
     public bool RoadAlwaysKeepMotorways { get => _roadAlwaysKeepMotorways; set => SetProperty(ref _roadAlwaysKeepMotorways, value); }
@@ -80,7 +81,7 @@ public class AutoCullDialogViewModel : ViewModelBase
 
     // --- Enum sources for pickers ---
     public TownCategory[] TownCategories { get; } = Enum.GetValues<TownCategory>();
-    public RoadClass[] RoadClasses { get; } = Enum.GetValues<RoadClass>();
+    public LinearFeatureType[] RoadClasses { get; } = Enum.GetValues<LinearFeatureType>();
     public CullPriority[] CullPriorities { get; } = Enum.GetValues<CullPriority>();
 
     // --- Commands ---

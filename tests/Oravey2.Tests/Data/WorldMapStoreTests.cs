@@ -118,14 +118,14 @@ public class WorldMapStoreTests : IDisposable
             new(new Vector2(10, 0), null),
             new(new Vector2(10, 10), 3.5f),
         };
-        var feature = new LinearFeature(LinearFeatureType.Road, "asphalt_2lane", 4.0f, nodes);
+        var feature = new LinearFeature(LinearFeatureType.Secondary, "asphalt_2lane", 4.0f, nodes);
         _store.InsertLinearFeature(rid, feature);
 
         var results = _store.GetLinearFeatures(rid);
 
         Assert.Single(results);
         var f = results[0];
-        Assert.Equal(LinearFeatureType.Road, f.Type);
+        Assert.Equal(LinearFeatureType.Secondary, f.Type);
         Assert.Equal("asphalt_2lane", f.Style);
         Assert.Equal(4.0f, f.Width);
         Assert.Equal(3, f.Nodes.Count);

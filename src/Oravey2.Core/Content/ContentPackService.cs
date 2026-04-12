@@ -13,7 +13,8 @@ public sealed record ScenarioDefinition(
     string? Map = null,
     string[]? Features = null,
     int Difficulty = 1,
-    string[]? Tags = null);
+    string[]? Tags = null,
+    string[]? Towns = null);
 
 /// <summary>
 /// Info about an installed content pack (manifest + directory).

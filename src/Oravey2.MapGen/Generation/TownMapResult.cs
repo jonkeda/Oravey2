@@ -9,7 +9,8 @@ public sealed record TownMapResult(
 public sealed record TownLayout(
     int Width,
     int Height,
-    int[][] Surface);
+    int[][] Surface,
+    int[][]? Liquid = null);
 
 public sealed record PlacedBuilding(
     string Id,

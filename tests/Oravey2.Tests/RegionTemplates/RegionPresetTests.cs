@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Oravey2.Core.World;
 using Oravey2.MapGen.RegionTemplates;
 using Xunit;
 
@@ -36,7 +37,7 @@ public class RegionPresetTests
             DefaultCullSettings = new CullSettings
             {
                 TownMinPopulation = 2000,
-                RoadMinClass = RoadClass.Secondary,
+                RoadMinClass = LinearFeatureType.Secondary,
                 WaterMinAreaKm2 = 0.5
             }
         };
@@ -76,7 +77,7 @@ public class RegionPresetTests
         var cull = preset.DefaultCullSettings;
         Assert.Equal(TownCategory.Village, cull.TownMinCategory);
         Assert.Equal(1000, cull.TownMinPopulation);
-        Assert.Equal(RoadClass.Secondary, cull.RoadMinClass);
+        Assert.Equal(LinearFeatureType.Secondary, cull.RoadMinClass);
         Assert.True(cull.RoadAlwaysKeepMotorways);
         Assert.Equal(0.01, cull.WaterMinAreaKm2);
         Assert.True(cull.WaterAlwaysKeepSea);

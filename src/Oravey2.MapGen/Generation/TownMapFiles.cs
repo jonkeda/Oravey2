@@ -27,6 +27,7 @@ public static class TownMapFiles
                 Width = result.Layout.Width,
                 Height = result.Layout.Height,
                 Surface = result.Layout.Surface,
+                Liquid = result.Layout.Liquid,
             }, Options));
 
         File.WriteAllText(
@@ -86,7 +87,7 @@ public static class TownMapFiles
         var zonesJson = File.ReadAllText(Path.Combine(townDir, "zones.json"));
         var zoneFiles = JsonSerializer.Deserialize<List<ZoneFile>>(zonesJson, Options) ?? [];
 
-        var layout = new TownLayout(layoutFile.Width, layoutFile.Height, layoutFile.Surface ?? []);
+        var layout = new TownLayout(layoutFile.Width, layoutFile.Height, layoutFile.Surface ?? [], layoutFile.Liquid);
 
         var buildings = buildingFiles.Select(b => new PlacedBuilding(
             b.Id, b.Name, b.MeshAsset, b.Size,
@@ -126,6 +127,7 @@ internal sealed class LayoutFile
     public int Width { get; set; }
     public int Height { get; set; }
     public int[][]? Surface { get; set; }
+    public int[][]? Liquid { get; set; }
 }
 
 internal sealed class BuildingFile
@@ -134,9 +136,10 @@ internal sealed class BuildingFile
     public string Name { get; set; } = "";
     public string MeshAsset { get; set; } = "";
     public string Size { get; set; } = "";
-    public int[][]? Footprint { get; set; }
+    public int[][] Footprint { get; set; } = [];
     public int Floors { get; set; }
     public float Condition { get; set; }
+    public string? InteriorChunkId { get; set; }
     public PlacementFile? Placement { get; set; }
 }
 
@@ -148,6 +151,7 @@ internal sealed class PropFile
     public float Rotation { get; set; }
     public float Scale { get; set; }
     public bool BlocksWalkability { get; set; }
+    public int[][]? Footprint { get; set; }
 }
 
 internal sealed class ZoneFile

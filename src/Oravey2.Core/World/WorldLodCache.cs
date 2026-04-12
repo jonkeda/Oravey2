@@ -139,7 +139,7 @@ public sealed class WorldLodCache
         int count = 0;
 
         // Surface type tallies
-        Span<int> surfaceCounts = stackalloc int[8]; // SurfaceType has 8 values
+        Span<int> surfaceCounts = stackalloc int[9]; // SurfaceType has 9 values
         bool hasForestFlag = false;
         int waterCount = 0;
 
@@ -155,7 +155,7 @@ public sealed class WorldLodCache
                     waterCount++;
 
                 int surfIdx = (int)td.Surface;
-                if (surfIdx >= 0 && surfIdx < 8)
+                if (surfIdx >= 0 && surfIdx < 9)
                     surfaceCounts[surfIdx]++;
 
                 if (td.Flags.HasFlag(TileFlags.Forested))
@@ -241,6 +241,7 @@ public sealed class WorldLodCache
             SurfaceType.Rock => LodBiome.Mountain,
             SurfaceType.Dirt => LodBiome.Wasteland,
             SurfaceType.Mud => LodBiome.Wasteland,
+            SurfaceType.Gravel => LodBiome.Wasteland,
             _ => LodBiome.Wasteland,
         };
     }

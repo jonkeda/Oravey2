@@ -1,6 +1,7 @@
 using System.Buffers.Binary;
 using System.Text;
 using System.Text.Json;
+using Oravey2.MapGen.Generation;
 
 namespace Oravey2.MapGen.Assets;
 
@@ -14,9 +15,9 @@ public static class PrimitiveMeshWriter
     private const uint ChunkTypeJson = 0x4E4F534A; // "JSON"
     private const uint ChunkTypeBin = 0x004E4942;  // "BIN\0"
 
-    public static readonly string PyramidPath = "meshes/primitives/pyramid.glb";
-    public static readonly string CubePath = "meshes/primitives/cube.glb";
-    public static readonly string SpherePath = "meshes/primitives/sphere.glb";
+    public static readonly string PyramidPath = "assets/meshes/primitives/pyramid.glb";
+    public static readonly string CubePath = "assets/meshes/primitives/cube.glb";
+    public static readonly string SpherePath = "assets/meshes/primitives/sphere.glb";
 
     /// <summary>
     /// Ensures all three primitive .glb files exist under <paramref name="contentRoot"/>/assets/.
@@ -29,6 +30,25 @@ public static class PrimitiveMeshWriter
         WriteIfMissing(Path.Combine(dir, "pyramid.glb"), BuildPyramid);
         WriteIfMissing(Path.Combine(dir, "cube.glb"), BuildCube);
         WriteIfMissing(Path.Combine(dir, "sphere.glb"), () => BuildSphere());
+
+        WriteMetaIfMissing(dir, "pyramid", "Pyramid placeholder for landmark buildings");
+        WriteMetaIfMissing(dir, "cube", "Cube placeholder for buildings");
+        WriteMetaIfMissing(dir, "sphere", "Sphere placeholder for props");
+    }
+
+    private static void WriteMetaIfMissing(string dir, string name, string description)
+    {
+        var metaPath = Path.Combine(dir, $"{name}.meta.json");
+        if (File.Exists(metaPath)) return;
+        AssetFiles.SaveMeta(new AssetMeta
+        {
+            AssetId = name,
+            Prompt = description,
+            GeneratedAt = DateTime.UtcNow,
+            Status = "accepted",
+            SourceType = "primitive",
+            SizeCategory = "medium",
+        }, metaPath);
     }
 
     private static void WriteIfMissing(string path, Func<byte[]> builder)

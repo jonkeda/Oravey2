@@ -1,4 +1,5 @@
 using System.Numerics;
+using Oravey2.Core.World;
 using Oravey2.MapGen.ViewModels;
 using Oravey2.MapGen.ViewModels.RegionTemplates;
 using Oravey2.MapGen.RegionTemplates;
@@ -13,7 +14,7 @@ public class AutoCullDialogViewModelTests
         TownMinCategory = TownCategory.Village,
         TownMinPopulation = 1_000,
         TownMaxCount = 30,
-        RoadMinClass = RoadClass.Primary,
+        RoadMinClass = LinearFeatureType.Primary,
         WaterMinAreaKm2 = 0.1,
         RoadSimplifyGeometry = false
     };
@@ -26,7 +27,7 @@ public class AutoCullDialogViewModelTests
         Assert.Equal(TownCategory.Village, vm.TownMinCategory);
         Assert.Equal(1_000, vm.TownMinPopulation);
         Assert.Equal(30, vm.TownMaxCount);
-        Assert.Equal(RoadClass.Primary, vm.RoadMinClass);
+        Assert.Equal(LinearFeatureType.Primary, vm.RoadMinClass);
         Assert.Equal(0.1, vm.WaterMinAreaKm2);
     }
 
@@ -35,13 +36,13 @@ public class AutoCullDialogViewModelTests
     {
         var vm = CreateVm();
         vm.TownMinPopulation = 5_000;
-        vm.RoadMinClass = RoadClass.Secondary;
+        vm.RoadMinClass = LinearFeatureType.Secondary;
         vm.WaterMinAreaKm2 = 0.5;
 
         var result = vm.BuildSettings();
 
         Assert.Equal(5_000, result.TownMinPopulation);
-        Assert.Equal(RoadClass.Secondary, result.RoadMinClass);
+        Assert.Equal(LinearFeatureType.Secondary, result.RoadMinClass);
         Assert.Equal(0.5, result.WaterMinAreaKm2);
     }
 
@@ -97,8 +98,8 @@ public class AutoCullDialogViewModelTests
         };
         var roads = new List<RoadItem>
         {
-            new(new RoadSegment(RoadClass.Primary, [Vector2.Zero, new Vector2(1000, 0)])),
-            new(new RoadSegment(RoadClass.Residential, [new Vector2(5000, 0), new Vector2(6000, 0)]))
+            new(new RoadSegment(LinearFeatureType.Primary, [Vector2.Zero, new Vector2(1000, 0)])),
+            new(new RoadSegment(LinearFeatureType.Residential, [new Vector2(5000, 0), new Vector2(6000, 0)]))
         };
         var water = new List<WaterItem>
         {

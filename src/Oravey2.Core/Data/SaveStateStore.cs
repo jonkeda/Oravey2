@@ -181,6 +181,56 @@ public sealed class SaveStateStore : IDisposable
         return results;
     }
 
+    // ── Save Meta ──────────────────────────────────────────
+
+    public void SetCurrentRegion(string regionName)
+    {
+        SetMeta("current_region", regionName);
+    }
+
+    public string? GetCurrentRegion()
+    {
+        return GetMeta("current_region");
+    }
+
+    public void SavePlayerPosition(string regionName, float x, float y, float z)
+    {
+        var json = $"{{\"x\":{x},\"y\":{y},\"z\":{z}}}";
+        SetMeta($"pos:{regionName}", json);
+    }
+
+    public (float X, float Y, float Z)? GetPlayerPosition(string regionName)
+    {
+        var json = GetMeta($"pos:{regionName}");
+        if (json == null) return null;
+
+        var doc = System.Text.Json.JsonDocument.Parse(json);
+        var root = doc.RootElement;
+        return (root.GetProperty("x").GetSingle(),
+                root.GetProperty("y").GetSingle(),
+                root.GetProperty("z").GetSingle());
+    }
+
+    private void SetMeta(string key, string value)
+    {
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = """
+            INSERT INTO save_meta (key, value) VALUES ($key, $val)
+            ON CONFLICT(key) DO UPDATE SET value = excluded.value;
+            """;
+        cmd.Parameters.AddWithValue("$key", key);
+        cmd.Parameters.AddWithValue("$val", value);
+        cmd.ExecuteNonQuery();
+    }
+
+    private string? GetMeta(string key)
+    {
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = "SELECT value FROM save_meta WHERE key = $key;";
+        cmd.Parameters.AddWithValue("$key", key);
+        return cmd.ExecuteScalar() as string;
+    }
+
     // ── Helpers ────────────────────────────────────────────
 
     private long LastId()

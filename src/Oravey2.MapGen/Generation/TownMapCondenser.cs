@@ -1,4 +1,5 @@
 using System.Numerics;
+using Oravey2.Core.World;
 using Oravey2.MapGen.RegionTemplates;
 
 namespace Oravey2.MapGen.Generation;
@@ -67,7 +68,10 @@ public sealed class TownMapCondenser
         // Step 8: Define zones from hazards
         var zones = DefineZones(width, height, design, town.ThreatLevel);
 
-        var layout = new TownLayout(width, height, surface);
+        // Step 9: Build liquid overlay from hazard zones
+        var liquid = BuildLiquidLayer(width, height, design.Hazards, zones);
+
+        var layout = new TownLayout(width, height, surface, liquid);
         return new TownMapResult(layout, buildings, props, zones);
     }
 
@@ -105,13 +109,14 @@ public sealed class TownMapCondenser
 
     internal static int[][] BuildSurface(int width, int height, Random rng)
     {
-        // Surface type IDs: 0 = dirt, 1 = grass, 2 = concrete, 3 = gravel
         var surface = new int[height][];
         for (var y = 0; y < height; y++)
         {
             surface[y] = new int[width];
             for (var x = 0; x < width; x++)
-                surface[y][x] = rng.Next(0, 2); // mostly dirt/grass
+                surface[y][x] = rng.Next(2) == 0
+                    ? (int)SurfaceType.Dirt
+                    : (int)SurfaceType.Grass;
         }
         return surface;
     }
@@ -181,7 +186,7 @@ public sealed class TownMapCondenser
         foreach (var (x, y) in roadTiles)
         {
             if (y >= 0 && y < surface.Length && x >= 0 && x < surface[y].Length)
-                surface[y][x] = 2; // concrete
+                surface[y][x] = (int)SurfaceType.Concrete;
         }
     }
 
@@ -411,6 +416,70 @@ public sealed class TownMapCondenser
 
         // Default: covers entire map
         return (0, 0, chunksWide - 1, chunksHigh - 1);
+    }
+
+    /// <summary>
+    /// Builds a liquid layer grid from hazard types and their zone bounds.
+    /// Returns null if no hazards produce liquids.
+    /// </summary>
+    internal static int[][]? BuildLiquidLayer(
+        int width, int height,
+        List<EnvironmentalHazard> hazards,
+        List<TownZone> zones)
+    {
+        // Map hazard types to LiquidType values
+        int[][]? liquid = null;
+
+        for (int i = 0; i < hazards.Count; i++)
+        {
+            var liquidType = HazardToLiquid(hazards[i].Type);
+            if (liquidType == 0) continue; // no liquid for this hazard
+
+            // Find the matching zone (hazard zones start at index 1)
+            var zoneIdx = i + 1; // zone[0] is main zone
+            if (zoneIdx >= zones.Count) continue;
+            var zone = zones[zoneIdx];
+
+            liquid ??= CreateEmptyGrid(width, height);
+
+            // Fill the zone bounds with liquid type
+            for (int cy = zone.ChunkStartY; cy <= zone.ChunkEndY; cy++)
+            for (int cx = zone.ChunkStartX; cx <= zone.ChunkEndX; cx++)
+            for (int ly = 0; ly < TilesPerChunk; ly++)
+            for (int lx = 0; lx < TilesPerChunk; lx++)
+            {
+                int gx = cx * TilesPerChunk + lx;
+                int gy = cy * TilesPerChunk + ly;
+                if (gx < width && gy < height)
+                    liquid[gy][gx] = liquidType;
+            }
+        }
+
+        return liquid;
+    }
+
+    private static int HazardToLiquid(string hazardType)
+    {
+        var t = hazardType.ToLowerInvariant();
+        if (t.Contains("flood") || t.Contains("water") || t.Contains("tidal") || t.Contains("storm surge"))
+            return (int)LiquidType.Water;
+        if (t.Contains("toxic") || t.Contains("chemical"))
+            return (int)LiquidType.Toxic;
+        if (t.Contains("acid"))
+            return (int)LiquidType.Acid;
+        if (t.Contains("sewage"))
+            return (int)LiquidType.Sewage;
+        if (t.Contains("oil") || t.Contains("petroleum"))
+            return (int)LiquidType.Oil;
+        return 0; // no liquid
+    }
+
+    private static int[][] CreateEmptyGrid(int width, int height)
+    {
+        var grid = new int[height][];
+        for (int y = 0; y < height; y++)
+            grid[y] = new int[width];
+        return grid;
     }
 
     private static (int Width, int Height, int Floors) SizeFromCategory(string sizeCategory) =>

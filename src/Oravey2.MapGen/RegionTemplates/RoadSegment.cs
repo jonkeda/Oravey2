@@ -1,15 +1,6 @@
 using System.Numerics;
+using Oravey2.Core.World;
 
 namespace Oravey2.MapGen.RegionTemplates;
 
-public enum RoadClass
-{
-    Motorway,
-    Trunk,
-    Primary,
-    Secondary,
-    Tertiary,
-    Residential
-}
-
-public record RoadSegment(RoadClass RoadClass, Vector2[] Nodes);
+public record RoadSegment(LinearFeatureType RoadClass, Vector2[] Nodes);

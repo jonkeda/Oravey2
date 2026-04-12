@@ -9,5 +9,6 @@ public enum SurfaceType : byte
     Sand = 4,
     Mud = 5,
     Rock = 6,
-    Metal = 7
+    Metal = 7,
+    Gravel = 8
 }

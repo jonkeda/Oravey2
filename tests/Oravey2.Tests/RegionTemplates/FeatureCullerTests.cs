@@ -1,4 +1,5 @@
 using System.Numerics;
+using Oravey2.Core.World;
 using Oravey2.MapGen.RegionTemplates;
 using Xunit;
 
@@ -12,7 +13,7 @@ public class FeatureCullerTests
         float gameX = 0, float gameZ = 0, double lat = 52.5, double lon = 4.9)
         => new(name, lat, lon, pop, new Vector2(gameX, gameZ), cat);
 
-    private static RoadSegment MakeRoad(RoadClass cls, params Vector2[] nodes)
+    private static RoadSegment MakeRoad(LinearFeatureType cls, params Vector2[] nodes)
         => new(cls, nodes);
 
     private static WaterBody MakePolygonWater(WaterType type, float sideMetres)
@@ -176,15 +177,15 @@ public class FeatureCullerTests
     {
         var roads = new List<RoadSegment>
         {
-            MakeRoad(RoadClass.Primary, new(0,0), new(1000,0)),
-            MakeRoad(RoadClass.Residential, new(0,0), new(500,0))
+            MakeRoad(LinearFeatureType.Primary, new(0,0), new(1000,0)),
+            MakeRoad(LinearFeatureType.Residential, new(0,0), new(500,0))
         };
-        var settings = new CullSettings { RoadMinClass = RoadClass.Primary, RoadKeepNearTowns = false };
+        var settings = new CullSettings { RoadMinClass = LinearFeatureType.Primary, RoadKeepNearTowns = false };
 
         var result = FeatureCuller.CullRoads(roads, [], settings);
 
         Assert.Single(result);
-        Assert.Equal(RoadClass.Primary, result[0].RoadClass);
+        Assert.Equal(LinearFeatureType.Primary, result[0].RoadClass);
     }
 
     [Fact]
@@ -192,23 +193,22 @@ public class FeatureCullerTests
     {
         var roads = new List<RoadSegment>
         {
-            MakeRoad(RoadClass.Motorway, new(0,0), new(5000,0)),
-            MakeRoad(RoadClass.Residential, new(0,0), new(500,0))
+            MakeRoad(LinearFeatureType.Motorway, new(0,0), new(5000,0)),
+            MakeRoad(LinearFeatureType.Residential, new(0,0), new(500,0))
         };
-        // Set min class to something that would exclude motorway if the enum order matters
-        // RoadClass enum: Motorway=0, so all should pass. Test that motorway protection works
-        // by also checking the residential is excluded
+        // Higher enum value = more important road. Motorway(6) >= Primary(4) passes.
+        // Residential(1) >= Primary(4) fails.
         var settings = new CullSettings
         {
-            RoadMinClass = RoadClass.Primary, // Motorway(0) <= Primary(2), so motorway passes class filter too
+            RoadMinClass = LinearFeatureType.Primary, // Motorway(6) >= Primary(4), so motorway passes class filter too
             RoadAlwaysKeepMotorways = true,
             RoadKeepNearTowns = false
         };
 
         var result = FeatureCuller.CullRoads(roads, [], settings);
 
-        Assert.Contains(result, r => r.RoadClass == RoadClass.Motorway);
-        Assert.DoesNotContain(result, r => r.RoadClass == RoadClass.Residential);
+        Assert.Contains(result, r => r.RoadClass == LinearFeatureType.Motorway);
+        Assert.DoesNotContain(result, r => r.RoadClass == LinearFeatureType.Residential);
     }
 
     [Fact]
@@ -219,11 +219,11 @@ public class FeatureCullerTests
         var roads = new List<RoadSegment>
         {
             // Road 500m from town — within 2km proximity
-            MakeRoad(RoadClass.Secondary, new(1500, 1000), new(2000, 1000))
+            MakeRoad(LinearFeatureType.Secondary, new(1500, 1000), new(2000, 1000))
         };
         var settings = new CullSettings
         {
-            RoadMinClass = RoadClass.Motorway, // very strict — would exclude Secondary
+            RoadMinClass = LinearFeatureType.Motorway, // very strict — would exclude Secondary
             RoadKeepNearTowns = true,
             RoadTownProximityKm = 2.0,
             RoadAlwaysKeepMotorways = false,
@@ -243,11 +243,11 @@ public class FeatureCullerTests
         var roads = new List<RoadSegment>
         {
             // Road 10km from town
-            MakeRoad(RoadClass.Tertiary, new(10_000, 10_000), new(11_000, 10_000))
+            MakeRoad(LinearFeatureType.Tertiary, new(10_000, 10_000), new(11_000, 10_000))
         };
         var settings = new CullSettings
         {
-            RoadMinClass = RoadClass.Primary,
+            RoadMinClass = LinearFeatureType.Primary,
             RoadKeepNearTowns = true,
             RoadTownProximityKm = 2.0,
             RoadAlwaysKeepMotorways = false,
@@ -264,13 +264,13 @@ public class FeatureCullerTests
     public void CullRoads_DeadEnd_Removed()
     {
         // A short dead-end (200m) connected to one main road
-        var mainRoad = MakeRoad(RoadClass.Primary, new(0, 0), new(5000, 0));
-        var deadEnd = MakeRoad(RoadClass.Primary, new(0, 0), new(0, 200)); // branches off start, only 200m
+        var mainRoad = MakeRoad(LinearFeatureType.Primary, new(0, 0), new(5000, 0));
+        var deadEnd = MakeRoad(LinearFeatureType.Primary, new(0, 0), new(0, 200)); // branches off start, only 200m
 
         var roads = new List<RoadSegment> { mainRoad, deadEnd };
         var settings = new CullSettings
         {
-            RoadMinClass = RoadClass.Residential,
+            RoadMinClass = LinearFeatureType.Residential,
             RoadKeepNearTowns = false,
             RoadRemoveDeadEnds = true,
             RoadDeadEndMinKm = 1.0, // anything below 1km dead-end removed
@@ -290,10 +290,10 @@ public class FeatureCullerTests
     {
         // Road with many redundant points along a straight line
         var nodes = Enumerable.Range(0, 100).Select(i => new Vector2(i * 10, 0)).ToArray();
-        var roads = new List<RoadSegment> { MakeRoad(RoadClass.Primary, nodes) };
+        var roads = new List<RoadSegment> { MakeRoad(LinearFeatureType.Primary, nodes) };
         var settings = new CullSettings
         {
-            RoadMinClass = RoadClass.Residential,
+            RoadMinClass = LinearFeatureType.Residential,
             RoadKeepNearTowns = false,
             RoadRemoveDeadEnds = false,
             RoadSimplifyGeometry = true,
