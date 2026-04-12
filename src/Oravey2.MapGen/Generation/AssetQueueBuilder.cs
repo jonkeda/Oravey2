@@ -28,10 +28,13 @@ public sealed class AssetQueueBuilder
             var design = TownDesignFile.Load(designPath).ToTownDesign();
             var townName = design.TownName;
 
-            // Landmark
-            AddAsset(seen, queue, townName, design.Landmark.Name,
-                design.Landmark.VisualDescription, design.Landmark.SizeCategory,
-                contentPackPath);
+            // Landmarks
+            foreach (var lm in design.Landmarks)
+            {
+                AddAsset(seen, queue, townName, lm.Name,
+                    lm.VisualDescription, lm.SizeCategory,
+                    contentPackPath);
+            }
 
             // Key locations
             foreach (var loc in design.KeyLocations)

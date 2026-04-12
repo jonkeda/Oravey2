@@ -25,8 +25,8 @@ public class AssetsStepViewModelTests
 
     private static TownDesign MakeDesign(string townName) => new(
         townName,
-        new LandmarkBuilding("The Beacon", "A tall lighthouse on a cliff", "large"),
-        [new KeyLocation("Market Hall", "shop", "A bustling market building", "medium")],
+        [new LandmarkBuilding("The Beacon", "A tall lighthouse on a cliff", "large", "", "", "")],
+        [new KeyLocation("Market Hall", "shop", "A bustling market building", "medium", "", "", "")],
         "organic",
         []);
 

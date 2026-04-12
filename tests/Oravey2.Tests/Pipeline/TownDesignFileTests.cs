@@ -6,11 +6,11 @@ public class TownDesignFileTests
 {
     private static TownDesign MakeDesign() => new(
         "Havenburg",
-        new LandmarkBuilding("Fort Kijkduin", "A massive coastal fortress with crumbling stone walls", "large"),
+        [new LandmarkBuilding("Fort Kijkduin", "A massive coastal fortress with crumbling stone walls", "large", "", "", "")],
         [
-            new KeyLocation("The Drydock Market", "shop", "An old naval drydock converted into a marketplace", "medium"),
-            new KeyLocation("Clinic", "medical", "A converted church clinic", "small"),
-            new KeyLocation("Barracks", "barracks", "Reinforced concrete bunker", "medium"),
+            new KeyLocation("The Drydock Market", "shop", "An old naval drydock converted into a marketplace", "medium", "", "", ""),
+            new KeyLocation("Clinic", "medical", "A converted church clinic", "small", "", "", ""),
+            new KeyLocation("Barracks", "barracks", "Reinforced concrete bunker", "medium", "", "", ""),
         ],
         "compound",
         [new EnvironmentalHazard("flooding", "The harbour district floods at high tide", "south-west waterfront")]);
@@ -22,8 +22,8 @@ public class TownDesignFileTests
         var file = TownDesignFile.FromTownDesign(design);
 
         Assert.Equal("Havenburg", file.TownName);
-        Assert.Equal("Fort Kijkduin", file.Landmark.Name);
-        Assert.Equal("large", file.Landmark.SizeCategory);
+        Assert.Equal("Fort Kijkduin", file.Landmarks[0].Name);
+        Assert.Equal("large", file.Landmarks[0].SizeCategory);
         Assert.Equal(3, file.KeyLocations.Count);
         Assert.Equal("compound", file.LayoutStyle);
         Assert.Single(file.Hazards);
@@ -36,8 +36,8 @@ public class TownDesignFileTests
         var design = file.ToTownDesign();
 
         Assert.Equal("Havenburg", design.TownName);
-        Assert.Equal("Fort Kijkduin", design.Landmark.Name);
-        Assert.Equal("A massive coastal fortress with crumbling stone walls", design.Landmark.VisualDescription);
+        Assert.Equal("Fort Kijkduin", design.Landmarks[0].Name);
+        Assert.Equal("A massive coastal fortress with crumbling stone walls", design.Landmarks[0].VisualDescription);
         Assert.Equal(3, design.KeyLocations.Count);
         Assert.Equal("The Drydock Market", design.KeyLocations[0].Name);
         Assert.Equal("shop", design.KeyLocations[0].Purpose);
@@ -64,9 +64,9 @@ public class TownDesignFileTests
             var roundTripped = loaded.ToTownDesign();
 
             Assert.Equal(original.TownName, roundTripped.TownName);
-            Assert.Equal(original.Landmark.Name, roundTripped.Landmark.Name);
-            Assert.Equal(original.Landmark.VisualDescription, roundTripped.Landmark.VisualDescription);
-            Assert.Equal(original.Landmark.SizeCategory, roundTripped.Landmark.SizeCategory);
+            Assert.Equal(original.Landmarks[0].Name, roundTripped.Landmarks[0].Name);
+            Assert.Equal(original.Landmarks[0].VisualDescription, roundTripped.Landmarks[0].VisualDescription);
+            Assert.Equal(original.Landmarks[0].SizeCategory, roundTripped.Landmarks[0].SizeCategory);
             Assert.Equal(original.KeyLocations.Count, roundTripped.KeyLocations.Count);
             Assert.Equal(original.LayoutStyle, roundTripped.LayoutStyle);
             Assert.Equal(original.Hazards.Count, roundTripped.Hazards.Count);
@@ -121,7 +121,7 @@ public class TownDesignFileTests
 
             var json = File.ReadAllText(path);
             Assert.Contains("\"townName\"", json);       // camelCase
-            Assert.Contains("\"landmark\"", json);
+            Assert.Contains("\"landmarks\"", json);
             Assert.Contains("\"keyLocations\"", json);
             Assert.Contains("\"layoutStyle\"", json);
             Assert.Contains("\"hazards\"", json);

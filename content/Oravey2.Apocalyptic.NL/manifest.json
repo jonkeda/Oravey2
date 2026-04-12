@@ -6,6 +6,7 @@
   "author": "Oravey2 Team",
   "engineVersion": ">=0.1.0",
   "parent": "oravey2.apocalyptic",
+  "regionCode": "NL",
   "tags": ["apocalyptic", "netherlands", "dutch"],
   "palette": {
     "primary": "#4A6741",

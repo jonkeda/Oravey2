@@ -6,7 +6,6 @@
   "author": "Oravey2 Team",
   "engineVersion": ">=0.1.0",
   "tags": ["apocalyptic", "survival", "wasteland"],
-  "defaultScenario": "portland",
   "palette": {
     "primary": "#4A6741",
     "accent": "#C17817",

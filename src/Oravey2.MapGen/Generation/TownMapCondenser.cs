@@ -53,8 +53,20 @@ public sealed class TownMapCondenser
         var centreY = height / 2;
         var occupied = new HashSet<(int, int)>();
 
-        var landmark = PlaceLandmark(design.Landmark, centreX, centreY, buildings.Count, occupied);
+        var landmark = PlaceLandmark(design.Landmarks[0], centreX, centreY, buildings.Count, occupied);
         buildings.Add(landmark);
+
+        // Place additional landmarks distributed around centre
+        for (var li = 1; li < design.Landmarks.Count; li++)
+        {
+            var angle = li * 2.0 * Math.PI / design.Landmarks.Count;
+            var offsetX = centreX + (int)(centreX * 0.3 * Math.Cos(angle));
+            var offsetY = centreY + (int)(centreY * 0.3 * Math.Sin(angle));
+            offsetX = Math.Clamp(offsetX, 2, width - 4);
+            offsetY = Math.Clamp(offsetY, 2, height - 4);
+            var extra = PlaceLandmark(design.Landmarks[li], offsetX, offsetY, buildings.Count, occupied);
+            buildings.Add(extra);
+        }
 
         // Step 5: Place key locations along main roads
         PlaceKeyLocations(design.KeyLocations, roadTiles, width, height, rng, buildings, occupied);
@@ -66,7 +78,7 @@ public sealed class TownMapCondenser
         var props = PlaceProps(width, height, rng, occupied, parms.PropDensityPercent, parms.MaxProps);
 
         // Step 8: Define zones from hazards
-        var zones = DefineZones(width, height, design, town.ThreatLevel);
+        var zones = DefineZones(width, height, design, (int)town.Destruction);
 
         // Step 9: Build liquid overlay from hazard zones
         var liquid = BuildLiquidLayer(width, height, design.Hazards, zones);
@@ -97,7 +109,7 @@ public sealed class TownMapCondenser
         }
 
         // Auto: base size from location count, clamped to reasonable range
-        var locationCount = design.KeyLocations.Count + 1; // +1 for landmark
+        var locationCount = design.KeyLocations.Count + design.Landmarks.Count;
         var baseDim = Math.Max(16, locationCount * 4);
         baseDim = Math.Min(baseDim, 48);
 

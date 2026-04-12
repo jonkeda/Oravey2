@@ -9,6 +9,8 @@ using Oravey2.MapGen.RegionTemplates;
 
 namespace Oravey2.MapGen.ViewModels;
 
+public enum TownSortMode { None, NameAsc, NameDesc, SizeAsc, SizeDesc }
+
 public class TownSelectionStepViewModel : BaseViewModel
 {
     private PipelineState _state = new();
@@ -35,12 +37,19 @@ public class TownSelectionStepViewModel : BaseViewModel
         ? "Discover: LLM invents towns from its knowledge of the region."
         : "Select: LLM picks from the parsed OSM town list.";
 
-    // --- Seed ---
-    private int _seed = 42;
-    public int Seed
+    // --- Min/Max Towns ---
+    private int _minTowns = 8;
+    public int MinTowns
     {
-        get => _seed;
-        set => SetProperty(ref _seed, value);
+        get => _minTowns;
+        set { if (SetProperty(ref _minTowns, value)) RefreshValidation(); }
+    }
+
+    private int _maxTowns = 15;
+    public int MaxTowns
+    {
+        get => _maxTowns;
+        set { if (SetProperty(ref _maxTowns, value)) RefreshValidation(); }
     }
 
     // --- State ---
@@ -63,13 +72,14 @@ public class TownSelectionStepViewModel : BaseViewModel
     public bool HasResults
     {
         get => _hasResults;
-        private set
+        internal set
         {
             if (SetProperty(ref _hasResults, value))
             {
                 _rerollAllCommand.RaiseCanExecuteChanged();
                 _saveNextCommand.RaiseCanExecuteChanged();
-                _addTownCommand.RaiseCanExecuteChanged();
+                OnPropertyChanged(nameof(IsListTabVisible));
+                OnPropertyChanged(nameof(IsMapTabVisible));
             }
         }
     }
@@ -81,26 +91,67 @@ public class TownSelectionStepViewModel : BaseViewModel
         set => SetProperty(ref _statusText, value);
     }
 
+    // --- Tabs ---
+    private bool _isListTab = true;
+    public bool IsListTab
+    {
+        get => _isListTab;
+        set
+        {
+            if (SetProperty(ref _isListTab, value))
+            {
+                OnPropertyChanged(nameof(IsMapTab));
+                OnPropertyChanged(nameof(IsListTabVisible));
+                OnPropertyChanged(nameof(IsMapTabVisible));
+                if (!value) MapInvalidated?.Invoke();
+            }
+        }
+    }
+    public bool IsMapTab => !IsListTab;
+    public bool IsListTabVisible => HasResults && IsListTab;
+    public bool IsMapTabVisible => HasResults && !IsListTab;
+
+    // --- Sort & Search ---
+    private string _searchText = "";
+    public string SearchText
+    {
+        get => _searchText;
+        set { if (SetProperty(ref _searchText, value)) RefreshFilteredTowns(); }
+    }
+
+    private TownSortMode _sortMode;
+    public TownSortMode SortMode
+    {
+        get => _sortMode;
+        set { if (SetProperty(ref _sortMode, value)) RefreshFilteredTowns(); }
+    }
+
     // --- Results ---
     public ObservableCollection<TownSelectionItem> Towns { get; } = [];
+    public ObservableCollection<TownSelectionItem> FilteredTowns { get; } = [];
 
     // --- LLM Log ---
     public ObservableCollection<LlmLogEntry> LlmLog { get; } = [];
+
+    // --- Map ---
+    public event Action? MapInvalidated;
+    public double RegionNorthLat => _state.Region.NorthLat;
+    public double RegionSouthLat => _state.Region.SouthLat;
+    public double RegionEastLon => _state.Region.EastLon;
+    public double RegionWestLon => _state.Region.WestLon;
 
     // --- Validation ---
     public string ValidationSummary
     {
         get
         {
-            var included = Towns.Where(t => t.IsIncluded).ToList();
-            var count = included.Count;
-            var countOk = count is >= 8 and <= 15;
-            var hasLow = included.Any(t => t.ThreatLevel <= 3);
-            var hasMid = included.Any(t => t.ThreatLevel is >= 4 and <= 6);
-            var hasHigh = included.Any(t => t.ThreatLevel >= 7);
-
-            return $"Towns: {count} {(countOk ? "✓" : "✗ (need 8–15)")}"
-                   + $" · Threat: {(hasLow ? "Low✓" : "Low✗")} {(hasMid ? "Mid✓" : "Mid✗")} {(hasHigh ? "High✓" : "High✗")}";
+            var count = Towns.Count(t => t.IsIncluded);
+            var ok = count >= MinTowns && count <= MaxTowns;
+            if (ok)
+                return $"Towns: {count} (min {MinTowns}, max {MaxTowns}) ✓";
+            if (count < MinTowns)
+                return $"Towns: {count} (min {MinTowns}, max {MaxTowns}) ✗ — need at least {MinTowns}";
+            return $"Towns: {count} (min {MinTowns}, max {MaxTowns}) ✗ — too many, max {MaxTowns}";
         }
     }
 
@@ -108,13 +159,8 @@ public class TownSelectionStepViewModel : BaseViewModel
     {
         get
         {
-            var included = Towns.Where(t => t.IsIncluded).ToList();
-            var count = included.Count;
-            if (count is < 8 or > 15) return false;
-            if (!included.Any(t => t.ThreatLevel <= 3)) return false;
-            if (!included.Any(t => t.ThreatLevel is >= 4 and <= 6)) return false;
-            if (!included.Any(t => t.ThreatLevel >= 7)) return false;
-            return true;
+            var count = Towns.Count(t => t.IsIncluded);
+            return count >= MinTowns && count <= MaxTowns;
         }
     }
 
@@ -122,27 +168,43 @@ public class TownSelectionStepViewModel : BaseViewModel
     private readonly AsyncRelayCommand _runLlmCommand;
     private readonly AsyncRelayCommand _rerollAllCommand;
     private readonly AsyncRelayCommand _saveNextCommand;
-    private readonly RelayCommand _addTownCommand;
     private readonly RelayCommand _cancelCommand;
 
     public ICommand RunLlmCommand => _runLlmCommand;
     public ICommand RerollAllCommand => _rerollAllCommand;
     public ICommand SaveNextCommand => _saveNextCommand;
-    public ICommand AddTownCommand => _addTownCommand;
     public ICommand CancelCommand => _cancelCommand;
 
+    public RelayCommand<TownSelectionItem> DeleteTownCommand { get; }
+
     public Action? StepCompleted { get; set; }
+    public Action? AddTownRequested { get; set; }
 
     // --- Parsed template from previous step ---
     internal RegionTemplate? ParsedTemplate { get; set; }
+
+    /// <summary>
+    /// Returns OSM towns from the parsed template that are not already in the selection.
+    /// </summary>
+    public List<TownEntry> GetAvailableOsmTowns()
+    {
+        if (ParsedTemplate is null) return [];
+        var existing = Towns.Select(t => t.RealName).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        return ParsedTemplate.Towns
+            .Where(t => !existing.Contains(t.Name))
+            .OrderByDescending(t => t.Population)
+            .ToList();
+    }
+
+    public bool HasParsedTemplate => ParsedTemplate is not null;
 
     public TownSelectionStepViewModel()
     {
         _runLlmCommand = new AsyncRelayCommand(RunLlmAsync, () => !IsRunning);
         _rerollAllCommand = new AsyncRelayCommand(RerollAllAsync, () => HasResults && !IsRunning);
         _saveNextCommand = new AsyncRelayCommand(SaveAndNextAsync, () => HasResults && !IsRunning);
-        _addTownCommand = new RelayCommand(AddBlankTown, () => HasResults);
         _cancelCommand = new RelayCommand(Cancel);
+        DeleteTownCommand = new RelayCommand<TownSelectionItem>(DeleteTown);
     }
 
     public void Initialize(string dataRoot,
@@ -150,6 +212,8 @@ public class TownSelectionStepViewModel : BaseViewModel
     {
         _dataRoot = dataRoot;
         _generationParams = generationParams ?? TownGenerationParams.Apocalyptic;
+        MinTowns = _generationParams.MinTowns;
+        MaxTowns = _generationParams.MaxTowns;
     }
 
     public void Load(PipelineState state)
@@ -161,13 +225,16 @@ public class TownSelectionStepViewModel : BaseViewModel
         {
             var loaded = CuratedTownsFile.Load(file);
             IsModeA = loaded.Mode == "A";
-            Seed = loaded.Seed;
             var refLat = (state.Region.SouthLat + state.Region.NorthLat) / 2.0;
             var refLon = (state.Region.WestLon + state.Region.EastLon) / 2.0;
             PopulateTowns(loaded.Towns.Select(e => new CuratedTown(
                 e.GameName, e.RealName, e.Latitude, e.Longitude,
                 TownCurator.LatLonToMetres(e.Latitude, e.Longitude, refLat, refLon),
-                e.Role, e.Faction, e.ThreatLevel, e.Description)).ToList());
+                e.Description,
+                Enum.TryParse<TownCategory>(e.Size, true, out var sz) ? sz : TownCategory.Village,
+                e.Inhabitants,
+                Enum.TryParse<DestructionLevel>(e.Destruction, true, out var dl) ? dl : DestructionLevel.Moderate
+                )).ToList());
             HasResults = true;
             _state.TownSelection.Completed = true;
             StatusText = "Loaded from saved file.";
@@ -214,7 +281,7 @@ public class TownSelectionStepViewModel : BaseViewModel
                     StatusText = "Error: No parsed template available. Complete step 3 first.";
                     return;
                 }
-                towns = await curator.DiscoverAsync(ParsedTemplate, Seed, _cts.Token);
+                towns = await curator.DiscoverAsync(ParsedTemplate, _cts.Token);
             }
             else
             {
@@ -223,7 +290,7 @@ public class TownSelectionStepViewModel : BaseViewModel
                     StatusText = "Error: No parsed template available. Complete step 3 first.";
                     return;
                 }
-                var region = await curator.CurateAsync(ParsedTemplate, Seed, _cts.Token);
+                var region = await curator.CurateAsync(ParsedTemplate, _cts.Token);
                 towns = region.Towns;
             }
 
@@ -275,18 +342,20 @@ public class TownSelectionStepViewModel : BaseViewModel
             }
 
             var replacement = await curator.RerollTownAsync(
-                ParsedTemplate, existing, oldTown, Seed);
+                ParsedTemplate, existing, oldTown);
 
             item.GameName = replacement.GameName;
             item.RealName = replacement.RealName;
             item.Latitude = replacement.Latitude;
             item.Longitude = replacement.Longitude;
-            item.Role = replacement.Role;
-            item.Faction = replacement.Faction;
-            item.ThreatLevel = replacement.ThreatLevel;
             item.Description = replacement.Description;
+            item.Size = replacement.Size;
+            item.Inhabitants = replacement.Inhabitants;
+            item.Destruction = replacement.Destruction;
 
             RefreshValidation();
+            RefreshFilteredTowns();
+            MapInvalidated?.Invoke();
             StatusText = $"Re-rolled: {replacement.GameName}";
         }
         catch (Exception ex)
@@ -299,11 +368,57 @@ public class TownSelectionStepViewModel : BaseViewModel
         }
     }
 
+    public async Task AddTownFromOsm(TownEntry osmTown)
+    {
+        if (_llmCall is null)
+        {
+            StatusText = "Error: LLM not configured.";
+            return;
+        }
+
+        IsRunning = true;
+        StatusText = $"Generating metadata for {osmTown.Name}...";
+        try
+        {
+            var curator = new TownCurator(_llmCall, _toolCall, _generationParams,
+                log: (dir, msg) => LlmLog.Add(new LlmLogEntry(DateTime.Now, dir, msg)));
+            var enriched = await curator.EnrichTownAsync(osmTown);
+
+            var item = new TownSelectionItem
+            {
+                GameName = enriched.GameName,
+                RealName = osmTown.Name,
+                Latitude = osmTown.Latitude,
+                Longitude = osmTown.Longitude,
+                Description = enriched.Description,
+                Size = osmTown.Category,
+                Inhabitants = osmTown.Population,
+                Destruction = enriched.Destruction,
+                IsIncluded = true,
+            };
+            item.PropertyChanged += OnTownItemChanged;
+            Towns.Add(item);
+            HasResults = true;
+            RefreshValidation();
+            RefreshFilteredTowns();
+            MapInvalidated?.Invoke();
+            StatusText = $"Added: {item.GameName} ({item.RealName})";
+        }
+        catch (Exception ex)
+        {
+            StatusText = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            IsRunning = false;
+        }
+    }
+
     public async Task SaveAndNextAsync()
     {
         var included = Towns.Where(t => t.IsIncluded).Select(t => t.ToCuratedTown());
         var mode = IsModeA ? "A" : "B";
-        var file = CuratedTownsFile.FromCuratedTowns(included, mode, Seed);
+        var file = CuratedTownsFile.FromCuratedTowns(included, mode);
 
         var path = GetOutputPath();
         await Task.Run(() => file.Save(path));
@@ -315,24 +430,19 @@ public class TownSelectionStepViewModel : BaseViewModel
         StepCompleted?.Invoke();
     }
 
-    private void AddBlankTown()
+    private void AddTownFromDialog()
     {
-        var item = new TownSelectionItem
-        {
-            GameName = "New Town",
-            RealName = "",
-            Latitude = (_state.Region.NorthLat + _state.Region.SouthLat) / 2,
-            Longitude = (_state.Region.EastLon + _state.Region.WestLon) / 2,
-            Role = "survivor_camp",
-            Faction = "",
-            ThreatLevel = 5,
-            Description = "",
-            IsIncluded = true,
-            IsEditing = true,
-        };
-        item.PropertyChanged += OnTownItemChanged;
-        Towns.Add(item);
+        AddTownRequested?.Invoke();
+    }
+
+    public void DeleteTown(TownSelectionItem? item)
+    {
+        if (item is null) return;
+        item.PropertyChanged -= OnTownItemChanged;
+        Towns.Remove(item);
         RefreshValidation();
+        RefreshFilteredTowns();
+        MapInvalidated?.Invoke();
     }
 
     private void Cancel()
@@ -353,28 +463,58 @@ public class TownSelectionStepViewModel : BaseViewModel
                 RealName = t.RealName,
                 Latitude = t.Latitude,
                 Longitude = t.Longitude,
-                Role = t.Role,
-                Faction = t.Faction,
-                ThreatLevel = t.ThreatLevel,
                 Description = t.Description,
+                Size = t.Size,
+                Inhabitants = t.Inhabitants,
+                Destruction = t.Destruction,
                 IsIncluded = true,
             };
             item.PropertyChanged += OnTownItemChanged;
             Towns.Add(item);
         }
         RefreshValidation();
+        RefreshFilteredTowns();
+        MapInvalidated?.Invoke();
     }
 
     private void OnTownItemChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is nameof(TownSelectionItem.IsIncluded) or nameof(TownSelectionItem.ThreatLevel))
+        if (e.PropertyName is nameof(TownSelectionItem.IsIncluded))
+        {
             RefreshValidation();
+            MapInvalidated?.Invoke();
+        }
     }
 
     internal void RefreshValidation()
     {
         OnPropertyChanged(nameof(ValidationSummary));
         OnPropertyChanged(nameof(IsValid));
+    }
+
+    internal void RefreshFilteredTowns()
+    {
+        IEnumerable<TownSelectionItem> result = Towns;
+
+        if (!string.IsNullOrEmpty(SearchText))
+        {
+            result = result.Where(t =>
+                t.GameName.Contains(SearchText, StringComparison.OrdinalIgnoreCase)
+                || t.RealName.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
+        }
+
+        result = SortMode switch
+        {
+            TownSortMode.NameAsc => result.OrderBy(t => t.GameName, StringComparer.OrdinalIgnoreCase),
+            TownSortMode.NameDesc => result.OrderByDescending(t => t.GameName, StringComparer.OrdinalIgnoreCase),
+            TownSortMode.SizeAsc => result.OrderBy(t => t.Size).ThenBy(t => t.GameName, StringComparer.OrdinalIgnoreCase),
+            TownSortMode.SizeDesc => result.OrderByDescending(t => t.Size).ThenBy(t => t.GameName, StringComparer.OrdinalIgnoreCase),
+            _ => result,
+        };
+
+        FilteredTowns.Clear();
+        foreach (var item in result)
+            FilteredTowns.Add(item);
     }
 
     internal string GetOutputPath()
@@ -392,7 +532,6 @@ public record LlmLogEntry(DateTime Timestamp, string Direction, string Content);
 /// </summary>
 public class TownSelectionItem : BaseViewModel
 {
-
     private string _gameName = "";
     public string GameName
     {
@@ -421,40 +560,43 @@ public class TownSelectionItem : BaseViewModel
         set => SetProperty(ref _longitude, value);
     }
 
-    private string _role = "";
-    public string Role
-    {
-        get => _role;
-        set => SetProperty(ref _role, value);
-    }
-
-    private string _faction = "";
-    public string Faction
-    {
-        get => _faction;
-        set => SetProperty(ref _faction, value);
-    }
-
-    private int _threatLevel;
-    public int ThreatLevel
-    {
-        get => _threatLevel;
-        set { if (SetProperty(ref _threatLevel, value)) OnPropertyChanged(nameof(ThreatColor)); }
-    }
-
-    public string ThreatColor => ThreatLevel switch
-    {
-        <= 3 => "#A6E3A1",
-        <= 6 => "#F9E2AF",
-        _ => "#F38BA8",
-    };
-
     private string _description = "";
     public string Description
     {
         get => _description;
         set => SetProperty(ref _description, value);
     }
+
+    private TownCategory _size = TownCategory.Village;
+    public TownCategory Size
+    {
+        get => _size;
+        set => SetProperty(ref _size, value);
+    }
+
+    private int _inhabitants;
+    public int Inhabitants
+    {
+        get => _inhabitants;
+        set => SetProperty(ref _inhabitants, value);
+    }
+
+    private DestructionLevel _destruction = DestructionLevel.Moderate;
+    public DestructionLevel Destruction
+    {
+        get => _destruction;
+        set { if (SetProperty(ref _destruction, value)) OnPropertyChanged(nameof(DestructionColor)); }
+    }
+
+    public string DestructionColor => Destruction switch
+    {
+        DestructionLevel.Pristine => "#A6E3A1",
+        DestructionLevel.Light => "#B4E3A6",
+        DestructionLevel.Moderate => "#F9E2AF",
+        DestructionLevel.Heavy => "#F3B48A",
+        DestructionLevel.Devastated => "#F38BA8",
+        _ => "#F9E2AF",
+    };
 
     private bool _isIncluded = true;
     public bool IsIncluded
@@ -475,5 +617,5 @@ public class TownSelectionItem : BaseViewModel
     public CuratedTown ToCuratedTown() => new(
         GameName, RealName, Latitude, Longitude,
         new Vector2((float)(Longitude * 1000), (float)(Latitude * 1000)),
-        Role, Faction, ThreatLevel, Description);
+        Description, Size, Inhabitants, Destruction);
 }

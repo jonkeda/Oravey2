@@ -11,5 +11,6 @@ public partial class MainPage : TabbedPage
 
         var pipelineView = new PipelineWizardView(wizardViewModel, services) { Title = "Pipeline v3" };
         Children.Insert(0, pipelineView);
+        CurrentPage = pipelineView;
     }
 }

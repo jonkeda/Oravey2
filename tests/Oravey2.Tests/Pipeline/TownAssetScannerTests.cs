@@ -22,10 +22,10 @@ public class TownAssetScannerTests
 
     private static TownDesign MakeDesign(string townName) => new(
         townName,
-        new LandmarkBuilding("The Beacon", "A tall lighthouse on a cliff", "large"),
+        [new LandmarkBuilding("The Beacon", "A tall lighthouse on a cliff", "large", "", "", "")],
         [
-            new KeyLocation("Market Hall", "shop", "A bustling market building", "medium"),
-            new KeyLocation("Clinic", "medical", "A small field clinic", "small"),
+            new KeyLocation("Market Hall", "shop", "A bustling market building", "medium", "", "", ""),
+            new KeyLocation("Clinic", "medical", "A small field clinic", "small", "", "", ""),
         ],
         "organic",
         []);
@@ -184,8 +184,8 @@ public class TownAssetScannerTests
     {
         var design = new TownDesign(
             "Haven",
-            new LandmarkBuilding("The Beacon", "A lighthouse", "large"),
-            [new KeyLocation("Market", "shop", "Market stall", "medium")],
+            [new LandmarkBuilding("The Beacon", "A lighthouse", "large", "", "", "")],
+            [new KeyLocation("Market", "shop", "Market stall", "medium", "", "", "")],
             "organic",
             []);
 

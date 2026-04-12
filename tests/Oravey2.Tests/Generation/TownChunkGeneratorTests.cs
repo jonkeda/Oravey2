@@ -42,10 +42,10 @@ public class TownChunkGeneratorTests
             Latitude: 52.50,
             Longitude: 4.95,
             GamePosition: new Vector2(0, 0),
-            Role: "trading_hub",
-            Faction: "Haven Guard",
-            ThreatLevel: 1,
             Description: "A fortified market town",
+            Size: TownCategory.Town,
+            Inhabitants: 5000,
+            Destruction: DestructionLevel.Pristine,
             BoundaryPolygon: boundary);
 
         return (town, region.Towns[0], region);

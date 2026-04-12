@@ -54,10 +54,10 @@ public class TownCuratorTests
             realName = t.Name,
             latitude = t.Latitude,
             longitude = t.Longitude,
-            role = "trading_hub",
-            faction = "Test Faction",
-            threatLevel = Math.Clamp(i + 1, 1, 10),
-            description = $"A test settlement based on {t.Name}"
+            description = $"A test settlement based on {t.Name}",
+            size = "Town",
+            inhabitants = 5000 + i * 1000,
+            destruction = "Moderate"
         });
         return JsonSerializer.Serialize(entries);
     }
@@ -89,7 +89,7 @@ public class TownCuratorTests
     public void BuildPrompt_ContainsTownNames()
     {
         var region = CreateRegionWith20Towns();
-        var prompt = TownCurator.BuildPrompt(region, 42, DefaultParams);
+        var prompt = TownCurator.BuildPrompt(region, DefaultParams);
 
         Assert.Contains("Town0", prompt);
         Assert.Contains("Town19", prompt);
@@ -108,12 +108,12 @@ public class TownCuratorTests
             NamingInstruction = "a fantasy rename",
         };
 
-        var prompt = TownCurator.BuildPrompt(region, 42, fantasy);
+        var prompt = TownCurator.BuildPrompt(region, fantasy);
 
         Assert.Contains("Fantasy", prompt);
         Assert.Contains("A medieval realm.", prompt);
-        Assert.Contains("market_town", prompt);
         Assert.Contains("a fantasy rename", prompt);
+        Assert.Contains("destruction", prompt);
         Assert.DoesNotContain("post-apocalyptic", prompt, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -122,7 +122,8 @@ public class TownCuratorTests
     {
         var towns = Enumerable.Range(0, 5).Select(i =>
             new CuratedTown($"T{i}", $"R{i}", 0, 0,
-                new Vector2(i * 20000f, 0), "r", "f", 5, "d")).ToList();
+                new Vector2(i * 20000f, 0), "desc",
+                TownCategory.Village, 1000, DestructionLevel.Moderate)).ToList();
 
         var narrow = DefaultParams with { MinTowns = 3 };
         TownCurator.Validate(towns, narrow); // should not throw with min=3

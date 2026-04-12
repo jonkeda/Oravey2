@@ -213,8 +213,10 @@ public class TownMapsStepViewModel : BaseViewModel
             {
                 GameName = t.GameName,
                 RealName = t.RealName,
-                Role = t.Role,
-                ThreatLevel = t.ThreatLevel,
+                Description = t.Description,
+                Size = t.Size,
+                Inhabitants = t.Inhabitants,
+                Destruction = t.Destruction,
                 Design = design,
             };
 
@@ -421,7 +423,10 @@ public class TownMapsStepViewModel : BaseViewModel
     internal static CuratedTown BuildCuratedTown(TownMapItem item) => new(
         item.GameName, item.RealName, 0, 0,
         System.Numerics.Vector2.Zero,
-        item.Role, "", item.ThreatLevel, "");
+        item.Description,
+        Enum.TryParse<TownCategory>(item.Size, true, out var sz) ? sz : TownCategory.Village,
+        item.Inhabitants,
+        Enum.TryParse<DestructionLevel>(item.Destruction, true, out var dl) ? dl : DestructionLevel.Moderate);
 
     private static RegionTemplate CreateMinimalRegion() => new()
     {
@@ -454,18 +459,32 @@ public class TownMapItem : BaseViewModel
         set => SetProperty(ref _realName, value);
     }
 
-    private string _role = "";
-    public string Role
+    private string _description = "";
+    public string Description
     {
-        get => _role;
-        set => SetProperty(ref _role, value);
+        get => _description;
+        set => SetProperty(ref _description, value);
     }
 
-    private int _threatLevel;
-    public int ThreatLevel
+    private string _size = "";
+    public string Size
     {
-        get => _threatLevel;
-        set => SetProperty(ref _threatLevel, value);
+        get => _size;
+        set => SetProperty(ref _size, value);
+    }
+
+    private int _inhabitants;
+    public int Inhabitants
+    {
+        get => _inhabitants;
+        set => SetProperty(ref _inhabitants, value);
+    }
+
+    private string _destruction = "";
+    public string Destruction
+    {
+        get => _destruction;
+        set => SetProperty(ref _destruction, value);
     }
 
     private bool _isGenerated;

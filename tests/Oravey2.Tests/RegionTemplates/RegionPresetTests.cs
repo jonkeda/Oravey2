@@ -15,6 +15,7 @@ public class RegionPresetTests
 
         Assert.Equal("NoordHolland", preset.Name);
         Assert.Equal("Noord-Holland", preset.DisplayName);
+        Assert.Equal("NL-NH", preset.RegionCode);
         Assert.Equal(53.0, preset.NorthLat);
         Assert.Equal(52.2, preset.SouthLat);
         Assert.Equal(5.5, preset.EastLon);
@@ -29,6 +30,7 @@ public class RegionPresetTests
         {
             Name = "TestRegion",
             DisplayName = "Test Region",
+            RegionCode = "XX-TR",
             NorthLat = 53.5,
             SouthLat = 52.0,
             EastLon = 6.0,
@@ -162,6 +164,7 @@ public class RegionPresetTests
             {
                 Name = Path.Combine(tempRoot, "TestRegion"),
                 DisplayName = "Test",
+                RegionCode = "XX",
                 NorthLat = 53.0,
                 SouthLat = 52.0,
                 EastLon = 6.0,
@@ -186,6 +189,7 @@ public class RegionPresetTests
     {
         Name = name,
         DisplayName = "Test",
+        RegionCode = "XX",
         NorthLat = 53.0,
         SouthLat = 52.0,
         EastLon = 6.0,

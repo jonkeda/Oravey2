@@ -7,4 +7,7 @@ public sealed record ManifestDto(
     string Description,
     string Author,
     string Parent,
-    string? EngineVersion = null);
+    string? EngineVersion = null,
+    string? RegionCode = null,
+    string? DefaultScenario = null,
+    List<string>? Tags = null);

@@ -7,10 +7,10 @@ public class DummyMeshAssignerTests
 {
     private static TownDesign CreateTestDesign() => new(
         "TestTown",
-        new LandmarkBuilding("The Beacon", "A towering lighthouse", "large"),
+        [new LandmarkBuilding("The Beacon", "A towering lighthouse", "large", "", "", "")],
         [
-            new KeyLocation("Harbor Dock", "shop", "A dock complex", "medium"),
-            new KeyLocation("Watchtower", "military", "A tall watchtower", "small"),
+            new KeyLocation("Harbor Dock", "shop", "A dock complex", "medium", "", "", ""),
+            new KeyLocation("Watchtower", "military", "A tall watchtower", "small", "", "", ""),
         ],
         "organic",
         []);

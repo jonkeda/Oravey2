@@ -1,0 +1,11 @@
+{
+  "id": "oravey2.fantasy.nl",
+  "name": "Netherlands",
+  "version": "0.1.0",
+  "description": "Shared Dutch content for Fantasy Oravey2. Windmills, canals, and tulip fields reimagined through a medieval lens.",
+  "author": "Oravey2 Team",
+  "engineVersion": ">=0.1.0",
+  "parent": "oravey2.fantasy",
+  "regionCode": "NL",
+  "tags": ["fantasy", "netherlands", "dutch"]
+}

@@ -20,7 +20,7 @@ public static class OverworldFiles
             result.World.ChunksWide, result.World.ChunksHigh, result.World.TileSize,
             PlacementFrom(result.World.PlayerStart),
             result.World.Towns.Select(t => new TownRefDto(
-                t.GameName, t.RealName, t.GameX, t.GameY, t.Role, t.ThreatLevel)).ToList());
+                t.GameName, t.RealName, t.GameX, t.GameY, t.Description, t.Size, t.Inhabitants, t.Destruction)).ToList());
 
         File.WriteAllText(
             Path.Combine(overworldDir, "world.json"),
@@ -54,7 +54,7 @@ public static class OverworldFiles
         var waterDtos = JsonSerializer.Deserialize<List<WaterDto>>(waterJson, ContentPackSerializer.ReadOptions) ?? [];
 
         var townRefs = (wf?.Towns ?? []).Select(t =>
-            new OverworldTownRef(t.GameName, t.RealName, t.GameX, t.GameY, t.Role, t.ThreatLevel)).ToList();
+            new OverworldTownRef(t.GameName, t.RealName, t.GameX, t.GameY, t.Description, t.Size, t.Inhabitants, t.Destruction)).ToList();
 
         var world = new OverworldInfo(
             wf?.Name ?? "", wf?.Description ?? "", wf?.Source ?? "",

@@ -1,6 +1,7 @@
 using System.Numerics;
 using System.Text.Json;
 using Oravey2.MapGen.Generation;
+using Oravey2.MapGen.RegionTemplates;
 
 namespace Oravey2.Tests.Pipeline;
 
@@ -12,10 +13,10 @@ public class TownDesignerTests
         Latitude: 52.96,
         Longitude: 4.76,
         GamePosition: new Vector2(4760f, 52960f),
-        Role: "trading_hub",
-        Faction: "Coastal Traders",
-        ThreatLevel: 4,
-        Description: "A fortified coastal trading settlement");
+        Description: "A fortified coastal trading settlement",
+        Size: TownCategory.Town,
+        Inhabitants: 5000,
+        Destruction: DestructionLevel.Heavy);
 
     private const string SampleRegionContext = "Region: noord-holland, Lat 52.20–52.90, Lon 4.50–5.20";
 
@@ -28,9 +29,8 @@ public class TownDesignerTests
 
         Assert.Contains("Havenburg", prompt);
         Assert.Contains("Den Helder", prompt);
-        Assert.Contains("trading_hub", prompt);
-        Assert.Contains("Coastal Traders", prompt);
-        Assert.Contains("4", prompt);  // threat level
+        Assert.Contains("Town", prompt);  // size
+        Assert.Contains("Heavy", prompt); // destruction
         Assert.Contains("fortified coastal", prompt);
         Assert.Contains("noord-holland", prompt);
         Assert.Contains("42", prompt); // seed
@@ -54,9 +54,15 @@ public class TownDesignerTests
     {
         var entry = new LlmTownDesignEntry
         {
-            LandmarkName = "Fort Kijkduin",
-            LandmarkVisualDescription = "A massive coastal fortress",
-            LandmarkSizeCategory = "large",
+            Landmarks =
+            [
+                new LlmLandmarkEntry
+                {
+                    Name = "Fort Kijkduin",
+                    VisualDescription = "A massive coastal fortress",
+                    SizeCategory = "large",
+                },
+            ],
             KeyLocations =
             [
                 new LlmKeyLocationEntry
@@ -89,8 +95,8 @@ public class TownDesignerTests
         var design = TownDesigner.BuildTownDesign("Havenburg", entry);
 
         Assert.Equal("Havenburg", design.TownName);
-        Assert.Equal("Fort Kijkduin", design.Landmark.Name);
-        Assert.Equal("large", design.Landmark.SizeCategory);
+        Assert.Equal("Fort Kijkduin", design.Landmarks[0].Name);
+        Assert.Equal("large", design.Landmarks[0].SizeCategory);
         Assert.Equal(2, design.KeyLocations.Count);
         Assert.Equal("Market", design.KeyLocations[0].Name);
         Assert.Equal("shop", design.KeyLocations[0].Purpose);
@@ -104,16 +110,22 @@ public class TownDesignerTests
     {
         var entry = new LlmTownDesignEntry
         {
-            LandmarkName = "Tower",
-            LandmarkVisualDescription = "A tall tower",
-            LandmarkSizeCategory = "enormous",  // invalid
+            Landmarks =
+            [
+                new LlmLandmarkEntry
+                {
+                    Name = "Tower",
+                    VisualDescription = "A tall tower",
+                    SizeCategory = "enormous",  // invalid
+                },
+            ],
             KeyLocations = [],
             LayoutStyle = "grid",
             Hazards = [],
         };
 
         var design = TownDesigner.BuildTownDesign("Test", entry);
-        Assert.Equal("medium", design.Landmark.SizeCategory);
+        Assert.Equal("medium", design.Landmarks[0].SizeCategory);
     }
 
     [Fact]
@@ -121,9 +133,15 @@ public class TownDesignerTests
     {
         var entry = new LlmTownDesignEntry
         {
-            LandmarkName = "Tower",
-            LandmarkVisualDescription = "A tall tower",
-            LandmarkSizeCategory = "small",
+            Landmarks =
+            [
+                new LlmLandmarkEntry
+                {
+                    Name = "Tower",
+                    VisualDescription = "A tall tower",
+                    SizeCategory = "small",
+                },
+            ],
             KeyLocations = [],
             LayoutStyle = "sprawling",  // invalid
             Hazards = [],
@@ -138,9 +156,15 @@ public class TownDesignerTests
     {
         var entry = new LlmTownDesignEntry
         {
-            LandmarkName = "Tower",
-            LandmarkVisualDescription = "A tall tower",
-            LandmarkSizeCategory = "small",
+            Landmarks =
+            [
+                new LlmLandmarkEntry
+                {
+                    Name = "Tower",
+                    VisualDescription = "A tall tower",
+                    SizeCategory = "small",
+                },
+            ],
             KeyLocations = [],
             LayoutStyle = "grid",
             Hazards =
@@ -152,7 +176,7 @@ public class TownDesignerTests
             ],
         };
 
-        var design = TownDesigner.BuildTownDesign("Test", entry);
+        var design = TownDesigner.BuildTownDesign("Test", entry, TownCategory.City);
         Assert.Equal(3, design.Hazards.Count);
     }
 
@@ -164,9 +188,9 @@ public class TownDesignerTests
         var json = """
             Here is the design:
             {
-                "landmarkName": "Fort Kijkduin",
-                "landmarkVisualDescription": "A massive fortress",
-                "landmarkSizeCategory": "large",
+                "landmarks": [
+                    {"name": "Fort Kijkduin", "visualDescription": "A massive fortress", "sizeCategory": "large"}
+                ],
                 "keyLocations": [
                     {"name": "Market", "purpose": "shop", "visualDescription": "A market", "sizeCategory": "medium"}
                 ],
@@ -179,7 +203,7 @@ public class TownDesignerTests
         var design = TownDesigner.ParseTextResponse("Havenburg", json);
 
         Assert.Equal("Havenburg", design.TownName);
-        Assert.Equal("Fort Kijkduin", design.Landmark.Name);
+        Assert.Equal("Fort Kijkduin", design.Landmarks[0].Name);
         Assert.Equal("compound", design.LayoutStyle);
     }
 
@@ -208,9 +232,9 @@ public class TownDesignerTests
                 {
                     ["design"] = JsonDocument.Parse("""
                         {
-                            "landmarkName": "Fort Kijkduin",
-                            "landmarkVisualDescription": "A massive coastal fortress",
-                            "landmarkSizeCategory": "large",
+                            "landmarks": [
+                                {"name": "Fort Kijkduin", "visualDescription": "A massive coastal fortress", "sizeCategory": "large"}
+                            ],
                             "keyLocations": [
                                 {"name": "Market", "purpose": "shop", "visualDescription": "Drydock market", "sizeCategory": "medium"}
                             ],
@@ -232,7 +256,7 @@ public class TownDesignerTests
         var design = await designer.DesignAsync(SampleTown, SampleRegionContext, 42);
 
         Assert.Equal("Havenburg", design.TownName);
-        Assert.Equal("Fort Kijkduin", design.Landmark.Name);
+        Assert.Equal("Fort Kijkduin", design.Landmarks[0].Name);
         Assert.Equal("compound", design.LayoutStyle);
     }
 
@@ -241,9 +265,9 @@ public class TownDesignerTests
     {
         var responseJson = """
             {
-                "landmarkName": "The Lighthouse",
-                "landmarkVisualDescription": "A crumbling lighthouse",
-                "landmarkSizeCategory": "medium",
+                "landmarks": [
+                    {"name": "The Lighthouse", "visualDescription": "A crumbling lighthouse", "sizeCategory": "medium"}
+                ],
                 "keyLocations": [
                     {"name": "Dock", "purpose": "storage", "visualDescription": "Old wooden dock", "sizeCategory": "small"}
                 ],
@@ -263,7 +287,7 @@ public class TownDesignerTests
         var design = await designer.DesignAsync(SampleTown, SampleRegionContext, 42);
 
         Assert.Equal("Havenburg", design.TownName);
-        Assert.Equal("The Lighthouse", design.Landmark.Name);
+        Assert.Equal("The Lighthouse", design.Landmarks[0].Name);
         Assert.Equal("linear", design.LayoutStyle);
         Assert.Single(design.KeyLocations);
         Assert.Empty(design.Hazards);

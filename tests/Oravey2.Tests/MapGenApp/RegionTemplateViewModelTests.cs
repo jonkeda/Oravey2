@@ -14,6 +14,7 @@ public class RegionTemplateViewModelTests
     {
         Name = "noordholland",
         DisplayName = "Noord-Holland",
+        RegionCode = "NL-NH",
         NorthLat = 53.0,
         SouthLat = 52.2,
         EastLon = 5.5,

@@ -7,6 +7,7 @@ public record RegionPreset
 {
     public required string Name { get; init; }
     public required string DisplayName { get; init; }
+    public string RegionCode { get; init; } = string.Empty;
 
     // Geographic bounds
     public required double NorthLat { get; init; }

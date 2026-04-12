@@ -6,7 +6,7 @@ namespace Oravey2.MapGen.Generation;
 public sealed class TownDesignFile
 {
     public string TownName { get; set; } = "";
-    public LandmarkEntry Landmark { get; set; } = new();
+    public List<LandmarkEntry> Landmarks { get; set; } = [];
     public List<KeyLocationEntry> KeyLocations { get; set; } = [];
     public string LayoutStyle { get; set; } = "";
     public List<HazardEntry> Hazards { get; set; } = [];
@@ -21,18 +21,24 @@ public sealed class TownDesignFile
     public static TownDesignFile FromTownDesign(TownDesign design) => new()
     {
         TownName = design.TownName,
-        Landmark = new LandmarkEntry
+        Landmarks = design.Landmarks.Select(l => new LandmarkEntry
         {
-            Name = design.Landmark.Name,
-            VisualDescription = design.Landmark.VisualDescription,
-            SizeCategory = design.Landmark.SizeCategory,
-        },
+            Name = l.Name,
+            VisualDescription = l.VisualDescription,
+            SizeCategory = l.SizeCategory,
+            OriginalDescription = l.OriginalDescription,
+            MeshyPrompt = l.MeshyPrompt,
+            PositionHint = l.PositionHint,
+        }).ToList(),
         KeyLocations = design.KeyLocations.Select(k => new KeyLocationEntry
         {
             Name = k.Name,
             Purpose = k.Purpose,
             VisualDescription = k.VisualDescription,
             SizeCategory = k.SizeCategory,
+            OriginalDescription = k.OriginalDescription,
+            MeshyPrompt = k.MeshyPrompt,
+            PositionHint = k.PositionHint,
         }).ToList(),
         LayoutStyle = design.LayoutStyle,
         Hazards = design.Hazards.Select(h => new HazardEntry
@@ -45,8 +51,12 @@ public sealed class TownDesignFile
 
     public TownDesign ToTownDesign() => new(
         TownName,
-        new LandmarkBuilding(Landmark.Name, Landmark.VisualDescription, Landmark.SizeCategory),
-        KeyLocations.Select(k => new KeyLocation(k.Name, k.Purpose, k.VisualDescription, k.SizeCategory)).ToList(),
+        Landmarks.Select(l => new LandmarkBuilding(
+            l.Name, l.VisualDescription, l.SizeCategory,
+            l.OriginalDescription, l.MeshyPrompt, l.PositionHint)).ToList(),
+        KeyLocations.Select(k => new KeyLocation(
+            k.Name, k.Purpose, k.VisualDescription, k.SizeCategory,
+            k.OriginalDescription, k.MeshyPrompt, k.PositionHint)).ToList(),
         LayoutStyle,
         Hazards.Select(h => new EnvironmentalHazard(h.Type, h.Description, h.LocationHint)).ToList());
 
@@ -68,6 +78,9 @@ public sealed class LandmarkEntry
     public string Name { get; set; } = "";
     public string VisualDescription { get; set; } = "";
     public string SizeCategory { get; set; } = "";
+    public string OriginalDescription { get; set; } = "";
+    public string MeshyPrompt { get; set; } = "";
+    public string PositionHint { get; set; } = "";
 }
 
 public sealed class KeyLocationEntry
@@ -76,6 +89,9 @@ public sealed class KeyLocationEntry
     public string Purpose { get; set; } = "";
     public string VisualDescription { get; set; } = "";
     public string SizeCategory { get; set; } = "";
+    public string OriginalDescription { get; set; } = "";
+    public string MeshyPrompt { get; set; } = "";
+    public string PositionHint { get; set; } = "";
 }
 
 public sealed class HazardEntry

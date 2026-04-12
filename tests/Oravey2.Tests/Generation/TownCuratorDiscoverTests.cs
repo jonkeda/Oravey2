@@ -43,13 +43,13 @@ public class TownCuratorDiscoverTests
     }
 
     [Fact]
-    public void BuildDiscoverPrompt_ContainsRegionNameAndRoles()
+    public void BuildDiscoverPrompt_ContainsRegionNameAndSettlementInfo()
     {
         var region = CreateTestRegion();
-        var prompt = TownCurator.BuildDiscoverPrompt(region, 42, DefaultParams);
+        var prompt = TownCurator.BuildDiscoverPrompt(region, DefaultParams);
 
         Assert.Contains("noord-holland", prompt);
-        Assert.Contains("trading_hub", prompt);
+        Assert.Contains("destruction", prompt);
         Assert.Contains("submit_towns", prompt);
         // No town list in prompt — LLM uses world knowledge
         Assert.DoesNotContain("Town0", prompt);
@@ -60,7 +60,7 @@ public class TownCuratorDiscoverTests
     public void BuildDiscoverPrompt_ContainsToolCallInstruction()
     {
         var region = CreateTestRegion();
-        var prompt = TownCurator.BuildDiscoverPrompt(region, 42, DefaultParams);
+        var prompt = TownCurator.BuildDiscoverPrompt(region, DefaultParams);
 
         Assert.Contains("Call the submit_towns function", prompt);
         Assert.DoesNotContain("JSON array", prompt);
@@ -79,13 +79,12 @@ public class TownCuratorDiscoverTests
         };
 
         var region = CreateTestRegion();
-        var prompt = TownCurator.BuildDiscoverPrompt(region, 99, fantasy);
+        var prompt = TownCurator.BuildDiscoverPrompt(region, fantasy);
 
         Assert.Contains("Fantasy", prompt);
         Assert.Contains("A medieval realm.", prompt);
-        Assert.Contains("market_town", prompt);
-        Assert.Contains("harbour", prompt);
         Assert.Contains("a fantasy rename", prompt);
+        Assert.Contains("destruction", prompt);
         Assert.DoesNotContain("post-apocalyptic", prompt, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -97,10 +96,10 @@ public class TownCuratorDiscoverTests
         {
             GameName = $"Haven-{i}",
             RealName = $"Town{i}",
-            Role = "trading_hub",
-            Faction = $"Faction{i}",
-            ThreatLevel = Math.Clamp(i + 1, 1, 10),
             Description = "A settlement.",
+            Size = "Town",
+            Inhabitants = 5000 + i * 1000,
+            Destruction = "Moderate",
         }).ToList();
 
         var towns = TownCurator.BuildCuratedTowns(entries, region, DefaultParams);
@@ -120,9 +119,9 @@ public class TownCuratorDiscoverTests
         var region = CreateTestRegion();
         var entries = new List<LlmTownEntry>
         {
-            new() { GameName = "A", RealName = "Town0", Role = "r", Faction = "f", ThreatLevel = 3, Description = "d" },
-            new() { GameName = "B", RealName = "NonExistent", Role = "r", Faction = "f", ThreatLevel = 5, Description = "d" },
-            new() { GameName = "C", RealName = "Town1", Role = "r", Faction = "f", ThreatLevel = 7, Description = "d" },
+            new() { GameName = "A", RealName = "Town0", Description = "d", Size = "Town", Inhabitants = 5000, Destruction = "Moderate" },
+            new() { GameName = "B", RealName = "NonExistent", Description = "d", Size = "Village", Inhabitants = 1000, Destruction = "Light" },
+            new() { GameName = "C", RealName = "Town1", Description = "d", Size = "Town", Inhabitants = 3000, Destruction = "Heavy" },
         };
 
         var towns = TownCurator.BuildCuratedTowns(entries, region, DefaultParams);
@@ -133,18 +132,18 @@ public class TownCuratorDiscoverTests
     }
 
     [Fact]
-    public void BuildCuratedTowns_ClampsThreatLevel()
+    public void BuildCuratedTowns_ParsesDestructionLevel()
     {
         var region = CreateTestRegion();
         var entries = new List<LlmTownEntry>
         {
-            new() { GameName = "A", RealName = "Town0", Role = "r", Faction = "f", ThreatLevel = 15, Description = "d" },
-            new() { GameName = "B", RealName = "Town1", Role = "r", Faction = "f", ThreatLevel = -5, Description = "d" },
+            new() { GameName = "A", RealName = "Town0", Description = "d", Size = "Town", Inhabitants = 5000, Destruction = "Devastated" },
+            new() { GameName = "B", RealName = "Town1", Description = "d", Size = "Village", Inhabitants = 1000, Destruction = "bogus" },
         };
 
         var towns = TownCurator.BuildCuratedTowns(entries, region, DefaultParams);
-        Assert.Equal(10, towns[0].ThreatLevel);
-        Assert.Equal(1, towns[1].ThreatLevel);
+        Assert.Equal(DestructionLevel.Devastated, towns[0].Destruction);
+        Assert.Equal(DestructionLevel.Moderate, towns[1].Destruction); // invalid → default
     }
 
     [Fact]
@@ -163,7 +162,7 @@ public class TownCuratorDiscoverTests
 
         var entries = new List<LlmTownEntry>
         {
-            new() { GameName = "Haven", RealName = "TestTown", Role = "r", Faction = "f", ThreatLevel = 5, Description = "d" },
+            new() { GameName = "Haven", RealName = "TestTown", Description = "d", Size = "Town", Inhabitants = 5000, Destruction = "Moderate" },
         };
 
         var towns = TownCurator.BuildCuratedTowns(entries, region, DefaultParams);
@@ -197,10 +196,10 @@ public class TownCuratorDiscoverTests
         {
             GameName = $"Haven-{i}",
             RealName = $"Town{i}",
-            Role = "trading_hub",
-            Faction = $"Faction{i}",
-            ThreatLevel = Math.Clamp(i + 1, 1, 10),
             Description = "Settlement.",
+            Size = "Town",
+            Inhabitants = 5000 + i * 1000,
+            Destruction = "Moderate",
         }).ToList();
 
         string? capturedPrompt = null;
@@ -214,7 +213,7 @@ public class TownCuratorDiscoverTests
         }
 
         var curator = new TownCurator(FakeLlm, ToolLlm);
-        var towns = await curator.DiscoverAsync(region, 42);
+        var towns = await curator.DiscoverAsync(region);
 
         Assert.NotNull(capturedPrompt);
         Assert.Contains("noord-holland", capturedPrompt);
@@ -228,7 +227,7 @@ public class TownCuratorDiscoverTests
         Task<string> FakeLlm(string p, CancellationToken ct) => Task.FromResult("");
 
         var curator = new TownCurator(FakeLlm);
-        await Assert.ThrowsAsync<InvalidOperationException>(() => curator.DiscoverAsync(region, 42));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => curator.DiscoverAsync(region));
     }
 
     [Fact]
@@ -239,10 +238,10 @@ public class TownCuratorDiscoverTests
         {
             GameName = $"T{i}",
             RealName = $"Town{i}",
-            Role = "trading_hub",
-            Faction = $"F{i}",
-            ThreatLevel = Math.Clamp(i + 1, 1, 10),
             Description = "d",
+            Size = "Town",
+            Inhabitants = 5000,
+            Destruction = "Moderate",
         }).ToList();
 
         bool textCalled = false, toolCalled = false;
@@ -257,7 +256,7 @@ public class TownCuratorDiscoverTests
         }
 
         var curator = new TownCurator(TextLlm, ToolLlm);
-        var towns = await curator.DiscoverAsync(region, 1);
+        var towns = await curator.DiscoverAsync(region);
 
         Assert.True(toolCalled, "DiscoverAsync should use tool delegate when available");
         Assert.False(textCalled, "DiscoverAsync should not use text delegate when tool is available");
@@ -272,10 +271,10 @@ public class TownCuratorDiscoverTests
         {
             GameName = $"H{i}",
             RealName = $"Town{i}",
-            Role = "trading_hub",
-            Faction = $"F{i}",
-            ThreatLevel = Math.Clamp(i + 1, 1, 10),
             Description = "d",
+            Size = "Town",
+            Inhabitants = 5000,
+            Destruction = "Moderate",
         }).ToList();
 
         var logs = new List<(string dir, string msg)>();
@@ -288,7 +287,7 @@ public class TownCuratorDiscoverTests
         }
 
         var curator = new TownCurator(FakeLlm, ToolLlm, log: (dir, msg) => logs.Add((dir, msg)));
-        await curator.DiscoverAsync(region, 42);
+        await curator.DiscoverAsync(region);
 
         Assert.Equal(2, logs.Count);
         Assert.Equal("→ Sent", logs[0].dir);

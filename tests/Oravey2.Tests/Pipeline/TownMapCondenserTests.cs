@@ -7,16 +7,16 @@ public class TownMapCondenserTests
 {
     private static TownDesign CreateTestDesign(int keyLocationCount = 3) => new(
         "TestTown",
-        new LandmarkBuilding("Fort Test", "A ruined fortress", "large"),
+        [new LandmarkBuilding("Fort Test", "A ruined fortress", "large", "", "", "")],
         Enumerable.Range(0, keyLocationCount).Select(i =>
-            new KeyLocation($"Location_{i}", "shop", "A building", "medium")).ToList(),
+            new KeyLocation($"Location_{i}", "shop", "A building", "medium", "", "", "")).ToList(),
         "organic",
         [new EnvironmentalHazard("flooding", "Water rises", "south-west waterfront")]);
 
     private static CuratedTown CreateTestTown() => new(
         "TestTown", "RealTest", 52.5, 4.8,
         System.Numerics.Vector2.Zero,
-        "trade-hub", "Merchants", 5, "A test town");
+        "A test town", TownCategory.Town, 5000, DestructionLevel.Moderate);
 
     private static RegionTemplate CreateMinimalRegion() => new()
     {
@@ -98,7 +98,7 @@ public class TownMapCondenserTests
     [Fact]
     public void PlaceLandmark_AtCentre()
     {
-        var landmark = new LandmarkBuilding("Fort Test", "Big fort", "large");
+        var landmark = new LandmarkBuilding("Fort Test", "Big fort", "large", "", "", "");
         var occupied = new HashSet<(int, int)>();
         var building = TownMapCondenser.PlaceLandmark(landmark, 16, 16, 0, occupied);
 
@@ -114,8 +114,8 @@ public class TownMapCondenserTests
     {
         var locations = new List<KeyLocation>
         {
-            new("Shop", "shop", "A shop", "small"),
-            new("Inn", "rest", "An inn", "medium"),
+            new("Shop", "shop", "A shop", "small", "", "", ""),
+            new("Inn", "rest", "An inn", "medium", "", "", ""),
         };
         var rng = new Random(42);
         var roadTiles = new List<(int X, int Y)>();

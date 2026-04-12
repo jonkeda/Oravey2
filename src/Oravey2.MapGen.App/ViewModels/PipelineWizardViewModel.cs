@@ -253,7 +253,7 @@ public sealed class PipelineWizardViewModel : AppBaseViewModel
 
     private void InitializeSteps()
     {
-        Steps.Add(new PipelineStepInfo(1, "Region"));
+        Steps.Add(new PipelineStepInfo(1, "Content Pack"));
         Steps.Add(new PipelineStepInfo(2, "Download Data"));
         Steps.Add(new PipelineStepInfo(3, "Parse & Extract"));
         Steps.Add(new PipelineStepInfo(4, "Town Selection"));

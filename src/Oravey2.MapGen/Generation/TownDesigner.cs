@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.Extensions.AI;
+using Oravey2.MapGen.RegionTemplates;
 
 namespace Oravey2.MapGen.Generation;
 
@@ -17,6 +18,17 @@ public sealed class TownDesigner
 
     private static readonly string[] ValidLayoutStyles =
         ["grid", "radial", "organic", "linear", "clustered", "compound"];
+
+    // Size-dependent building counts: (landmarks, minKeyLoc, maxKeyLoc, maxHazards)
+    internal static (int Landmarks, int MinKeyLocations, int MaxKeyLocations, int MaxHazards) CountsForSize(TownCategory size) => size switch
+    {
+        TownCategory.Hamlet     => (1, 2,  3,  1),
+        TownCategory.Village    => (1, 3,  5,  2),
+        TownCategory.Town       => (2, 4,  7,  3),
+        TownCategory.City       => (3, 6,  10, 3),
+        TownCategory.Metropolis => (5, 8,  14, 4),
+        _                       => (1, 3,  5,  2),
+    };
 
     public TownDesigner(
         Func<string, CancellationToken, Task<string>> llmCall,
@@ -55,7 +67,7 @@ public sealed class TownDesigner
             (LlmTownDesignEntry design) =>
             {
                 _log?.Invoke("← Received", JsonSerializer.Serialize(design, JsonOptions));
-                captured = BuildTownDesign(town.GameName, design);
+                captured = BuildTownDesign(town.GameName, design, town.Size);
                 return "Accepted.";
             },
             "submit_town_design",
@@ -78,67 +90,94 @@ public sealed class TownDesigner
         var response = await _llmCall(prompt, ct);
         _log?.Invoke("← Received", response);
 
-        return ParseTextResponse(town.GameName, response);
+        return ParseTextResponse(town.GameName, response, town.Size);
     }
 
-    internal static string BuildPrompt(CuratedTown town, string regionContext, int seed) => $$"""
-        You are designing a single town for a post-apocalyptic RPG.
-
-        Region context: {{regionContext}}
-        World seed: {{seed}}
-
-        Town to design:
-        - Name: {{town.GameName}} (real name: {{town.RealName}})
-        - Role: {{town.Role}}
-        - Faction: {{town.Faction}}
-        - Threat level: {{town.ThreatLevel}} (1 = safe, 10 = deadly)
-        - Description: {{town.Description}}
-
-        Design this town with:
-        1. One landmark building — the most iconic structure (name, visual description for 3D asset generation, size: small/medium/large)
-        2. 3–8 key locations — places the player visits (name, purpose, visual description, size)
-           Purposes: shop, quest_giver, crafting, medical, barracks, tavern, storage, other
-        3. Layout style — one of: grid, radial, organic, linear, clustered, compound
-        4. 0–3 environmental hazards — dangers in the environment (type, description, location hint)
-           Types: flooding, radiation, collapse, fire, toxic, wildlife, other
-
-        The visual descriptions should be detailed enough for a 3D artist to create the asset.
-        Keep the design consistent with the town's role, faction, and threat level.
-        """;
-
-    internal static TownDesign BuildTownDesign(string townName, LlmTownDesignEntry entry)
+    internal static string BuildPrompt(CuratedTown town, string regionContext, int seed)
     {
-        var landmark = new LandmarkBuilding(
-            entry.LandmarkName,
-            entry.LandmarkVisualDescription,
-            NormalizeSizeCategory(entry.LandmarkSizeCategory));
+        var (landmarkCount, minKeyLoc, maxKeyLoc, maxHazards) = CountsForSize(town.Size);
+
+        return $$"""
+            You are designing buildings for a post-apocalyptic RPG town.
+
+            === REAL-WORLD CONTEXT ===
+            Real town name: {{town.RealName}}
+            Coordinates: {{town.Latitude:F4}}, {{town.Longitude:F4}}
+
+            === GAME CONTEXT ===
+            Game name: {{town.GameName}}
+            Size: {{town.Size}} ({{town.Inhabitants}} inhabitants)
+            Destruction level: {{town.Destruction}}
+            Description: {{town.Description}}
+            Region: {{regionContext}}
+            World seed: {{seed}}
+
+            === INSTRUCTIONS ===
+            1. Research the real town {{town.RealName}} at ({{town.Latitude:F4}}, {{town.Longitude:F4}}).
+               Identify its most notable real buildings, landmarks, and public institutions
+               (churches, town halls, harbours, windmills, bridges, markets, etc.).
+
+            2. Select {{landmarkCount}} landmark(s) and {{minKeyLoc}}–{{maxKeyLoc}} key locations based on those real buildings.
+
+            3. For each building (landmark and key location):
+               a. Name — a post-apocalyptic rename of the real building name (keep recognisable)
+               b. VisualDescription — detailed visual for a 3D artist (exterior only, include damage from {{town.Destruction}})
+               c. SizeCategory — small, medium, or large
+               d. OriginalDescription — one sentence: the real building's name, architectural style, era, and purpose
+               e. MeshyPrompt — 30–60 word text-to-3D prompt describing materials, damage state, style. End with "low-poly game asset". Exterior only.
+               f. PositionHint — compass direction + nearby feature relative to town centre
+                  (e.g. "north-east, near the harbour", "centre, on the main square")
+
+            4. Choose a layout style: grid, radial, organic, linear, clustered, or compound
+               (pick the one that matches the real town's street pattern)
+
+            5. Add 0–{{maxHazards}} environmental hazards consistent with the {{town.Destruction}} destruction level.
+
+            Key location purposes: shop, quest_giver, crafting, medical, barracks, tavern, storage, other
+            Hazard types: flooding, radiation, collapse, fire, toxic, wildlife, other
+            """;
+    }
+
+    internal static TownDesign BuildTownDesign(string townName, LlmTownDesignEntry entry, TownCategory size = TownCategory.Village)
+    {
+        var (_, _, _, maxHazards) = CountsForSize(size);
+
+        var landmarks = entry.Landmarks
+            .Select(l => new LandmarkBuilding(
+                l.Name, l.VisualDescription, NormalizeSizeCategory(l.SizeCategory),
+                l.OriginalDescription, l.MeshyPrompt, l.PositionHint))
+            .ToList();
+
+        // Ensure at least one landmark
+        if (landmarks.Count == 0)
+            landmarks.Add(new LandmarkBuilding("Unknown Landmark", "", "medium", "", "", "centre"));
 
         var keyLocations = entry.KeyLocations
-            .Select(k => new KeyLocation(k.Name, k.Purpose, k.VisualDescription, NormalizeSizeCategory(k.SizeCategory)))
+            .Select(k => new KeyLocation(
+                k.Name, k.Purpose, k.VisualDescription, NormalizeSizeCategory(k.SizeCategory),
+                k.OriginalDescription, k.MeshyPrompt, k.PositionHint))
             .ToList();
 
         var layoutStyle = NormalizeLayoutStyle(entry.LayoutStyle);
 
         var hazards = entry.Hazards
-            .Take(3)
+            .Take(maxHazards)
             .Select(h => new EnvironmentalHazard(h.Type, h.Description, h.LocationHint))
             .ToList();
 
-        return new TownDesign(townName, landmark, keyLocations, layoutStyle, hazards);
+        return new TownDesign(townName, landmarks, keyLocations, layoutStyle, hazards);
     }
 
-    internal static TownDesign ParseTextResponse(string townName, string response)
+    internal static TownDesign ParseTextResponse(string townName, string response, TownCategory size = TownCategory.Village)
     {
-        // Try to extract JSON from the response
         var json = ExtractJson(response);
         var entry = JsonSerializer.Deserialize<LlmTownDesignEntry>(json, JsonOptions)
                     ?? throw new InvalidOperationException("Failed to parse LLM design response.");
-        return BuildTownDesign(townName, entry);
+        return BuildTownDesign(townName, entry, size);
     }
 
     private static string ExtractJson(string text)
     {
-        // Find the first { and last }
         var start = text.IndexOf('{');
         var end = text.LastIndexOf('}');
         if (start < 0 || end < 0 || end <= start)

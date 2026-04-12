@@ -3,6 +3,7 @@ using System.Windows.Input;
 using Microsoft.Extensions.AI;
 using Oravey2.MapGen.Generation;
 using Oravey2.MapGen.Pipeline;
+using Oravey2.MapGen.RegionTemplates;
 
 namespace Oravey2.MapGen.ViewModels;
 
@@ -79,6 +80,11 @@ public class TownDesignStepViewModel : BaseViewModel
     public string ProgressText => $"{DesignedCount}/{TotalCount} designed";
     public bool AllDesigned => TotalCount > 0 && DesignedCount == TotalCount;
 
+    public string? IncompleteWarning => !AllDesigned && DesignedCount > 0
+        ? $"⚠ {TotalCount - DesignedCount} town(s) not yet designed — they won't be travelable in-game."
+        : null;
+    public bool HasIncompleteWarning => IncompleteWarning is not null;
+
     // --- LLM Log ---
     public ObservableCollection<LlmLogEntry> LlmLog { get; } = [];
 
@@ -113,7 +119,7 @@ public class TownDesignStepViewModel : BaseViewModel
         _regenerateCommand = new AsyncRelayCommand(RegenerateSelectedAsync,
             () => SelectedTown is not null && !IsRunning);
         _cancelCommand = new RelayCommand(Cancel, () => IsRunning);
-        _nextCommand = new RelayCommand(OnNext, () => AllDesigned && !IsRunning);
+        _nextCommand = new RelayCommand(OnNext, () => DesignedCount > 0 && !IsRunning);
     }
 
     public void Initialize(string dataRoot)
@@ -144,10 +150,10 @@ public class TownDesignStepViewModel : BaseViewModel
             {
                 GameName = t.GameName,
                 RealName = t.RealName,
-                Role = t.Role,
-                Faction = t.Faction,
-                ThreatLevel = t.ThreatLevel,
                 Description = t.Description,
+                Size = t.Size,
+                Inhabitants = t.Inhabitants,
+                Destruction = t.Destruction,
                 Latitude = t.Latitude,
                 Longitude = t.Longitude,
             };
@@ -340,6 +346,8 @@ public class TownDesignStepViewModel : BaseViewModel
         DesignedCount = Towns.Count(t => t.IsDesigned);
         _designAllCommand.RaiseCanExecuteChanged();
         _nextCommand.RaiseCanExecuteChanged();
+        OnPropertyChanged(nameof(IncompleteWarning));
+        OnPropertyChanged(nameof(HasIncompleteWarning));
     }
 
     private void UpdatePipelineState()
@@ -370,32 +378,32 @@ public class TownDesignItem : BaseViewModel
         set => SetProperty(ref _realName, value);
     }
 
-    private string _role = "";
-    public string Role
-    {
-        get => _role;
-        set => SetProperty(ref _role, value);
-    }
-
-    private string _faction = "";
-    public string Faction
-    {
-        get => _faction;
-        set => SetProperty(ref _faction, value);
-    }
-
-    private int _threatLevel;
-    public int ThreatLevel
-    {
-        get => _threatLevel;
-        set => SetProperty(ref _threatLevel, value);
-    }
-
     private string _description = "";
     public string Description
     {
         get => _description;
         set => SetProperty(ref _description, value);
+    }
+
+    private string _size = "";
+    public string Size
+    {
+        get => _size;
+        set => SetProperty(ref _size, value);
+    }
+
+    private int _inhabitants;
+    public int Inhabitants
+    {
+        get => _inhabitants;
+        set => SetProperty(ref _inhabitants, value);
+    }
+
+    private string _destruction = "";
+    public string Destruction
+    {
+        get => _destruction;
+        set => SetProperty(ref _destruction, value);
     }
 
     public double Latitude { get; set; }
@@ -425,7 +433,8 @@ public class TownDesignItem : BaseViewModel
         {
             if (SetProperty(ref _design, value))
             {
-                OnPropertyChanged(nameof(LandmarkName));
+                OnPropertyChanged(nameof(LandmarkSummary));
+                OnPropertyChanged(nameof(LandmarkCount));
                 OnPropertyChanged(nameof(KeyLocationCount));
                 OnPropertyChanged(nameof(LayoutStyle));
                 OnPropertyChanged(nameof(HazardCount));
@@ -433,7 +442,10 @@ public class TownDesignItem : BaseViewModel
         }
     }
 
-    public string? LandmarkName => Design?.Landmark.Name;
+    public string LandmarkSummary => Design is not null
+        ? string.Join(", ", Design.Landmarks.Select(l => l.Name))
+        : "";
+    public int LandmarkCount => Design?.Landmarks.Count ?? 0;
     public int KeyLocationCount => Design?.KeyLocations.Count ?? 0;
     public string? LayoutStyle => Design?.LayoutStyle;
     public int HazardCount => Design?.Hazards.Count ?? 0;
@@ -441,5 +453,8 @@ public class TownDesignItem : BaseViewModel
     public CuratedTown ToCuratedTown() => new(
         GameName, RealName, Latitude, Longitude,
         new System.Numerics.Vector2((float)(Longitude * 1000), (float)(Latitude * 1000)),
-        Role, Faction, ThreatLevel, Description);
+        Description,
+        Enum.TryParse<TownCategory>(Size, true, out var sz) ? sz : TownCategory.Village,
+        Inhabitants,
+        Enum.TryParse<DestructionLevel>(Destruction, true, out var dl) ? dl : DestructionLevel.Moderate);
 }

@@ -1,4 +1,5 @@
 using System.Numerics;
+using Oravey2.MapGen.RegionTemplates;
 
 namespace Oravey2.MapGen.Generation;
 
@@ -8,8 +9,8 @@ public sealed record CuratedTown(
     double Latitude,
     double Longitude,
     Vector2 GamePosition,
-    string Role,
-    string Faction,
-    int ThreatLevel,
     string Description,
+    TownCategory Size,
+    int Inhabitants,
+    DestructionLevel Destruction,
     Vector2[]? BoundaryPolygon = null);

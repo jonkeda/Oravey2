@@ -103,6 +103,7 @@ public class RegionIntegrationTests
         {
             Name = "TestRegion",
             DisplayName = "Test Region Display",
+            RegionCode = "XX-TR",
             NorthLat = 53.5,
             SouthLat = 52.0,
             EastLon = 6.0,
@@ -169,6 +170,7 @@ public class RegionIntegrationTests
             {
                 Name = "test-region",
                 DisplayName = "Test",
+                RegionCode = "XX",
                 NorthLat = 53.0,
                 SouthLat = 52.0,
                 EastLon = 6.0,
@@ -200,6 +202,7 @@ public class RegionIntegrationTests
         {
             Name = "test-region",
             DisplayName = "Test",
+            RegionCode = "XX",
             NorthLat = 53.0,
             SouthLat = 52.0,
             EastLon = 6.0,

@@ -68,7 +68,8 @@ public sealed class DummyMeshAssigner
     /// </summary>
     public static string ClassifyBuilding(string buildingName, TownDesign design)
     {
-        if (string.Equals(buildingName, design.Landmark.Name, StringComparison.OrdinalIgnoreCase))
+        if (design.Landmarks.Any(lm =>
+                string.Equals(lm.Name, buildingName, StringComparison.OrdinalIgnoreCase)))
             return "landmark";
 
         if (design.KeyLocations.Any(kl =>

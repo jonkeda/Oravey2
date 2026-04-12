@@ -1,6 +1,7 @@
 using System.Numerics;
 using Oravey2.MapGen.Generation;
 using Oravey2.MapGen.Pipeline;
+using Oravey2.MapGen.RegionTemplates;
 using Oravey2.MapGen.ViewModels;
 
 namespace Oravey2.Tests.Pipeline;
@@ -40,13 +41,13 @@ public class TownDesignStepViewModelTests
                 Latitude: 52.3 + i * 0.06,
                 Longitude: 4.6 + i * 0.05,
                 GamePosition: new Vector2(i * 20000f, i * 16700f),
-                Role: i == 0 ? "trading_hub" : "survivor_camp",
-                Faction: $"Faction-{i}",
-                ThreatLevel: i + 3,
-                Description: $"Town {i} description"));
+                Description: $"Town {i} description",
+                Size: TownCategory.Village,
+                Inhabitants: 5000 + i * 1000,
+                Destruction: DestructionLevel.Moderate));
         }
 
-        var file = CuratedTownsFile.FromCuratedTowns(towns, "A", 42);
+        var file = CuratedTownsFile.FromCuratedTowns(towns, "A");
         var path = Path.Combine(state.ContentPackPath, "data", "curated-towns.json");
         file.Save(path);
         return path;
@@ -54,11 +55,11 @@ public class TownDesignStepViewModelTests
 
     private static TownDesign MakeDesign(string townName = "Haven-0") => new(
         townName,
-        new LandmarkBuilding("Fort Kijkduin", "A massive coastal fortress", "large"),
+        [new LandmarkBuilding("Fort Kijkduin", "A massive coastal fortress", "large", "", "", "")],
         [
-            new KeyLocation("Market", "shop", "An old drydock market", "medium"),
-            new KeyLocation("Clinic", "medical", "A converted church clinic", "small"),
-            new KeyLocation("Barracks", "barracks", "Reinforced bunker", "medium"),
+            new KeyLocation("Market", "shop", "An old drydock market", "medium", "", "", ""),
+            new KeyLocation("Clinic", "medical", "A converted church clinic", "small", "", "", ""),
+            new KeyLocation("Barracks", "barracks", "Reinforced bunker", "medium", "", "", ""),
         ],
         "compound",
         [new EnvironmentalHazard("flooding", "The harbour floods at high tide", "south-west waterfront")]);
@@ -161,7 +162,7 @@ public class TownDesignStepViewModelTests
         var item = new TownDesignItem { GameName = "Test" };
         item.Design = MakeDesign("Test");
 
-        Assert.Equal("Fort Kijkduin", item.LandmarkName);
+        Assert.Equal("Fort Kijkduin", item.LandmarkSummary);
         Assert.Equal(3, item.KeyLocationCount);
         Assert.Equal("compound", item.LayoutStyle);
         Assert.Equal(1, item.HazardCount);
@@ -174,10 +175,10 @@ public class TownDesignStepViewModelTests
         {
             GameName = "Haven-0",
             RealName = "Town0",
-            Role = "trading_hub",
-            Faction = "Faction-0",
-            ThreatLevel = 3,
             Description = "Desc",
+            Size = "Village",
+            Inhabitants = 5000,
+            Destruction = "Moderate",
             Latitude = 52.3,
             Longitude = 4.6,
         };
@@ -185,8 +186,8 @@ public class TownDesignStepViewModelTests
 
         Assert.Equal("Haven-0", town.GameName);
         Assert.Equal("Town0", town.RealName);
-        Assert.Equal("trading_hub", town.Role);
-        Assert.Equal(3, town.ThreatLevel);
+        Assert.Equal(TownCategory.Village, town.Size);
+        Assert.Equal(DestructionLevel.Moderate, town.Destruction);
     }
 
     // --- Selection ---
@@ -260,8 +261,8 @@ public class TownDesignStepViewModelTests
         var design = loaded.ToTownDesign();
 
         Assert.Equal("Haven-0", design.TownName);
-        Assert.Equal("Fort Kijkduin", design.Landmark.Name);
-        Assert.Equal("large", design.Landmark.SizeCategory);
+        Assert.Equal("Fort Kijkduin", design.Landmarks[0].Name);
+        Assert.Equal("large", design.Landmarks[0].SizeCategory);
         Assert.Equal(3, design.KeyLocations.Count);
         Assert.Equal("compound", design.LayoutStyle);
         Assert.Single(design.Hazards);

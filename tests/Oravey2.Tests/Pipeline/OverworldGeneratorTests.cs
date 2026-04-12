@@ -20,8 +20,9 @@ public class OverworldGeneratorTests
         WaterBodies = water ?? [],
     };
 
-    private static CuratedTown MakeTown(string name, float x, float y, int threat = 1) =>
-        new(name, name, 0, 0, new Vector2(x, y), "role", "faction", threat, "desc");
+    private static CuratedTown MakeTown(string name, float x, float y, int destruction = 0) =>
+        new(name, name, 0, 0, new Vector2(x, y), "desc",
+            TownCategory.Village, 1000, (DestructionLevel)destruction);
 
     // --- ComputeWorldBounds ---
 
@@ -175,8 +176,8 @@ public class OverworldGeneratorTests
     {
         var towns = new List<CuratedTown>
         {
-            MakeTown("haven", 0.5f, 0.5f, threat: 1),
-            MakeTown("outpost", 1.5f, 0.5f, threat: 3),
+            MakeTown("haven", 0.5f, 0.5f, destruction: 0),
+            MakeTown("outpost", 1.5f, 0.5f, destruction: 2),
         };
         var roads = new List<RoadSegment>
         {
@@ -199,19 +200,21 @@ public class OverworldGeneratorTests
     }
 
     [Fact]
-    public void Generate_PlayerStartsAtLowestThreat()
+    public void Generate_PlayerStartsAtLargestTown()
     {
         var towns = new List<CuratedTown>
         {
-            MakeTown("danger", 0.5f, 0.5f, threat: 5),
-            MakeTown("safe", 1.5f, 0.5f, threat: 1),
+            new("small", "small", 0, 0, new Vector2(0.5f, 0.5f), "desc",
+                TownCategory.Village, 500, DestructionLevel.Moderate),
+            new("big", "big", 0, 0, new Vector2(1.5f, 0.5f), "desc",
+                TownCategory.City, 50000, DestructionLevel.Pristine),
         };
         var region = MakeRegion();
         var gen = new OverworldGenerator();
 
         var result = gen.Generate(region, towns, "Test");
 
-        // Player start chunk should be near "safe" town (x=1.5 → chunk 1)
+        // Player start chunk should be near "big" town (x=1.5 → chunk 1)
         Assert.Equal(1, result.World.PlayerStart.ChunkX);
     }
 }

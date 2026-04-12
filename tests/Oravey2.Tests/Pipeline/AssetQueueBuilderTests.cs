@@ -19,8 +19,8 @@ public class AssetQueueBuilderTests
     private static TownDesign MakeDesign(string townName, string landmarkDesc = "A tall tower",
         params (string name, string desc)[] keyLocations) => new(
         townName,
-        new LandmarkBuilding("The Beacon", landmarkDesc, "large"),
-        keyLocations.Select(k => new KeyLocation(k.name, "purpose", k.desc, "medium")).ToList(),
+        [new LandmarkBuilding("The Beacon", landmarkDesc, "large", "", "", "")],
+        keyLocations.Select(k => new KeyLocation(k.name, "purpose", k.desc, "medium", "", "", "")).ToList(),
         "organic",
         []);
 

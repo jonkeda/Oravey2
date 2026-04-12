@@ -1,6 +1,7 @@
 using Oravey2.Contracts.ContentPack;
 using Oravey2.MapGen.Generation;
 using Oravey2.MapGen.Pipeline;
+using Oravey2.MapGen.RegionTemplates;
 using Oravey2.MapGen.ViewModels;
 
 namespace Oravey2.Tests.Pipeline;
@@ -9,9 +10,9 @@ public class TownMapsStepViewModelTests
 {
     private static TownDesign CreateTestDesign(string townName = "TestTown") => new(
         townName,
-        new LandmarkBuilding("Fort Test", "A ruined fortress", "large"),
-        [new KeyLocation("Shop", "shop", "A small shop", "small"),
-         new KeyLocation("Inn", "rest", "An inn", "medium")],
+        [new LandmarkBuilding("Fort Test", "A ruined fortress", "large", "", "", "")],
+        [new KeyLocation("Shop", "shop", "A small shop", "small", "", "", ""),
+         new KeyLocation("Inn", "rest", "An inn", "medium", "", "", "")],
         "organic",
         [new EnvironmentalHazard("flooding", "Water rises", "south")]);
 
@@ -36,11 +37,10 @@ public class TownMapsStepViewModelTests
             var curated = new CuratedTownsFile
             {
                 Mode = "A",
-                Seed = 42,
                 GeneratedAt = DateTime.UtcNow,
                 Towns = [new CuratedTownDto(
                     townName, "RealTest", 52.5, 4.8,
-                    "trade-hub", "Merchants", 5, "A test town", 0)],
+                    "A test town", "Town", 5000, "Moderate")],
             };
             curated.Save(curatedPath);
         }
@@ -112,7 +112,8 @@ public class TownMapsStepViewModelTests
             };
             var result = condenser.Condense(
                 new CuratedTown("Havenburg", "RealTest", 52.5, 4.8,
-                    System.Numerics.Vector2.Zero, "trade-hub", "Merchants", 5, ""),
+                    System.Numerics.Vector2.Zero, "",
+                    TownCategory.Town, 5000, DestructionLevel.Moderate),
                 design, region, 42);
             TownMapFiles.Save(result, Path.Combine(dir, "towns", "Havenburg"));
 
@@ -166,10 +167,10 @@ public class TownMapsStepViewModelTests
             Directory.CreateDirectory(dataDir);
             var curated = new CuratedTownsFile
             {
-                Mode = "A", Seed = 42, GeneratedAt = DateTime.UtcNow,
+                Mode = "A", GeneratedAt = DateTime.UtcNow,
                 Towns = [
-                    new CuratedTownDto("TownA", "A", 0, 0, "trade-hub", "X", 3, "a", 0),
-                    new CuratedTownDto("TownB", "B", 0, 0, "fortress", "Y", 7, "b", 0),
+                    new CuratedTownDto("TownA", "A", 0, 0, "a", "Town", 5000, "Moderate"),
+                    new CuratedTownDto("TownB", "B", 0, 0, "b", "Town", 3000, "Heavy"),
                 ],
             };
             curated.Save(Path.Combine(dataDir, "curated-towns.json"));

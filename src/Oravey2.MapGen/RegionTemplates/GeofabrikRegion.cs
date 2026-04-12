@@ -26,6 +26,7 @@ public record GeofabrikRegion
         {
             Name = Id,
             DisplayName = Name,
+            RegionCode = Iso3166_2?.FirstOrDefault() ?? Iso3166Alpha2?.FirstOrDefault() ?? string.Empty,
             NorthLat = bbox.North,
             SouthLat = bbox.South,
             EastLon = bbox.East,

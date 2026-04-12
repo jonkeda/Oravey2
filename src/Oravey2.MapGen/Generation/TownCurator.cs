@@ -26,10 +26,9 @@ public sealed class TownCurator
 
     public async Task<CuratedRegion> CurateAsync(
         RegionTemplate region,
-        int seed,
         CancellationToken ct = default)
     {
-        var prompt = BuildPrompt(region, seed, _params);
+        var prompt = BuildPrompt(region, _params);
         _log?.Invoke("→ Sent", prompt);
 
         string response;
@@ -65,13 +64,12 @@ public sealed class TownCurator
     /// </summary>
     public async Task<List<CuratedTown>> DiscoverAsync(
         RegionTemplate region,
-        int seed,
         CancellationToken ct = default)
     {
         if (_toolCall is null)
             throw new InvalidOperationException("DiscoverAsync requires tool-calling support.");
 
-        var prompt = BuildDiscoverPrompt(region, seed, _params);
+        var prompt = BuildDiscoverPrompt(region, _params);
         _log?.Invoke("→ Sent", prompt);
 
         List<CuratedTown>? captured = null;
@@ -98,19 +96,16 @@ public sealed class TownCurator
         RegionTemplate region,
         List<CuratedTown> existing,
         CuratedTown toReplace,
-        int seed,
         CancellationToken ct = default)
     {
         var p = _params;
-        var roleList = string.Join(", ", p.Roles);
         var existingList = string.Join("\n", existing.Where(t => t != toReplace)
-            .Select(t => $"- {t.GameName} ({t.RealName}): {t.Role}, threat {t.ThreatLevel}"));
+            .Select(t => $"- {t.GameName} ({t.RealName}): {t.Size}, {t.Destruction}"));
         var townNames = string.Join(", ", region.Towns.Select(t => t.Name));
 
         var prompt = $$"""
             You are creating a {{p.Genre}} RPG world in the region "{{region.Name}}".
             {{p.ThemeDescription}}
-            World seed: {{seed}}
 
             Available towns in this region: {{townNames}}
 
@@ -119,10 +114,12 @@ public sealed class TownCurator
 
             Replace the town "{{toReplace.GameName}}" ({{toReplace.RealName}}) with a different {{p.SettlementNoun}}.
             Pick a town from the available list that is NOT already selected.
-            Role must be one of [{{roleList}}].
 
             Respond with a single JSON object:
-            {"gameName":"...","realName":"...","role":"...","faction":"...","threatLevel":0,"description":"..."}
+            {"gameName":"...","realName":"...","description":"...","size":"Village","inhabitants":1000,"destruction":"Moderate"}
+
+            size must be one of: Hamlet, Village, Town, City, Metropolis
+            destruction must be one of: Pristine, Light, Moderate, Heavy, Devastated
             """;
 
         _log?.Invoke("→ Sent", prompt);
@@ -156,21 +153,60 @@ public sealed class TownCurator
         return BuildCuratedTown(e, townLookup, p);
     }
 
+    /// <summary>
+    /// Enrich a single OSM town with LLM-generated metadata (GameName, Description, Destruction).
+    /// </summary>
+    public async Task<TownEnrichment> EnrichTownAsync(
+        TownEntry osmTown,
+        CancellationToken ct = default)
+    {
+        var p = _params;
+        var prompt = $$"""
+            You are a world-builder for a {{p.Genre}} game. {{p.ThemeDescription}}
+
+            Given this real-world settlement:
+            - Name: {{osmTown.Name}}
+            - Category: {{osmTown.Category}}
+            - Population: {{osmTown.Population}}
+            - Coordinates: {{osmTown.Latitude:F4}}, {{osmTown.Longitude:F4}}
+
+            Generate:
+            1. gameName — {{p.NamingInstruction}}
+            2. description — 1-2 sentences describing the settlement in the game world
+            3. destruction — one of: Pristine, Light, Moderate, Heavy, Devastated
+
+            Respond with ONLY a JSON object:
+            {"gameName":"...","description":"...","destruction":"Moderate"}
+            """;
+
+        _log?.Invoke("→ Sent", prompt);
+
+        var response = await _llmCall(prompt, ct);
+        _log?.Invoke("← Received", response);
+        response = StripMarkdownFences(response);
+
+        var entry = JsonSerializer.Deserialize<LlmTownEntry>(response, JsonOptions)
+            ?? throw new InvalidOperationException("LLM returned invalid JSON for town enrichment");
+
+        return new TownEnrichment(
+            entry.GameName,
+            entry.Description,
+            Enum.TryParse<DestructionLevel>(entry.Destruction, true, out var dl) ? dl : DestructionLevel.Moderate);
+    }
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true
     };
 
-    internal static string BuildPrompt(RegionTemplate region, int seed, TownGenerationParams p)
+    internal static string BuildPrompt(RegionTemplate region, TownGenerationParams p)
     {
         var townList = string.Join("\n", region.Towns.Select(t =>
             $"- {t.Name}: pop {t.Population}, category {t.Category}, lat {t.Latitude:F4} lon {t.Longitude:F4}"));
-        var roleList = string.Join(", ", p.Roles);
 
         return $$"""
             You are creating a {{p.Genre}} RPG world. {{p.ThemeDescription}}
             The region is "{{region.Name}}".
-            World seed: {{seed}}
 
             Here are all real towns in this region:
             {{townList}}
@@ -179,20 +215,19 @@ public sealed class TownCurator
             - gameName: {{p.NamingInstruction}}
             - realName: the original town name
             - latitude, longitude: from the list above
-            - role: one of [{{roleList}}]
-            - faction: a faction name appropriate for the role
-            - threatLevel: {{p.MinThreat}}–{{p.MaxThreat}} (ensure a gradient from safe to dangerous)
             - description: 1–2 sentences about the {{p.SettlementNoun}}
+            - size: one of [Hamlet, Village, Town, City, Metropolis]
+            - inhabitants: estimated number of inhabitants
+            - destruction: one of [Pristine, Light, Moderate, Heavy, Devastated]
 
             Requirements:
-            - At least one {{p.SettlementNoun}} in each threat range: {{p.MinThreat}}–{{p.SafeThreshold}} (safe), {{p.SafeThreshold + 1}}–{{p.ModerateThreshold}} (moderate), {{p.ModerateThreshold + 1}}–{{p.MaxThreat}} (dangerous)
             - Prefer larger towns but include some small {{p.SettlementNoun}}s for variety
-            - The starting area (largest town) should be threat level {{p.MinThreat}}–{{p.StartingTownMaxThreat}}
+            - Mix destruction levels for gameplay variety
 
             Respond with ONLY a JSON array. No markdown, no explanation.
             Example format:
             [
-              {"gameName":"Haven","realName":"Purmerend","latitude":52.50,"longitude":4.95,"role":"trading_hub","faction":"Haven Guard","threatLevel":1,"description":"A fortified market town..."}
+              {"gameName":"Haven","realName":"Purmerend","latitude":52.50,"longitude":4.95,"description":"A fortified market town...","size":"Town","inhabitants":5000,"destruction":"Moderate"}
             ]
             """;
     }
@@ -211,6 +246,8 @@ public sealed class TownCurator
         {
             var boundary = townLookup.TryGetValue(e.RealName, out var match) ? match.BoundaryPolygon : null;
             var gamePos = match?.GamePosition ?? new Vector2((float)(e.Longitude * 1000), (float)(e.Latitude * 1000));
+            var size = match?.Category ?? (Enum.TryParse<TownCategory>(e.Size, true, out var sz) ? sz : TownCategory.Village);
+            var inhabitants = match?.Population ?? e.Inhabitants;
 
             result.Add(new CuratedTown(
                 GameName: e.GameName,
@@ -218,20 +255,18 @@ public sealed class TownCurator
                 Latitude: e.Latitude,
                 Longitude: e.Longitude,
                 GamePosition: gamePos,
-                Role: e.Role,
-                Faction: e.Faction,
-                ThreatLevel: Math.Clamp(e.ThreatLevel, 1, 10),
                 Description: e.Description,
+                Size: size,
+                Inhabitants: inhabitants,
+                Destruction: Enum.TryParse<DestructionLevel>(e.Destruction, true, out var dl) ? dl : DestructionLevel.Moderate,
                 BoundaryPolygon: boundary));
         }
 
         return result;
     }
 
-    internal static string BuildDiscoverPrompt(RegionTemplate region, int seed, TownGenerationParams p)
+    internal static string BuildDiscoverPrompt(RegionTemplate region, TownGenerationParams p)
     {
-        var roleList = string.Join(", ", p.Roles);
-
         return $$"""
             You are creating a {{p.Genre}} RPG world. {{p.ThemeDescription}}
             The region is "{{region.Name}}".
@@ -243,15 +278,14 @@ public sealed class TownCurator
             For each {{p.SettlementNoun}}:
             - gameName: {{p.NamingInstruction}}
             - realName: the real-world name of the settlement
-            - role: one of [{{roleList}}]
-            - faction: a faction name appropriate for the role
-            - threatLevel: {{p.MinThreat}}–{{p.MaxThreat}} (ensure a gradient from safe to dangerous)
             - description: 1–2 sentences about the {{p.SettlementNoun}}
+            - size: one of [Hamlet, Village, Town, City, Metropolis]
+            - inhabitants: estimated number of inhabitants
+            - destruction: one of [Pristine, Light, Moderate, Heavy, Devastated]
 
             Requirements:
-            - Spread across threat ranges: {{p.MinThreat}}–{{p.SafeThreshold}} (safe), {{p.SafeThreshold + 1}}–{{p.ModerateThreshold}} (moderate), {{p.ModerateThreshold + 1}}–{{p.MaxThreat}} (dangerous)
             - Include a mix of settlement sizes for variety
-            - The largest settlement should be threat level {{p.MinThreat}}–{{p.StartingTownMaxThreat}} (starting area)
+            - Mix destruction levels for gameplay variety
 
             Call the submit_towns function with your selections.
             """;
@@ -319,9 +353,11 @@ public sealed class TownCurator
 
             result.Add(new CuratedTown(
                 e.GameName, e.RealName, match.Latitude, match.Longitude,
-                match.GamePosition, e.Role, e.Faction,
-                Math.Clamp(e.ThreatLevel, p.MinThreat, p.MaxThreat),
-                e.Description, match.BoundaryPolygon));
+                match.GamePosition, e.Description,
+                match.Category,
+                match.Population,
+                Enum.TryParse<DestructionLevel>(e.Destruction, true, out var dl) ? dl : DestructionLevel.Moderate,
+                match.BoundaryPolygon));
         }
 
         return result;
@@ -334,17 +370,20 @@ public sealed class TownCurator
         {
             return new CuratedTown(
                 entry.GameName, entry.RealName, match.Latitude, match.Longitude,
-                match.GamePosition, entry.Role, entry.Faction,
-                Math.Clamp(entry.ThreatLevel, p.MinThreat, p.MaxThreat),
-                entry.Description, match.BoundaryPolygon);
+                match.GamePosition, entry.Description,
+                match.Category,
+                match.Population,
+                Enum.TryParse<DestructionLevel>(entry.Destruction, true, out var dl) ? dl : DestructionLevel.Moderate,
+                match.BoundaryPolygon);
         }
 
         return new CuratedTown(
             entry.GameName, entry.RealName, 0, 0,
-            Vector2.Zero, entry.Role, entry.Faction,
-            Math.Clamp(entry.ThreatLevel, p.MinThreat, p.MaxThreat),
-            entry.Description);
+            Vector2.Zero, entry.Description,
+            Enum.TryParse<TownCategory>(entry.Size, true, out var sz) ? sz : TownCategory.Village,
+            entry.Inhabitants,
+            Enum.TryParse<DestructionLevel>(entry.Destruction, true, out var dl2) ? dl2 : DestructionLevel.Moderate);
     }
-
-
 }
+
+public record TownEnrichment(string GameName, string Description, DestructionLevel Destruction);

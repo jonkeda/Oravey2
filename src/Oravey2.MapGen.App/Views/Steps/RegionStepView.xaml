@@ -5,46 +5,70 @@
              x:Class="Oravey2.MapGen.App.Views.RegionStepView"
              x:DataType="vm:RegionStepViewModel">
     <VerticalStackLayout Spacing="16" Padding="8">
-        <Label Text="① Region Selection" Style="{StaticResource HeaderLabel}" />
-        <Label Text="Select a geographic region from the Geofabrik index and choose a target content pack."
+        <Label Text="① Content Pack" Style="{StaticResource HeaderLabel}" />
+        <Label Text="Select an existing content pack or create a new one."
                TextColor="{StaticResource OnSurfaceVariant}" />
-        <Button Text="Next →"
-                Command="{Binding NextCommand}"
-                HorizontalOptions="Start"
-                Style="{StaticResource PrimaryButton}" />
 
-        <!-- Select Region Button -->
-        <Button Text="Select Region…"
-                Clicked="OnSelectRegionClicked"
+        <!-- Content Pack List -->
+        <CollectionView AutomationId="ContentPackList"
+                        ItemsSource="{Binding ContentPackInfos}"
+                        SelectedItem="{Binding SelectedPackInfo, Mode=TwoWay}"
+                        SelectionMode="Single"
+                        HeightRequest="220">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:ContentPackInfo">
+                    <Border Style="{StaticResource CardBorder}" Margin="0,4" Padding="12,8">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="8" />
+                        </Border.StrokeShape>
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="{Binding DirectoryName}" TextColor="{StaticResource OnSurface}"
+                                   FontSize="15" FontAttributes="Bold" />
+                            <Label Text="{Binding RegionCode}" TextColor="{StaticResource OnSurfaceVariant}"
+                                   FontSize="12" />
+                            <Label Text="{Binding Description}" TextColor="{StaticResource OnSurfaceVariant}"
+                                   FontSize="12" />
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+            <CollectionView.EmptyView>
+                <Label Text="No content packs found. Create one to get started."
+                       TextColor="{StaticResource OnSurfaceVariant}"
+                       HorizontalTextAlignment="Center" Margin="0,20" />
+            </CollectionView.EmptyView>
+        </CollectionView>
+
+        <!-- Create Content Pack -->
+        <Button AutomationId="ContentPackCreateButton"
+                Text="+ Create Content Pack"
+                Command="{Binding CreateContentPackCommand}"
                 HorizontalOptions="Start"
                 Style="{StaticResource SecondaryButton}" />
 
-        <!-- Region Card (visible when selected) -->
-        <Border IsVisible="{Binding HasRegion}"
+        <!-- Selected Pack Card -->
+        <Border IsVisible="{Binding HasSelectedPack}"
                 Style="{StaticResource CardBorder}">
             <Border.StrokeShape>
                 <RoundRectangle CornerRadius="8" />
             </Border.StrokeShape>
-            <VerticalStackLayout Spacing="8">
-                <Label Text="{Binding RegionDisplayName}" FontSize="18" FontAttributes="Bold" />
-                <Label Text="{Binding BoundingBoxText}" TextColor="{StaticResource OnSurfaceVariant}" FontSize="13" />
-                <Label TextColor="{StaticResource OnSurfaceVariant}" FontSize="12">
-                    <Label.FormattedText>
-                        <FormattedString>
-                            <Span Text="OSM: " />
-                            <Span Text="{Binding OsmUrl}" />
-                        </FormattedString>
-                    </Label.FormattedText>
-                </Label>
+            <VerticalStackLayout Spacing="4" Padding="12,8">
+                <Label AutomationId="ContentPackSelectedName"
+                       Text="{Binding SelectedPackInfo.DirectoryName}"
+                       TextColor="{StaticResource OnSurface}"
+                       FontSize="16" FontAttributes="Bold" />
+                <Label AutomationId="ContentPackHierarchy"
+                       Text="{Binding SelectedPackHierarchy}"
+                       TextColor="{StaticResource OnSurfaceVariant}"
+                       FontSize="12" />
             </VerticalStackLayout>
         </Border>
 
-        <!-- Content Pack Selector -->
-        <Label Text="Target Content Pack" Style="{StaticResource SectionLabel}" Margin="0,8,0,0" />
-        <Picker Title="Select content pack…"
-                ItemsSource="{Binding ContentPacks}"
-                SelectedItem="{Binding SelectedContentPack}" />
-
-
+        <!-- Next -->
+        <Button AutomationId="ContentPackNextButton"
+                Text="Next →"
+                Command="{Binding NextCommand}"
+                HorizontalOptions="Start"
+                Style="{StaticResource PrimaryButton}" />
     </VerticalStackLayout>
 </ContentView>

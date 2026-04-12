@@ -25,13 +25,13 @@ public sealed class OverworldGenerator
         var townRefs = towns.Select(t => new OverworldTownRef(
             t.GameName, t.RealName,
             t.GamePosition.X, t.GamePosition.Y,
-            t.Role, t.ThreatLevel)).ToList();
+            t.Description, t.Size.ToString(), t.Inhabitants, t.Destruction.ToString())).ToList();
 
         // Compute world bounds from town positions
         var (chunksWide, chunksHigh) = ComputeWorldBounds(towns);
 
-        // Player starts at the lowest threat town
-        var startTown = towns.MinBy(t => t.ThreatLevel) ?? towns[0];
+        // Player starts at the largest town (most inhabitants)
+        var startTown = towns.MaxBy(t => t.Inhabitants) ?? towns[0];
         var playerStart = GamePosToPlacement(startTown.GamePosition, chunksWide, chunksHigh);
 
         var world = new OverworldInfo(

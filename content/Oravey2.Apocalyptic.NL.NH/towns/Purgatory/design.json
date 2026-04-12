@@ -1,0 +1,121 @@
+{
+  "townName": "Purgatory",
+  "landmarks": [
+    {
+      "name": "Stelling\u0027s Crown",
+      "visualDescription": "A three-story neoclassical stone building with collapsed eastern wing. Boarded windows, crumbling ornamental stonework, graffiti-covered facade. Red brick showing through eroded plaster. Broken copper roof with dark patina. Grand entrance hall exposed to elements, marble floor fractured.",
+      "sizeCategory": "large",
+      "originalDescription": "De Stelling, a neoclassical town hall built in the 18th century, served as Purmerend\u0027s administrative and civic center.",
+      "meshyPrompt": "Neoclassical stone town hall, three stories, massive structural damage to east wing, crumbling ornamental facade, boarded windows, exposed red brick, broken copper roof sections, rubble and debris at base, heavy weathering and blast scoring, low-poly game asset",
+      "positionHint": "centre, dominating the main square"
+    },
+    {
+      "name": "Purge Spire",
+      "visualDescription": "Tall red-brick church with fractured spire (top third tilted at dangerous angle). One stained glass window intact but heavily stained, others boarded. Weathered cross barely visible. Side chapel roof partially collapsed. Interior visible through gaps\u2014wooden pews charred, stone nave intact but dark.",
+      "sizeCategory": "medium",
+      "originalDescription": "Sint-Purmerendse Kerk, a Reformed church with neogothic architecture, erected in the 1880s as the spiritual center of the town.",
+      "meshyPrompt": "Red brick neogothic church, fractured spire, damaged roof sections, boarded stained glass windows, weathered red masonry, half-collapsed side chapel, exposed wooden interior beams, scorched plaster, heavy post-apocalyptic decay, low-poly game asset",
+      "positionHint": "north-west of centre, near the old market square"
+    },
+    {
+      "name": "Dike Breach Station",
+      "visualDescription": "Industrial brick structure with corroded metal water gates frozen open. Two concrete pump towers, one top section sheared cleanly by structural collapse. Rust streaking every surface. Broken pipes protruding, some still dripping stagnant water. Algae and mold growth on lower levels. Warning signs faded but visible.",
+      "sizeCategory": "medium",
+      "originalDescription": "Purmerend\u0027s historic waterworks facility (19th century hydraulic infrastructure) that managed canal systems and water gates.",
+      "meshyPrompt": "Industrial waterworks facility, two brick pump towers, corroded metal water gates stuck open, rusted pipes, broken concrete sections, mold and algae stains, one tower top sheared off, heavy industrial decay, stagnant water pooling, low-poly game asset",
+      "positionHint": "east, along the canal district"
+    }
+  ],
+  "keyLocations": [
+    {
+      "name": "The Scrap Market",
+      "purpose": "shop",
+      "visualDescription": "Gutted steel-frame market shed, corrugated iron roof partially intact, weathered stalls overturned. Scattered goods (scrap metal, salvage) between broken concrete floor. Faded vendor signs, hand-painted prices barely readable. Side walls sprayed with territory markers.",
+      "sizeCategory": "large",
+      "originalDescription": "Purmerend\u0027s historic weekly market hall (20th century covered market), hub of local commerce and trading.",
+      "meshyPrompt": "Large market shed, steel frame exposed, corrugated metal roof sections missing, weathered concrete floor cracked, overturned market stalls and salvage piles, faded paint and graffiti, heavy rust on steel elements, low-poly game asset",
+      "positionHint": "centre-south, along main market street"
+    },
+    {
+      "name": "Rust \u0026 Restore",
+      "purpose": "crafting",
+      "visualDescription": "Single-story industrial brick building with three large rolling doors (now rusted shut). Grimy windows. Workbenches visible inside through cracks. Tools scattered (some hanging on walls). Barrel drums stacked outside. Oil stains on cracked asphalt.",
+      "sizeCategory": "medium",
+      "originalDescription": "A pre-war mechanic\u0027s garage and workshop (mid-20th century), once Purmerend\u0027s center for vehicle repair.",
+      "meshyPrompt": "Industrial mechanic\u0027s garage, single story red brick, three large rusted rolling doors, grimy windows, exposed workbenches visible inside, scattered tools and equipment, oil-stained concrete, barrel drums, heavy rust and grime, low-poly game asset",
+      "positionHint": "south-east, near the canal"
+    },
+    {
+      "name": "The Mercy Box",
+      "purpose": "medical",
+      "visualDescription": "Two-story concrete and brick clinic building, weathered white tile cladding peeling off in large sections. Red cross faded and cracked above entrance. Windows reinforced with makeshift metal bars. Interior shelving (medical cabinets) visible, some ransacked. Bullet holes in concrete.",
+      "sizeCategory": "medium",
+      "originalDescription": "A converted 1970s community health clinic and pharmacy, Purmerend\u0027s public medical facility.",
+      "meshyPrompt": "Concrete and brick medical clinic, two stories, white tile cladding heavily damaged and peeling, faded red cross, barred windows, bullet damage on concrete, weathered entrance, makeshift security modifications, heavy wear and decay, low-poly game asset",
+      "positionHint": "north, near residential district"
+    },
+    {
+      "name": "The Citadel",
+      "purpose": "barracks",
+      "visualDescription": "Four-story concrete brutalist slab, narrow slit windows, most now broken or barricaded with sandbags. Visible gun emplacements on roof. Graffiti covering lower levels\u2014territorial markings and faction symbols. Sandbagged entrance with metal gate. Rubble-strewn courtyard inside.",
+      "sizeCategory": "large",
+      "originalDescription": "A converted 1960s office building that once housed local government administrative offices.",
+      "meshyPrompt": "Brutalist concrete office building, four stories, slit windows, sandbag fortifications and gun emplacements on roof, graffiti and faction markers, barricaded entrance, heavy bullet scoring, sandbagged interior courtyard visible, weaponized defensive structure, low-poly game asset",
+      "positionHint": "west of centre, overlooking main square"
+    },
+    {
+      "name": "The Crossed Swords",
+      "purpose": "tavern",
+      "visualDescription": "Two-story brick building with art deco tilework (mostly intact on upper facade). Ground floor windows boarded. Faded neon sign (powered but dark). Heavy wooden door, scratched and graffitied. Interior dim but occupied\u2014smoke visible. Makeshift furniture through gaps.",
+      "sizeCategory": "medium",
+      "originalDescription": "A historic 1920s pub and inn with Art Deco styling, once Purmerend\u0027s social gathering place.",
+      "meshyPrompt": "Art deco pub and inn, two stories, red and cream brick with tilework, boarded ground-floor windows, faded neon signage, scratched wooden entrance, smoke-filled interior visible, occupied and makeshift furnished, weathered art deco details, low-poly game asset",
+      "positionHint": "centre, on the main square"
+    },
+    {
+      "name": "Vault Nine",
+      "purpose": "storage",
+      "visualDescription": "Large corrugated metal warehouse, two sections (one partially collapsed roof). Massive sliding doors (one derailed). Faded industrial markings (shipping routes, product codes). Graffiti-tagged walls. Visible interior shelving and crates, some stacked haphazardly. Weathered tarp coverings.",
+      "sizeCategory": "large",
+      "originalDescription": "A converted 1950s warehouse and grain storage facility, once a distribution hub for regional commerce.",
+      "meshyPrompt": "Large industrial warehouse, corrugated metal, two-section structure with one partially collapsed roof, derailed sliding doors, faded shipping markings, stacked crates and shelving inside visible through gaps, heavy weathering and graffiti, damaged structure, low-poly game asset",
+      "positionHint": "south, near the docks"
+    },
+    {
+      "name": "The Spymaster\u0027s Tower",
+      "purpose": "quest_giver",
+      "visualDescription": "Tall concrete transmission tower (70\u002B feet) with rusted satellite dishes and antenna arrays (some tilted, one spinning slowly in wind). Small concrete operator\u0027s shed at base, windows intact. Cables draped loose. Warning lights still blinking (irregular). Graffiti at base\u2014coordinates and dates marked.",
+      "sizeCategory": "medium",
+      "originalDescription": "A 1980s radio and telecommunications relay station (concrete tower with attached equipment building).",
+      "meshyPrompt": "Communications relay tower, tall concrete structure, rusted satellite dishes and antenna arrays (some tilted and operational), concrete operator station at base with intact windows, loose cables, intermittent warning lights blinking, graffiti with coordinates and dates, isolated communications hub, low-poly game asset",
+      "positionHint": "north-east, on highest ground near edge of town"
+    },
+    {
+      "name": "The Archive",
+      "purpose": "other",
+      "visualDescription": "Two-story concrete brutalist box, deep-set windows (some broken). Massive entrance doors (one ajar). Interior partially visible\u2014stacks of books and filing cabinets, many toppled. Water damage on walls (stains reaching 4 feet high). Cardboard boxes stacked to salvage readable documents. Faded library sign barely legible.",
+      "sizeCategory": "medium",
+      "originalDescription": "Purmerend\u0027s historic public library and records building (1960s brutalist concrete), the town\u0027s knowledge repository.",
+      "meshyPrompt": "Concrete brutalist library building, two stories, deep-set windows (some broken), massive entrance doors, interior chaos with toppled shelves and filing cabinets, water damage stains on walls, scattered books and documents, salvage cardboard boxes, faded signage, archive facility decay, low-poly game asset",
+      "positionHint": "west-centre, adjacent to Stelling\u0027s Crown"
+    }
+  ],
+  "layoutStyle": "compound",
+  "hazards": [
+    {
+      "type": "flooding",
+      "description": "The canal dikes east of town have ruptured in multiple places. Seasonal water surges overflow into the low-lying market and dock districts, creating unpredictable swamp zones.",
+      "locationHint": "south-east waterfront and canal district"
+    },
+    {
+      "type": "collapse",
+      "description": "Structural failures are common from heavy bombardment and age. The Purge Spire\u0027s fractured tower and the Vault Nine\u0027s partial roof collapse create fall hazards; rubble from the Stelling\u0027s Crown blocks movement.",
+      "locationHint": "centre and south, near major landmarks"
+    },
+    {
+      "type": "toxic",
+      "description": "Industrial runoff from the old waterworks and pre-war chemical storage has pooled in low areas, creating toxic zones. Corroded pipes leak unknown liquids; warning signs faded but still visible.",
+      "locationHint": "east canal district, near Dike Breach Station and surrounding industrial zone"
+    }
+  ]
+}

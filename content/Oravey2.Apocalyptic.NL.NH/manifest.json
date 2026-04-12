@@ -6,6 +6,7 @@
   "author": "Oravey2 Team",
   "engineVersion": "\u003E=0.1.0",
   "parent": "oravey2.apocalyptic.nl",
+  "regionCode": "NL-NH",
   "tags": [
     "apocalyptic",
     "netherlands",

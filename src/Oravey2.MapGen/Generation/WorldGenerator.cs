@@ -33,7 +33,7 @@ public sealed class WorldGenerator
         foreach (var region in template.Regions)
         {
             ct.ThrowIfCancellationRequested();
-            var curated = await curator.CurateAsync(region, seed, ct);
+            var curated = await curator.CurateAsync(region, ct);
             curatedRegions.Add(curated);
         }
 

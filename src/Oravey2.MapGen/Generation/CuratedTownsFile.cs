@@ -7,19 +7,17 @@ namespace Oravey2.MapGen.Generation;
 public sealed class CuratedTownsFile
 {
     public string Mode { get; set; } = "B";
-    public int Seed { get; set; }
     public DateTime GeneratedAt { get; set; } = DateTime.UtcNow;
     public List<CuratedTownDto> Towns { get; set; } = [];
 
     public static CuratedTownsFile FromCuratedTowns(
-        IEnumerable<CuratedTown> towns, string mode, int seed) => new()
+        IEnumerable<CuratedTown> towns, string mode) => new()
     {
         Mode = mode,
-        Seed = seed,
         GeneratedAt = DateTime.UtcNow,
         Towns = towns.Select(t => new CuratedTownDto(
             t.GameName, t.RealName, t.Latitude, t.Longitude,
-            t.Role, t.Faction, t.ThreatLevel, t.Description, 0)).ToList(),
+            t.Description, t.Size.ToString(), t.Inhabitants, t.Destruction.ToString())).ToList(),
     };
 
     public void Save(string path)

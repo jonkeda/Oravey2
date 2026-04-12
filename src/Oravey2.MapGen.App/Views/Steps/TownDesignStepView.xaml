@@ -52,6 +52,10 @@
 
                     <!-- Progress -->
                     <Label Text="{Binding ProgressText}" TextColor="{StaticResource OnSurfaceVariant}" FontSize="13" />
+                    <Label AutomationId="TownDesignIncompleteWarning"
+                           Text="{Binding IncompleteWarning}"
+                           IsVisible="{Binding HasIncompleteWarning}"
+                           TextColor="{StaticResource Error}" FontSize="13" />
 
                     <!-- Action buttons -->
                     <Button Text="Design Town"
@@ -99,25 +103,48 @@
                             </VerticalStackLayout>
                         </Border>
 
-                        <!-- Landmark Card -->
+                        <!-- Landmarks Card -->
                         <Border Style="{StaticResource CardBorder}" Padding="12"
                                 IsVisible="{Binding Design, Converter={StaticResource IsNotNullConverter}}">
                             <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
-                            <VerticalStackLayout Spacing="4">
-                                <Label Text="🏛 Landmark" FontSize="15" FontAttributes="Bold"
-                                       TextColor="{StaticResource OnSurface}" />
-                                <HorizontalStackLayout Spacing="8">
-                                    <Label Text="{Binding LandmarkName}" FontSize="14"
-                                           FontAttributes="Bold" TextColor="{StaticResource OnSurface}" />
-                                    <Border Padding="4,2" BackgroundColor="{StaticResource SurfaceVariant}">
-                                        <Border.StrokeShape><RoundRectangle CornerRadius="4" /></Border.StrokeShape>
-                                        <Label Text="{Binding Design.Landmark.SizeCategory}"
-                                               FontSize="11" TextColor="{StaticResource OnSurfaceVariant}" />
-                                    </Border>
-                                </HorizontalStackLayout>
-                                <Label Text="{Binding Design.Landmark.VisualDescription}"
-                                       FontSize="12" TextColor="{StaticResource OnSurface}" FontAttributes="Italic"
-                                       LineBreakMode="WordWrap" />
+                            <VerticalStackLayout Spacing="6">
+                                <Label FontSize="15" FontAttributes="Bold">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="🏛 Landmarks (" TextColor="{StaticResource OnSurface}" />
+                                            <Span Text="{Binding LandmarkCount}" TextColor="{StaticResource OnSurface}" />
+                                            <Span Text=")" TextColor="{StaticResource OnSurface}" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                                <CollectionView ItemsSource="{Binding Design.Landmarks}">
+                                    <CollectionView.ItemsLayout>
+                                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="6" />
+                                    </CollectionView.ItemsLayout>
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate x:DataType="gen:LandmarkBuilding">
+                                            <VerticalStackLayout Spacing="2" Padding="0,2">
+                                                <HorizontalStackLayout Spacing="8">
+                                                    <Label Text="{Binding Name}" FontSize="14"
+                                                           FontAttributes="Bold" TextColor="{StaticResource OnSurface}" />
+                                                    <Border Padding="4,2" BackgroundColor="{StaticResource SurfaceVariant}">
+                                                        <Border.StrokeShape><RoundRectangle CornerRadius="4" /></Border.StrokeShape>
+                                                        <Label Text="{Binding SizeCategory}"
+                                                               FontSize="11" TextColor="{StaticResource OnSurfaceVariant}" />
+                                                    </Border>
+                                                </HorizontalStackLayout>
+                                                <Label Text="{Binding OriginalDescription}" FontSize="11"
+                                                       TextColor="{StaticResource OnSurfaceVariant}" LineBreakMode="WordWrap" />
+                                                <Label Text="{Binding VisualDescription}" FontSize="11"
+                                                       TextColor="{StaticResource OnSurface}" FontAttributes="Italic" LineBreakMode="WordWrap" />
+                                                <Label Text="{Binding PositionHint, StringFormat='Position: {0}'}" FontSize="10"
+                                                       TextColor="{StaticResource OnSurfaceVariant}" />
+                                                <Label Text="{Binding MeshyPrompt, StringFormat='Meshy: {0}'}" FontSize="10"
+                                                       TextColor="{StaticResource OnSurfaceVariant}" LineBreakMode="WordWrap" />
+                                            </VerticalStackLayout>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                </CollectionView>
                             </VerticalStackLayout>
                         </Border>
 
@@ -153,9 +180,15 @@
                                                                FontSize="10" TextColor="{StaticResource OnSurfaceVariant}" />
                                                     </Border>
                                                 </HorizontalStackLayout>
+                                                <Label Text="{Binding OriginalDescription}" FontSize="10"
+                                                       TextColor="{StaticResource OnSurfaceVariant}" LineBreakMode="WordWrap" />
                                                 <Label Text="{Binding VisualDescription}"
                                                        FontSize="11" TextColor="{StaticResource OnSurface}"
                                                        LineBreakMode="WordWrap" />
+                                                <Label Text="{Binding PositionHint, StringFormat='Position: {0}'}" FontSize="10"
+                                                       TextColor="{StaticResource OnSurfaceVariant}" />
+                                                <Label Text="{Binding MeshyPrompt, StringFormat='Meshy: {0}'}" FontSize="10"
+                                                       TextColor="{StaticResource OnSurfaceVariant}" LineBreakMode="WordWrap" />
                                             </VerticalStackLayout>
                                         </DataTemplate>
                                     </CollectionView.ItemTemplate>

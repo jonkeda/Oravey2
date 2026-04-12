@@ -42,9 +42,9 @@ public class RoadSelectorTests
         };
 
         var curatedA = new CuratedTown("HavenA", "TownA", 52.50, 4.95, new Vector2(0, 0),
-            "trading_hub", "Guard", 1, "Safe town");
+            "Safe town", TownCategory.Town, 5000, DestructionLevel.Pristine);
         var curatedB = new CuratedTown("HavenB", "TownB", 52.60, 5.05, new Vector2(8000, 11000),
-            "military_outpost", "Army", 5, "Military base");
+            "Military base", TownCategory.Town, 3000, DestructionLevel.Moderate);
 
         var curated = new CuratedRegion("TestRegion",
             new Vector2(-5000, -5000), new Vector2(55000, 55000),

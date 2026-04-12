@@ -9,8 +9,8 @@ public class OverworldFilesTests
     {
         var townRefs = new List<OverworldTownRef>
         {
-            new("haven", "Island Haven", 0.5f, 0.5f, "safe_haven", 1),
-            new("outpost", "Fort Outpost", 1.5f, 0.5f, "militia_base", 3),
+            new("haven", "Island Haven", 0.5f, 0.5f, "A safe port town", "Town", 5000, "Pristine"),
+            new("outpost", "Fort Outpost", 1.5f, 0.5f, "A military outpost", "Village", 1000, "Moderate"),
         };
 
         var world = new OverworldInfo(
@@ -91,7 +91,7 @@ public class OverworldFilesTests
             var town = loaded.World.Towns.First(t => t.GameName == "haven");
             Assert.Equal("Island Haven", town.RealName);
             Assert.Equal(0.5f, town.GameX, 0.01f);
-            Assert.Equal("safe_haven", town.Role);
+            Assert.Equal("A safe port town", town.Description);
         }
         finally
         {

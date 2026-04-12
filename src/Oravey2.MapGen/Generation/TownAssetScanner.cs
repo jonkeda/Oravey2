@@ -62,10 +62,13 @@ public sealed class TownAssetScanner
             placedByName.TryAdd(b.Name, b);
         }
 
-        // Landmark
-        AddBuildingEntry(entries, design.Landmark.Name, "landmark",
-            design.Landmark.SizeCategory, design.Landmark.VisualDescription,
-            placedByName, contentPackPath);
+        // Landmarks
+        foreach (var lm in design.Landmarks)
+        {
+            AddBuildingEntry(entries, lm.Name, "landmark",
+                lm.SizeCategory, lm.VisualDescription,
+                placedByName, contentPackPath);
+        }
 
         // Key locations
         foreach (var loc in design.KeyLocations)

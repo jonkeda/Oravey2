@@ -15,5 +15,7 @@ public sealed record TownRefDto(
     string RealName,
     float GameX,
     float GameY,
-    string Role,
-    int ThreatLevel);
+    string Description,
+    string Size,
+    int Inhabitants,
+    string Destruction);
