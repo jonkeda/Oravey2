@@ -5,7 +5,8 @@ public sealed record TownDesign(
     List<LandmarkBuilding> Landmarks,
     List<KeyLocation> KeyLocations,
     string LayoutStyle,
-    List<EnvironmentalHazard> Hazards);
+    List<EnvironmentalHazard> Hazards,
+    TownSpatialSpecification? SpatialSpec = null);
 
 public sealed record LandmarkBuilding(
     string Name, string VisualDescription, string SizeCategory,

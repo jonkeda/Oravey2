@@ -133,6 +133,14 @@ public sealed class TownDesigner
 
             5. Add 0–{{maxHazards}} environmental hazards consistent with the {{town.Destruction}} destruction level.
 
+            6. **CRITICAL: Provide spatial specification** with real-world coordinates, building footprints,
+               road network, and water bodies to ground the town in geography:
+               - RealWorldBounds: min/max latitude and longitude in decimal degrees
+               - BuildingPlacements: center coordinates (lat/lon), footprint sizes (meters), rotation, alignment hint
+               - RoadNetwork: connected nodes and edges with road width (meters)
+               - WaterBodies (optional): polygon vertices, water type (river/canal/harbour/lake)
+               - TerrainDescription: brief note on terrain (flat, hilly, mixed, etc.)
+
             Key location purposes: shop, quest_giver, crafting, medical, barracks, tavern, storage, other
             Hazard types: flooding, radiation, collapse, fire, toxic, wildlife, other
             """;
@@ -165,7 +173,24 @@ public sealed class TownDesigner
             .Select(h => new EnvironmentalHazard(h.Type, h.Description, h.LocationHint))
             .ToList();
 
-        return new TownDesign(townName, landmarks, keyLocations, layoutStyle, hazards);
+        var design = new TownDesign(townName, landmarks, keyLocations, layoutStyle, hazards);
+
+        // Build and validate spatial specification if provided
+        if (entry.SpatialSpec is not null)
+        {
+            try
+            {
+                var spatialSpec = BuildSpatialSpecification.Build(entry.SpatialSpec, design);
+                design = design with { SpatialSpec = spatialSpec };
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Log validation error but don't fail — spatial spec is optional in this phase
+                System.Diagnostics.Debug.WriteLine($"Spatial spec validation failed: {ex.Message}");
+            }
+        }
+
+        return design;
     }
 
     internal static TownDesign ParseTextResponse(string townName, string response, TownCategory size = TownCategory.Village)
