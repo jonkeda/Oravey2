@@ -1,5 +1,6 @@
 using System.Text.Json;
-using System.Text.Json.Serialization;
+using Oravey2.Contracts;
+using Oravey2.Contracts.ContentPack;
 
 namespace Oravey2.MapGen.Generation;
 
@@ -9,23 +10,16 @@ namespace Oravey2.MapGen.Generation;
 /// </summary>
 public static class AssetFiles
 {
-    private static readonly JsonSerializerOptions Options = new()
-    {
-        WriteIndented = true,
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        Converters = { new JsonStringEnumConverter() },
-    };
-
     public static void SaveMeta(AssetMeta meta, string metaPath)
     {
         var dir = Path.GetDirectoryName(metaPath);
         if (!string.IsNullOrEmpty(dir))
             Directory.CreateDirectory(dir);
-        File.WriteAllText(metaPath, JsonSerializer.Serialize(meta, Options));
+        File.WriteAllText(metaPath, JsonSerializer.Serialize(meta, ContentPackSerializer.WriteOptions));
     }
 
     public static AssetMeta LoadMeta(string metaPath) =>
-        JsonSerializer.Deserialize<AssetMeta>(File.ReadAllText(metaPath), Options) ?? new();
+        JsonSerializer.Deserialize<AssetMeta>(File.ReadAllText(metaPath), ContentPackSerializer.ReadOptions) ?? new();
 
     /// <summary>
     /// Updates buildings.json in a town directory, replacing MeshAsset for a building
@@ -38,20 +32,21 @@ public static class AssetFiles
         if (!File.Exists(buildingsPath)) return;
 
         var json = File.ReadAllText(buildingsPath);
-        var buildings = JsonSerializer.Deserialize<List<BuildingRefDto>>(json, Options) ?? [];
+        var buildings = JsonSerializer.Deserialize<List<BuildingDto>>(json, ContentPackSerializer.ReadOptions) ?? [];
 
         var updated = false;
-        foreach (var b in buildings)
+        var updatedBuildings = buildings.Select(b =>
         {
             if (string.Equals(b.Name, buildingName, StringComparison.OrdinalIgnoreCase))
             {
-                b.MeshAsset = newMeshPath;
                 updated = true;
+                return b with { MeshAsset = newMeshPath };
             }
-        }
+            return b;
+        }).ToList();
 
         if (updated)
-            File.WriteAllText(buildingsPath, JsonSerializer.Serialize(buildings, Options));
+            File.WriteAllText(buildingsPath, JsonSerializer.Serialize(updatedBuildings, ContentPackSerializer.WriteOptions));
     }
 }
 
@@ -64,24 +59,4 @@ public sealed class AssetMeta
     public string Status { get; set; } = "accepted";
     public string SourceType { get; set; } = "text-to-3d";
     public string SizeCategory { get; set; } = "";
-}
-
-internal sealed class BuildingRefDto
-{
-    public string Id { get; set; } = "";
-    public string Name { get; set; } = "";
-    public string MeshAsset { get; set; } = "";
-    public string Size { get; set; } = "";
-    public int[][]? Footprint { get; set; }
-    public int Floors { get; set; }
-    public float Condition { get; set; }
-    public PlacementRefDto? Placement { get; set; }
-}
-
-internal sealed class PlacementRefDto
-{
-    public int ChunkX { get; set; }
-    public int ChunkY { get; set; }
-    public int LocalTileX { get; set; }
-    public int LocalTileY { get; set; }
 }

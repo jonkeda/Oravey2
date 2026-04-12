@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Oravey2.Contracts\Oravey2.Contracts.csproj" />
     <ProjectReference Include="..\Oravey2.Core\Oravey2.Core.csproj" />
   </ItemGroup>
 

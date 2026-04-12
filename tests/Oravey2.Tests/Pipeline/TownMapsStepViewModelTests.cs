@@ -1,3 +1,4 @@
+using Oravey2.Contracts.ContentPack;
 using Oravey2.MapGen.Generation;
 using Oravey2.MapGen.Pipeline;
 using Oravey2.MapGen.ViewModels;
@@ -37,17 +38,9 @@ public class TownMapsStepViewModelTests
                 Mode = "A",
                 Seed = 42,
                 GeneratedAt = DateTime.UtcNow,
-                Towns = [new CuratedTownEntry
-                {
-                    GameName = townName,
-                    RealName = "RealTest",
-                    Latitude = 52.5,
-                    Longitude = 4.8,
-                    Role = "trade-hub",
-                    Faction = "Merchants",
-                    ThreatLevel = 5,
-                    Description = "A test town",
-                }],
+                Towns = [new CuratedTownDto(
+                    townName, "RealTest", 52.5, 4.8,
+                    "trade-hub", "Merchants", 5, "A test town", 0)],
             };
             curated.Save(curatedPath);
         }
@@ -175,8 +168,8 @@ public class TownMapsStepViewModelTests
             {
                 Mode = "A", Seed = 42, GeneratedAt = DateTime.UtcNow,
                 Towns = [
-                    new() { GameName = "TownA", RealName = "A", Role = "trade-hub", Faction = "X", ThreatLevel = 3, Description = "a" },
-                    new() { GameName = "TownB", RealName = "B", Role = "fortress", Faction = "Y", ThreatLevel = 7, Description = "b" },
+                    new CuratedTownDto("TownA", "A", 0, 0, "trade-hub", "X", 3, "a", 0),
+                    new CuratedTownDto("TownB", "B", 0, 0, "fortress", "Y", 7, "b", 0),
                 ],
             };
             curated.Save(Path.Combine(dataDir, "curated-towns.json"));

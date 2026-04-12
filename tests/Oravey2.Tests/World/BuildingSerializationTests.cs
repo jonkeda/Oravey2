@@ -1,92 +1,93 @@
-using Oravey2.Core.World;
-using Oravey2.Core.World.Serialization;
+using System.Text.Json;
+using Oravey2.Contracts;
+using Oravey2.Contracts.ContentPack;
 
 namespace Oravey2.Tests.World;
 
 public class BuildingSerializationTests
 {
     [Fact]
-    public void BuildingDefinition_RoundTrip()
+    public void BuildingDto_RoundTrip()
     {
-        var building = new BuildingDefinition(
-            "shop_001", "Corner Shop", "meshes/shop.glb",
-            BuildingSize.Small,
-            new[] { (2, 2), (3, 2), (2, 3), (3, 3) },
-            1, 0.8f, null);
+        var original = new BuildingDto(
+            "shop_001", "Corner Shop", "meshes/shop.glb", "small",
+            [[2, 2], [3, 2], [2, 3], [3, 3]],
+            Floors: 1, Condition: 0.8f, InteriorChunkId: null,
+            new PlacementDto(0, 0, 2, 2));
 
-        var json = BuildingSerializer.ToBuildingJson(building, 0, 0);
-        var restored = BuildingSerializer.FromBuildingJson(json);
+        var json = JsonSerializer.Serialize(original, ContentPackSerializer.WriteOptions);
+        var restored = JsonSerializer.Deserialize<BuildingDto>(json, ContentPackSerializer.ReadOptions)!;
 
-        Assert.Equal(building.Id, restored.Id);
-        Assert.Equal(building.Name, restored.Name);
-        Assert.Equal(building.MeshAssetPath, restored.MeshAssetPath);
-        Assert.Equal(building.Size, restored.Size);
-        Assert.Equal(building.Footprint.Length, restored.Footprint.Length);
-        Assert.Equal(building.Floors, restored.Floors);
-        Assert.Equal(building.Condition, restored.Condition);
-        Assert.Equal(building.InteriorChunkId, restored.InteriorChunkId);
+        Assert.Equal(original.Id, restored.Id);
+        Assert.Equal(original.Name, restored.Name);
+        Assert.Equal(original.MeshAsset, restored.MeshAsset);
+        Assert.Equal(original.Size, restored.Size);
+        Assert.Equal(original.Floors, restored.Floors);
+        Assert.Equal(original.Condition, restored.Condition);
+        Assert.Equal(original.InteriorChunkId, restored.InteriorChunkId);
+        Assert.Equal(original.Placement, restored.Placement);
+        Assert.Equal(original.Footprint!.Length, restored.Footprint!.Length);
     }
 
     [Fact]
-    public void PropDefinition_RoundTrip()
+    public void PropDto_RoundTrip()
     {
-        var prop = new PropDefinition(
+        var original = new PropDto(
             "car_001", "meshes/car.glb",
-            0, 0, 5, 7, 45f, 1.5f, true,
-            new[] { (5, 7), (6, 7) });
+            new PlacementDto(0, 0, 5, 7),
+            Rotation: 45f, Scale: 1.5f, BlocksWalkability: true,
+            Footprint: [[5, 7], [6, 7]]);
 
-        var json = BuildingSerializer.ToPropJson(prop);
-        var restored = BuildingSerializer.FromPropJson(json);
+        var json = JsonSerializer.Serialize(original, ContentPackSerializer.WriteOptions);
+        var restored = JsonSerializer.Deserialize<PropDto>(json, ContentPackSerializer.ReadOptions)!;
 
-        Assert.Equal(prop.Id, restored.Id);
-        Assert.Equal(prop.MeshAssetPath, restored.MeshAssetPath);
-        Assert.Equal(prop.ChunkX, restored.ChunkX);
-        Assert.Equal(prop.ChunkY, restored.ChunkY);
-        Assert.Equal(prop.LocalTileX, restored.LocalTileX);
-        Assert.Equal(prop.LocalTileY, restored.LocalTileY);
-        Assert.Equal(prop.RotationDegrees, restored.RotationDegrees);
-        Assert.Equal(prop.Scale, restored.Scale);
-        Assert.Equal(prop.BlocksWalkability, restored.BlocksWalkability);
-        Assert.Equal(prop.Footprint!.Length, restored.Footprint!.Length);
+        Assert.Equal(original.Id, restored.Id);
+        Assert.Equal(original.MeshAsset, restored.MeshAsset);
+        Assert.Equal(original.Placement, restored.Placement);
+        Assert.Equal(original.Rotation, restored.Rotation);
+        Assert.Equal(original.Scale, restored.Scale);
+        Assert.Equal(original.BlocksWalkability, restored.BlocksWalkability);
+        Assert.Equal(original.Footprint!.Length, restored.Footprint!.Length);
     }
 
     [Fact]
-    public void SerializeDeserialize_Buildings_Json()
+    public void SerializeDeserialize_Buildings_Collection()
     {
         var buildings = new[]
         {
-            new BuildingJson("b1", "Building 1", "meshes/b1.glb", "Small",
-                new[] { new[] { 0, 0 }, new[] { 1, 0 } }, 1, 1f, null,
-                new PlacementJson(0, 0, 0, 0)),
-            new BuildingJson("b2", "Building 2", "meshes/b2.glb", "Large",
-                new[] { new[] { 4, 4 }, new[] { 5, 4 }, new[] { 6, 4 }, new[] { 4, 5 }, new[] { 5, 5 } },
-                2, 0.5f, "interior_b2",
-                new PlacementJson(0, 0, 4, 4))
+            new BuildingDto("b1", "Building 1", "meshes/b1.glb", "small",
+                [[0, 0], [1, 0]], 1, 1f, null, new PlacementDto(0, 0, 0, 0)),
+            new BuildingDto("b2", "Building 2", "meshes/b2.glb", "large",
+                [[4, 4], [5, 4], [6, 4], [4, 5], [5, 5]],
+                2, 0.5f, "interior_b2", new PlacementDto(0, 0, 4, 4)),
         };
 
-        var json = BuildingSerializer.SerializeBuildings(buildings);
-        var restored = BuildingSerializer.DeserializeBuildings(json);
+        var json = JsonSerializer.Serialize(buildings, ContentPackSerializer.WriteOptions);
+        var restored = JsonSerializer.Deserialize<BuildingDto[]>(json, ContentPackSerializer.ReadOptions);
 
+        Assert.NotNull(restored);
         Assert.Equal(2, restored.Length);
         Assert.Equal("b1", restored[0].Id);
         Assert.Equal("b2", restored[1].Id);
+        Assert.Equal("interior_b2", restored[1].InteriorChunkId);
     }
 
     [Fact]
-    public void SerializeDeserialize_Props_Json()
+    public void SerializeDeserialize_Props_Collection()
     {
         var props = new[]
         {
-            new PropJson("p1", "meshes/barrel.glb",
-                new PlacementJson(0, 0, 3, 3), 0f, 1f, false, null),
-            new PropJson("p2", "meshes/car.glb",
-                new PlacementJson(0, 0, 7, 2), 90f, 1f, true,
-                new[] { new[] { 7, 2 }, new[] { 8, 2 } })
+            new PropDto("p1", "meshes/barrel.glb",
+                new PlacementDto(0, 0, 3, 3), 0f, 1f, false, null),
+            new PropDto("p2", "meshes/car.glb",
+                new PlacementDto(0, 0, 7, 2), 90f, 1f, true,
+                [[7, 2], [8, 2]]),
         };
 
-        var json = BuildingSerializer.SerializeProps(props);
-        var restored = BuildingSerializer.DeserializeProps(json);
+        var json = JsonSerializer.Serialize(props, ContentPackSerializer.WriteOptions);
+        var restored = JsonSerializer.Deserialize<PropDto[]>(json, ContentPackSerializer.ReadOptions);
 
+        Assert.NotNull(restored);
         Assert.Equal(2, restored.Length);
         Assert.Equal("p1", restored[0].Id);
         Assert.False(restored[0].BlocksWalkability);
@@ -95,34 +96,16 @@ public class BuildingSerializationTests
     }
 
     [Fact]
-    public void LoadBuildings_MissingFile_ReturnsEmpty()
+    public void BuildingDto_NullOptionalFields_OmittedInJson()
     {
-        var tempDir = Path.Combine(Path.GetTempPath(), $"oravey_test_{Guid.NewGuid():N}");
-        Directory.CreateDirectory(tempDir);
-        try
-        {
-            var result = BuildingSerializer.LoadBuildings(tempDir);
-            Assert.Empty(result);
-        }
-        finally
-        {
-            Directory.Delete(tempDir, true);
-        }
-    }
+        var building = new BuildingDto(
+            "b3", "Ruin", "meshes/ruin.glb", "small",
+            Footprint: null, Floors: 1, Condition: 0.1f, InteriorChunkId: null,
+            new PlacementDto(0, 0, 0, 0));
 
-    [Fact]
-    public void LoadProps_MissingFile_ReturnsEmpty()
-    {
-        var tempDir = Path.Combine(Path.GetTempPath(), $"oravey_test_{Guid.NewGuid():N}");
-        Directory.CreateDirectory(tempDir);
-        try
-        {
-            var result = BuildingSerializer.LoadProps(tempDir);
-            Assert.Empty(result);
-        }
-        finally
-        {
-            Directory.Delete(tempDir, true);
-        }
+        var json = JsonSerializer.Serialize(building, ContentPackSerializer.WriteOptions);
+
+        Assert.DoesNotContain("footprint", json);
+        Assert.DoesNotContain("interiorChunkId", json);
     }
 }

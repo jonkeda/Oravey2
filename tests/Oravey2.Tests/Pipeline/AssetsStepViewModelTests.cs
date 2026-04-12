@@ -1,3 +1,4 @@
+using Oravey2.MapGen.Assets;
 using Oravey2.MapGen.Generation;
 using Oravey2.MapGen.Pipeline;
 using Oravey2.MapGen.ViewModels;
@@ -336,9 +337,9 @@ public class AssetsStepViewModelTests
             // Verify buildings were updated
             var townDir = Path.Combine(root, "towns", "haven");
             var loaded = TownMapFiles.Load(townDir);
-            Assert.Equal("meshes/primitives/pyramid.glb", loaded.Buildings[0].MeshAsset); // landmark
-            Assert.Equal("meshes/primitives/cube.glb", loaded.Buildings[1].MeshAsset);    // key location
-            Assert.Equal("meshes/primitives/sphere.glb", loaded.Props[0].MeshAsset);      // prop
+            Assert.Equal(PrimitiveMeshWriter.PyramidPath, loaded.Buildings[0].MeshAsset); // landmark
+            Assert.Equal(PrimitiveMeshWriter.CubePath, loaded.Buildings[1].MeshAsset);    // key location
+            Assert.Equal(PrimitiveMeshWriter.SpherePath, loaded.Props[0].MeshAsset);      // prop
 
             // Verify primitives were created
             var primDir = Path.Combine(root, "assets", "meshes", "primitives");

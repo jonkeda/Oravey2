@@ -19,6 +19,7 @@ public static class MinimapColourMapper
         [SurfaceType.Mud]      = 0xFF6B8E23, // olive (Swamp-like)
         [SurfaceType.Asphalt]  = 0xFF424242, // dark grey (roads)
         [SurfaceType.Metal]    = 0xFFB0BEC5, // light grey
+        [SurfaceType.Gravel]   = 0xFF9E9D9B, // warm grey
     };
 
     /// <summary>Water colour (used when a tile is flagged as water).</summary>
