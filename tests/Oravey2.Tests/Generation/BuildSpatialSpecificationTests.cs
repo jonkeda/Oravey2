@@ -237,6 +237,37 @@ public class BuildSpatialSpecificationTests
         return baseSpec;
     }
 
+    [Fact]
+    public void Build_DuplicateBuildingNames_TakesFirstWithoutThrowing()
+    {
+        var llmSpec = CreateTestLlmSpec();
+
+        // Add a duplicate "Cathedral" with different coordinates
+        llmSpec.BuildingPlacements.Add(new LlmBuildingPlacementDto
+        {
+            BuildingName = "Cathedral",
+            CenterLat = 52.6,
+            CenterLon = 4.6,
+            WidthMeters = 30.0,
+            DepthMeters = 35.0,
+            RotationDegrees = 90.0,
+            AlignmentHint = "on_main_road"
+        });
+
+        var design = CreateTestDesign();
+
+        // Should not throw — duplicates are silently de-duped (first wins)
+        var spec = BuildSpatialSpecification.Build(llmSpec, design);
+
+        Assert.NotNull(spec);
+        Assert.Equal(2, spec.BuildingPlacements.Count); // Cathedral + Market
+        Assert.Contains("Cathedral", spec.BuildingPlacements.Keys);
+
+        // Verify first placement was kept (original at 52.5, not duplicate at 52.6)
+        var cathedral = spec.BuildingPlacements["Cathedral"];
+        Assert.Equal(52.5, cathedral.CenterLat, 0.01);
+    }
+
     private TownDesign CreateTestDesign()
     {
         var landmarks = new List<LandmarkBuilding>

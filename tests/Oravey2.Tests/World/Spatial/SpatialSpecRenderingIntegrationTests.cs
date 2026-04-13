@@ -503,4 +503,100 @@ public class SpatialSpecRenderingIntegrationTests
         }
         Assert.True(hasStructures, "Full scene should render at least some building structures");
     }
+
+    // --- Edge-Case Tests ---
+
+    [Fact]
+    public void Render_EmptyBuildingPlacements_NoException()
+    {
+        var bounds = new BoundingBox(0.0, 1.0, 0.0, 1.0);
+        var spec = new TownSpatialSpecification(
+            bounds,
+            new Dictionary<string, BuildingPlacement>(),
+            new RoadNetwork(new List<Vector2>(), new List<RoadEdge>(), 0),
+            new List<SpatialWaterBody>(),
+            "flat");
+
+        var renderer = CreateRenderer();
+        var mapData = CreateEmptyMap();
+
+        var result = renderer.Render(spec, mapData);
+
+        Assert.NotNull(result);
+        Assert.NotNull(result.BuildingStats);
+        Assert.Equal(0, result.BuildingStats.Count);
+        Assert.Equal(0, result.BuildingStats.TilesRendered);
+    }
+
+    [Fact]
+    public void Render_EmptyWaterBodies_NoException()
+    {
+        var bounds = new BoundingBox(0.0, 1.0, 0.0, 1.0);
+        var buildings = new Dictionary<string, BuildingPlacement>
+        {
+            { "Hall", new BuildingPlacement("Hall", 0.5, 0.5, 50.0, 40.0, 0.0, "square") }
+        };
+        var spec = new TownSpatialSpecification(
+            bounds,
+            buildings,
+            new RoadNetwork(new List<Vector2>(), new List<RoadEdge>(), 0),
+            new List<SpatialWaterBody>(),
+            "flat");
+
+        var renderer = CreateRenderer();
+        var mapData = CreateEmptyMap();
+
+        var result = renderer.Render(spec, mapData);
+
+        Assert.NotNull(result);
+        Assert.NotNull(result.WaterStats);
+        Assert.Equal(0, result.WaterStats.Count);
+        Assert.Equal(0, result.WaterStats.TilesRendered);
+    }
+
+    [Fact]
+    public void DeterministicHash_SameInput_AlwaysSameOutput()
+    {
+        var hash1 = SpatialSpecRenderer.DeterministicHash("Town Hall");
+        var hash2 = SpatialSpecRenderer.DeterministicHash("Town Hall");
+        Assert.Equal(hash1, hash2);
+    }
+
+    [Fact]
+    public void DeterministicHash_DifferentInputs_DifferentOutputs()
+    {
+        var hash1 = SpatialSpecRenderer.DeterministicHash("Town Hall");
+        var hash2 = SpatialSpecRenderer.DeterministicHash("Market");
+        Assert.NotEqual(hash1, hash2);
+    }
+
+    [Fact]
+    public void DeterministicHash_EmptyString_DoesNotReturnZero()
+    {
+        var hash = SpatialSpecRenderer.DeterministicHash("");
+        // Empty string should still produce a non-zero hash (FNV offset basis)
+        Assert.NotEqual(0, hash);
+    }
+
+    [Fact]
+    public void Render_VerySmallBuilding_AtLeastOneTile()
+    {
+        var bounds = new BoundingBox(0.0, 1.0, 0.0, 1.0);
+        var buildings = new Dictionary<string, BuildingPlacement>
+        {
+            { "Tiny", new BuildingPlacement("Tiny", 0.5, 0.5, 1.0, 1.0, 0.0, "center") }
+        };
+        var spec = new TownSpatialSpecification(bounds, buildings,
+            new RoadNetwork(new List<Vector2>(), new List<RoadEdge>(), 0),
+            new List<SpatialWaterBody>(), "flat");
+
+        var renderer = CreateRenderer();
+        var mapData = CreateEmptyMap();
+        var result = renderer.Render(spec, mapData);
+
+        Assert.NotNull(result.BuildingStats);
+        Assert.Equal(1, result.BuildingStats.Count);
+        Assert.True(result.BuildingStats.TilesRendered >= 1,
+            "Even a 1m building should render at least 1 tile");
+    }
 }

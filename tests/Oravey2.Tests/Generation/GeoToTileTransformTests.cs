@@ -131,6 +131,38 @@ public class GeoToTileTransformTests
         Assert.True(outside.X >= 0);
         Assert.True(outside.Y >= 0);
     }
+
+    [Fact]
+    public void ToTileCoord_FarOutsideBounds_ClampsToEdge()
+    {
+        var bbox = new BoundingBox(52.0, 53.0, 4.0, 5.0);
+        var transform = new GeoToTileTransform(bbox, tileSizeMeters: 2.0f);
+        var (width, height) = transform.GetGridDimensions();
+
+        // Point far south and west of bounds
+        var sw = transform.ToTileCoord(0.0, 0.0);
+        Assert.True(sw.X >= 0 && sw.X < 1.0f, "Clamped SW should map near tile-origin X");
+        Assert.True(sw.Y >= 0 && sw.Y < 1.0f, "Clamped SW should map near tile-origin Y");
+
+        // Point far north and east of bounds
+        var ne = transform.ToTileCoord(90.0, 180.0);
+        Assert.True(ne.X >= width - 1, "Clamped NE should map near grid-max X");
+        Assert.True(ne.Y >= height - 1, "Clamped NE should map near grid-max Y");
+    }
+
+    [Fact]
+    public void GetGridDimensions_VerySmallBounds_ReturnsMinimumGrid()
+    {
+        // Bounding box spanning < 1 meter in each direction
+        var bbox = new BoundingBox(52.0, 52.000001, 4.0, 4.000001);
+        var transform = new GeoToTileTransform(bbox, tileSizeMeters: 2.0f);
+
+        var (width, height) = transform.GetGridDimensions();
+
+        // Grid clamps to minimum of 50 even for tiny bounds
+        Assert.True(width >= 50, "Width should be at least 50 (minimum clamp)");
+        Assert.True(height >= 50, "Height should be at least 50 (minimum clamp)");
+    }
 }
 
 public class TownSpatialTransformTests
