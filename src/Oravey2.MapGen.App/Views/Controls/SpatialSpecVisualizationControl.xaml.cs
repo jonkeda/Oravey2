@@ -38,26 +38,36 @@ public partial class SpatialSpecVisualizationControl : ContentView
         }
     }
 
-    private void OnPinch(object sender, EventArgs e)
+    private void OnPinch(object sender, PinchGestureUpdatedEventArgs e)
     {
-        _zoomLevel = Math.Clamp(_zoomLevel * 1.05f, 0.1f, 10.0f);
-        Canvas.Invalidate();
+        if (e.Status == GestureStatus.Running)
+        {
+            _zoomLevel = Math.Clamp(_zoomLevel * (float)e.Scale, 0.1f, 10.0f);
+            Canvas.Invalidate();
+        }
     }
+
+    private float _lastPanX, _lastPanY;
 
     private void OnDragStart(object sender, EventArgs e)
     {
-        // Handle drag start
+        _lastPanX = _panX;
+        _lastPanY = _panY;
     }
 
-    private void OnDrag(object sender, EventArgs e)
+    private void OnDrag(object sender, PanUpdatedEventArgs e)
     {
-        // Handle drag
-        Canvas.Invalidate();
+        if (e.StatusType == GestureStatus.Running)
+        {
+            _panX = _lastPanX + (float)e.TotalX;
+            _panY = _lastPanY + (float)e.TotalY;
+            Canvas.Invalidate();
+        }
     }
 
     private void OnDragEnd(object sender, EventArgs e)
     {
-        // Handle drag end
+        // Pan complete
     }
 
     /// Custom drawable for rendering spatial spec
@@ -85,11 +95,11 @@ public partial class SpatialSpecVisualizationControl : ContentView
             canvas.FillColor = ColorGrass;
             canvas.FillRectangle(dirtyRect);
 
-            // Transform canvas for zoom and pan
+            // Calculate cell size — zoom > 1 makes cells bigger
             var (gridWidth, gridHeight) = Transform.GetGridDimensions();
-            float cellWidth = (dirtyRect.Width - 8) / (gridWidth * _control._zoomLevel);
-            float cellHeight = (dirtyRect.Height - 8) / (gridHeight * _control._zoomLevel);
-            float cellSize = Math.Min(cellWidth, cellHeight);
+            float cellWidth = (dirtyRect.Width - 8) / gridWidth;
+            float cellHeight = (dirtyRect.Height - 8) / gridHeight;
+            float cellSize = Math.Min(cellWidth, cellHeight) * _control._zoomLevel;
 
             canvas.Translate(_control._panX + 4, _control._panY + 4);
 

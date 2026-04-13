@@ -10,7 +10,12 @@
                       Grid.Row="0"
                       BackgroundColor="#F0F0F0"
                       VerticalOptions="FillAndExpand"
-                      HorizontalOptions="FillAndExpand" />
+                      HorizontalOptions="FillAndExpand">
+            <GraphicsView.GestureRecognizers>
+                <PinchGestureRecognizer PinchUpdated="OnPinch" />
+                <PanGestureRecognizer PanUpdated="OnDrag" />
+            </GraphicsView.GestureRecognizers>
+        </GraphicsView>
 
         <!-- Legend -->
         <Border Grid.Row="1"
