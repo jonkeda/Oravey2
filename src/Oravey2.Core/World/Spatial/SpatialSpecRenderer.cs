@@ -1,10 +1,9 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Oravey2.Contracts.Spatial;
-using Oravey2.Core.Framework.Logging;
-using Oravey2.Core.Framework.Services;
 using Oravey2.Core.World.Terrain;
 
 namespace Oravey2.Core.World.Spatial;
@@ -17,18 +16,10 @@ namespace Oravey2.Core.World.Spatial;
 public sealed class SpatialSpecRenderer
 {
     private readonly ILogger<SpatialSpecRenderer> _logger;
-    private readonly List<CollisionRecord> _collisions = new();
 
-    public IReadOnlyList<CollisionRecord> Collisions => _collisions.AsReadOnly();
-
-    public SpatialSpecRenderer()
+    public SpatialSpecRenderer(ILogger<SpatialSpecRenderer>? logger = null)
     {
-        var loggerFactory = GameLoggerFactory.Null;
-        if (ServiceLocator.Instance.TryGet<GameLoggerFactory>(out var factory) && factory != null)
-        {
-            loggerFactory = factory;
-        }
-        _logger = loggerFactory.CreateLogger<SpatialSpecRenderer>();
+        _logger = logger ?? NullLogger<SpatialSpecRenderer>.Instance;
     }
 
     /// <summary>
@@ -40,7 +31,7 @@ public sealed class SpatialSpecRenderer
         TileMapData mapData,
         float tileSize = 1.0f)
     {
-        _collisions.Clear();
+        var collisions = new List<CollisionRecord>();
 
         var result = new SpatialSpecRenderingResult();
 
@@ -51,16 +42,16 @@ public sealed class SpatialSpecRenderer
         result.TerrainStats = RenderTerrain(mapData, spec, transformer);
 
         // 2. Render water second (no occlusion)
-        result.WaterStats = RenderWater(mapData, spec, transformer);
+        result.WaterStats = RenderWater(mapData, spec, transformer, collisions);
 
         // 3. Render roads third
-        result.RoadStats = RenderRoads(mapData, spec, transformer);
+        result.RoadStats = RenderRoads(mapData, spec, transformer, collisions);
 
         // 4. Render buildings last (topmost layer)
-        result.BuildingStats = RenderBuildings(mapData, spec, transformer);
+        result.BuildingStats = RenderBuildings(mapData, spec, transformer, collisions);
 
-        result.CollisionCount = _collisions.Count;
-        result.Collisions = _collisions.ToList();
+        result.CollisionCount = collisions.Count;
+        result.Collisions = collisions;
 
         _logger.LogInformation(
             "Rendered spatial spec: {Buildings} buildings, {Roads} road segments, {Water} water bodies",
@@ -68,10 +59,10 @@ public sealed class SpatialSpecRenderer
             result.RoadStats.SegmentCount,
             result.WaterStats.Count);
 
-        if (_collisions.Count > 0)
+        if (collisions.Count > 0)
         {
-            _logger.LogWarning("Found {Count} collisions during rendering", _collisions.Count);
-            foreach (var collision in _collisions)
+            _logger.LogWarning("Found {Count} collisions during rendering", collisions.Count);
+            foreach (var collision in collisions)
                 _logger.LogWarning("[COLLISION] {Message}", collision.Message);
         }
 
@@ -97,7 +88,8 @@ public sealed class SpatialSpecRenderer
     private WaterRenderingStats RenderWater(
         TileMapData mapData,
         TownSpatialSpecification spec,
-        GeoToTileTransformer transformer)
+        GeoToTileTransformer transformer,
+        List<CollisionRecord> collisions)
     {
         var stats = new WaterRenderingStats
         {
@@ -121,7 +113,7 @@ public sealed class SpatialSpecRenderer
                     // Check for collisions with buildings
                     if (existing.StructureId != 0)
                     {
-                        _collisions.Add(new CollisionRecord(
+                        collisions.Add(new CollisionRecord(
                             $"Water '{water.Name}' overlaps building structure at tile ({tx}, {ty})",
                             CollisionType.WaterBuildingOverlap));
                     }
@@ -139,7 +131,8 @@ public sealed class SpatialSpecRenderer
     private RoadRenderingStats RenderRoads(
         TileMapData mapData,
         TownSpatialSpecification spec,
-        GeoToTileTransformer transformer)
+        GeoToTileTransformer transformer,
+        List<CollisionRecord> collisions)
     {
         var stats = new RoadRenderingStats
         {
@@ -163,7 +156,7 @@ public sealed class SpatialSpecRenderer
                     // Check for collisions with buildings
                     if (existing.StructureId != 0)
                     {
-                        _collisions.Add(new CollisionRecord(
+                        collisions.Add(new CollisionRecord(
                             $"Road overlaps building structure at tile ({tx}, {ty})",
                             CollisionType.RoadBuildingOverlap));
                     }
@@ -181,7 +174,8 @@ public sealed class SpatialSpecRenderer
     private BuildingRenderingStats RenderBuildings(
         TileMapData mapData,
         TownSpatialSpecification spec,
-        GeoToTileTransformer transformer)
+        GeoToTileTransformer transformer,
+        List<CollisionRecord> collisions)
     {
         var stats = new BuildingRenderingStats
         {
@@ -208,18 +202,18 @@ public sealed class SpatialSpecRenderer
                     // Check for collision with existing structure or water
                     if (existing.StructureId != 0)
                     {
-                        _collisions.Add(new CollisionRecord(
+                        collisions.Add(new CollisionRecord(
                             $"Building '{buildingName}' overlaps existing structure at tile ({tx}, {ty})",
                             CollisionType.BuildingBuildingOverlap));
                     }
                     if (existing.WaterLevel > 0)
                     {
-                        _collisions.Add(new CollisionRecord(
+                        collisions.Add(new CollisionRecord(
                             $"Building '{buildingName}' overlaps water at tile ({tx}, {ty})",
                             CollisionType.BuildingWaterOverlap));
                     }
 
-                    int structureId = buildingName.GetHashCode();
+                    int structureId = DeterministicHash(buildingName);
                     if (structureId == 0) structureId = 1;
 
                     var buildingTile = new TileData(
@@ -249,6 +243,23 @@ public sealed class SpatialSpecRenderer
         var normalized = degrees % 360;
         if (normalized < 0) normalized += 360;
         return (float)normalized;
+    }
+
+    /// <summary>
+    /// FNV-1a hash — deterministic across processes, machines, and .NET versions.
+    /// </summary>
+    internal static int DeterministicHash(string text)
+    {
+        unchecked
+        {
+            uint hash = 2166136261;
+            foreach (char c in text)
+            {
+                hash ^= c;
+                hash *= 16777619;
+            }
+            return (int)hash;
+        }
     }
 }
 
@@ -287,19 +298,14 @@ public sealed class GeoToTileTransformer
 
     public List<(int TileX, int TileY)> PolygonToTiles(List<Vector2> polygon)
     {
-        var tiles = new HashSet<(int, int)>();
+        if (polygon.Count < 3) return new List<(int, int)>();
 
-        for (int i = 0; i < polygon.Count; i++)
-        {
-            var p1 = polygon[i];
-            var p2 = polygon[(i + 1) % polygon.Count];
+        // Convert polygon vertices to tile coordinates
+        var tileVertices = polygon
+            .Select(p => GeoToTile(p.X, p.Y))
+            .ToList();
 
-            var edgeTiles = LineToTiles(p1.X, p1.Y, p2.X, p2.Y);
-            foreach (var tile in edgeTiles)
-                tiles.Add(tile);
-        }
-
-        return tiles.ToList();
+        return ScanlineFill(tileVertices);
     }
 
     public List<(int TileX, int TileY)> LineToTiles(double lat1, double lon1, double lat2, double lon2)
@@ -315,8 +321,6 @@ public sealed class GeoToTileTransformer
         double widthMeters, double depthMeters,
         double rotationDegrees)
     {
-        var tiles = new HashSet<(int, int)>();
-
         // Convert building dimensions from meters to degrees (rough approximation)
         double metersPerLatDegree = 111000.0;
         double centerLatRadians = centerLat * System.Math.PI / 180.0;
@@ -325,18 +329,52 @@ public sealed class GeoToTileTransformer
         double halfWidthDegrees = (widthMeters / 2) / metersPerLonDegree;
         double halfDepthDegrees = (depthMeters / 2) / metersPerLatDegree;
 
-        // Generate corner points with rotation
+        // Generate corner points with rotation, then delegate to polygon fill
         var corners = GetRotatedRectangleCorners(
             centerLat, centerLon, halfWidthDegrees, halfDepthDegrees, rotationDegrees);
 
-        // Rasterize filled rectangle using scanline approach
-        for (int i = 0; i < corners.Count; i++)
+        return PolygonToTiles(corners);
+    }
+
+    /// <summary>
+    /// Scanline fill algorithm: for each row in the tile-space bounding box,
+    /// find edge intersections and fill between pairs.
+    /// </summary>
+    private static List<(int TileX, int TileY)> ScanlineFill(List<(int TileX, int TileY)> tileVertices)
+    {
+        var tiles = new HashSet<(int, int)>();
+
+        int minX = tileVertices.Min(v => v.TileX);
+        int maxX = tileVertices.Max(v => v.TileX);
+        int minY = tileVertices.Min(v => v.TileY);
+        int maxY = tileVertices.Max(v => v.TileY);
+
+        for (int y = minY; y <= maxY; y++)
         {
-            var edge = LineToTiles(
-                corners[i].X, corners[i].Y,
-                corners[(i + 1) % corners.Count].X, corners[(i + 1) % corners.Count].Y);
-            foreach (var tile in edge)
-                tiles.Add(tile);
+            var intersections = new List<int>();
+
+            for (int i = 0; i < tileVertices.Count; i++)
+            {
+                var (x1, y1) = tileVertices[i];
+                var (x2, y2) = tileVertices[(i + 1) % tileVertices.Count];
+
+                if ((y1 <= y && y2 > y) || (y2 <= y && y1 > y))
+                {
+                    int xIntersect = x1 + (y - y1) * (x2 - x1) / (y2 - y1);
+                    intersections.Add(xIntersect);
+                }
+            }
+
+            intersections.Sort();
+
+            // Fill between pairs of intersections
+            for (int j = 0; j + 1 < intersections.Count; j += 2)
+            {
+                for (int x = intersections[j]; x <= intersections[j + 1]; x++)
+                {
+                    tiles.Add((x, y));
+                }
+            }
         }
 
         return tiles.ToList();
@@ -365,7 +403,8 @@ public sealed class GeoToTileTransformer
         {
             var rotX = dx * cos - dy * sin;
             var rotY = dx * sin + dy * cos;
-            result.Add(new Vector2((float)(centerLon + rotX), (float)(centerLat + rotY)));
+            // Convention: X=latitude, Y=longitude (matches all other Vector2 usage in spatial code)
+            result.Add(new Vector2((float)(centerLat + rotY), (float)(centerLon + rotX)));
         }
 
         return result;

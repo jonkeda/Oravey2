@@ -102,10 +102,10 @@ public class EndToEndSpatialSpecTests
         
         var waterPolygon = new List<Vector2>
         {
-            new(52.015f, 4.015f),
-            new(52.015f, 4.025f),
-            new(52.025f, 4.025f),
-            new(52.025f, 4.015f),
+            new(52.026f, 4.002f),
+            new(52.026f, 4.008f),
+            new(52.029f, 4.008f),
+            new(52.029f, 4.002f),
         };
         var waters = new List<SpatialWaterBody>
         {
