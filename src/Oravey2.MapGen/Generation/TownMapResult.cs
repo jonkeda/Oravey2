@@ -5,7 +5,26 @@ public sealed record TownMapResult(
     List<PlacedBuilding> Buildings,
     List<PlacedProp> Props,
     List<TownZone> Zones,
-    TownSpatialSpecification? SpatialSpec = null);
+    TownSpatialSpecification? SpatialSpec = null,
+    string? SpatialSpecJson = null)
+{
+    /// <summary>
+    /// Creates a TownMapResult with automatic serialization of the spatial spec to JSON.
+    /// </summary>
+    public static TownMapResult CreateWithSerializedSpec(
+        TownLayout layout,
+        List<PlacedBuilding> buildings,
+        List<PlacedProp> props,
+        List<TownZone> zones,
+        TownSpatialSpecification? spatialSpec = null)
+    {
+        var serializedJson = spatialSpec != null
+            ? SpatialSpecSerializer.SerializeToJson(spatialSpec)
+            : null;
+
+        return new TownMapResult(layout, buildings, props, zones, spatialSpec, serializedJson);
+    }
+}
 
 public sealed record TownLayout(
     int Width,

@@ -1,0 +1,184 @@
+[
+  {
+    "id": "prop_0",
+    "meshAsset": "meshes/vehicle_wreck.glb",
+    "placement": {
+      "chunkX": 0,
+      "chunkY": 0,
+      "localTileX": 13,
+      "localTileY": 11
+    },
+    "rotation": 269.9702,
+    "scale": 1.0247642,
+    "blocksWalkability": false
+  },
+  {
+    "id": "prop_1",
+    "meshAsset": "meshes/vehicle_wreck.glb",
+    "placement": {
+      "chunkX": 0,
+      "chunkY": 2,
+      "localTileX": 3,
+      "localTileY": 9
+    },
+    "rotation": 258.9603,
+    "scale": 1.082733,
+    "blocksWalkability": false
+  },
+  {
+    "id": "prop_2",
+    "meshAsset": "meshes/sandbags.glb",
+    "placement": {
+      "chunkX": 1,
+      "chunkY": 2,
+      "localTileX": 3,
+      "localTileY": 15
+    },
+    "rotation": 186.03456,
+    "scale": 0.8649481,
+    "blocksWalkability": true
+  },
+  {
+    "id": "prop_3",
+    "meshAsset": "meshes/crate.glb",
+    "placement": {
+      "chunkX": 1,
+      "chunkY": 0,
+      "localTileX": 5,
+      "localTileY": 13
+    },
+    "rotation": 40.02772,
+    "scale": 0.9619061,
+    "blocksWalkability": false
+  },
+  {
+    "id": "prop_4",
+    "meshAsset": "meshes/trash_pile.glb",
+    "placement": {
+      "chunkX": 0,
+      "chunkY": 2,
+      "localTileX": 11,
+      "localTileY": 1
+    },
+    "rotation": 281.56204,
+    "scale": 0.80495965,
+    "blocksWalkability": false
+  },
+  {
+    "id": "prop_5",
+    "meshAsset": "meshes/sandbags.glb",
+    "placement": {
+      "chunkX": 2,
+      "chunkY": 1,
+      "localTileX": 3,
+      "localTileY": 14
+    },
+    "rotation": 339.13766,
+    "scale": 1.1444843,
+    "blocksWalkability": false
+  },
+  {
+    "id": "prop_6",
+    "meshAsset": "meshes/crate.glb",
+    "placement": {
+      "chunkX": 0,
+      "chunkY": 0,
+      "localTileX": 11,
+      "localTileY": 11
+    },
+    "rotation": 44.848064,
+    "scale": 1.1395,
+    "blocksWalkability": false
+  },
+  {
+    "id": "prop_7",
+    "meshAsset": "meshes/barrel.glb",
+    "placement": {
+      "chunkX": 0,
+      "chunkY": 1,
+      "localTileX": 12,
+      "localTileY": 14
+    },
+    "rotation": 141.64781,
+    "scale": 1.1295303,
+    "blocksWalkability": false
+  },
+  {
+    "id": "prop_8",
+    "meshAsset": "meshes/sandbags.glb",
+    "placement": {
+      "chunkX": 1,
+      "chunkY": 0,
+      "localTileX": 0,
+      "localTileY": 6
+    },
+    "rotation": 314.36703,
+    "scale": 0.8847541,
+    "blocksWalkability": false
+  },
+  {
+    "id": "prop_9",
+    "meshAsset": "meshes/sandbags.glb",
+    "placement": {
+      "chunkX": 0,
+      "chunkY": 0,
+      "localTileX": 14,
+      "localTileY": 8
+    },
+    "rotation": 171.54832,
+    "scale": 1.0028625,
+    "blocksWalkability": false
+  },
+  {
+    "id": "prop_10",
+    "meshAsset": "meshes/sandbags.glb",
+    "placement": {
+      "chunkX": 2,
+      "chunkY": 0,
+      "localTileX": 3,
+      "localTileY": 14
+    },
+    "rotation": 37.529213,
+    "scale": 1.1954197,
+    "blocksWalkability": true
+  },
+  {
+    "id": "prop_11",
+    "meshAsset": "meshes/barrel.glb",
+    "placement": {
+      "chunkX": 2,
+      "chunkY": 1,
+      "localTileX": 15,
+      "localTileY": 6
+    },
+    "rotation": 192.43257,
+    "scale": 0.90736145,
+    "blocksWalkability": false
+  },
+  {
+    "id": "prop_12",
+    "meshAsset": "meshes/vehicle_wreck.glb",
+    "placement": {
+      "chunkX": 1,
+      "chunkY": 0,
+      "localTileX": 15,
+      "localTileY": 15
+    },
+    "rotation": 208.68979,
+    "scale": 1.1366836,
+    "blocksWalkability": false
+  },
+  {
+    "id": "prop_13",
+    "meshAsset": "meshes/sandbags.glb",
+    "placement": {
+      "chunkX": 2,
+      "chunkY": 2,
+      "localTileX": 12,
+      "localTileY": 8
+    },
+    "rotation": 295.5681,
+    "scale": 0.9720768,
+    "blocksWalkability": false
+  }
+]

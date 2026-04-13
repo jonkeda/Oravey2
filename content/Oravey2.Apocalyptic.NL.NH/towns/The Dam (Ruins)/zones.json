@@ -1,0 +1,50 @@
+[
+  {
+    "id": "zone_main",
+    "name": "The Dam (Ruins)",
+    "biome": 0,
+    "radiationLevel": 0,
+    "enemyDifficultyTier": 1,
+    "isFastTravelTarget": true,
+    "chunkStartX": 0,
+    "chunkStartY": 0,
+    "chunkEndX": 2,
+    "chunkEndY": 2
+  },
+  {
+    "id": "zone_hazard_0",
+    "name": "flooding zone",
+    "biome": 1,
+    "radiationLevel": 0.1,
+    "enemyDifficultyTier": 2,
+    "isFastTravelTarget": false,
+    "chunkStartX": 0,
+    "chunkStartY": 2,
+    "chunkEndX": 2,
+    "chunkEndY": 2
+  },
+  {
+    "id": "zone_hazard_1",
+    "name": "collapse zone",
+    "biome": 1,
+    "radiationLevel": 0.1,
+    "enemyDifficultyTier": 2,
+    "isFastTravelTarget": false,
+    "chunkStartX": 0,
+    "chunkStartY": 0,
+    "chunkEndX": 2,
+    "chunkEndY": 0
+  },
+  {
+    "id": "zone_hazard_2",
+    "name": "radiation zone",
+    "biome": 1,
+    "radiationLevel": 0.5,
+    "enemyDifficultyTier": 2,
+    "isFastTravelTarget": false,
+    "chunkStartX": 0,
+    "chunkStartY": 0,
+    "chunkEndX": 2,
+    "chunkEndY": 0
+  }
+]

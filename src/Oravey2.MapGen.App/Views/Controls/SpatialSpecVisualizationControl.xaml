@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Oravey2.MapGen.App.Views.SpatialSpecVisualizationControl"
+             AutomationId="SpatialSpecVisualization">
+    
+    <Grid RowDefinitions="*,Auto" BackgroundColor="{StaticResource Surface}" Padding="4">
+        <!-- Canvas for drawing -->
+        <GraphicsView x:Name="Canvas"
+                      Grid.Row="0"
+                      BackgroundColor="#F0F0F0"
+                      VerticalOptions="FillAndExpand"
+                      HorizontalOptions="FillAndExpand" />
+
+        <!-- Legend -->
+        <Border Grid.Row="1"
+                Style="{StaticResource CardBorder}"
+                Padding="8"
+                Margin="4">
+            <Border.StrokeShape><RoundRectangle CornerRadius="4" /></Border.StrokeShape>
+            <FlexLayout Wrap="Wrap" JustifyContent="Start" AlignItems="Center">
+                <!-- Grass -->
+                <HorizontalStackLayout Spacing="4" VerticalOptions="Center" Margin="0,0,12,0">
+                    <BoxView BackgroundColor="#90EE90" WidthRequest="12" HeightRequest="12" CornerRadius="2" />
+                    <Label Text="Grass" FontSize="12" TextColor="{StaticResource OnSurface}" VerticalOptions="Center" />
+                </HorizontalStackLayout>
+
+                <!-- Buildings -->
+                <HorizontalStackLayout Spacing="4" VerticalOptions="Center" Margin="0,0,12,0">
+                    <BoxView BackgroundColor="#808080" WidthRequest="12" HeightRequest="12" CornerRadius="2" />
+                    <Label Text="Buildings" FontSize="12" TextColor="{StaticResource OnSurface}" VerticalOptions="Center" />
+                </HorizontalStackLayout>
+
+                <!-- Roads -->
+                <HorizontalStackLayout Spacing="4" VerticalOptions="Center" Margin="0,0,12,0">
+                    <BoxView BackgroundColor="#333333" WidthRequest="12" HeightRequest="12" CornerRadius="2" />
+                    <Label Text="Roads" FontSize="12" TextColor="{StaticResource OnSurface}" VerticalOptions="Center" />
+                </HorizontalStackLayout>
+
+                <!-- Water -->
+                <HorizontalStackLayout Spacing="4" VerticalOptions="Center">
+                    <BoxView BackgroundColor="#4169E1" WidthRequest="12" HeightRequest="12" CornerRadius="2" />
+                    <Label Text="Water" FontSize="12" TextColor="{StaticResource OnSurface}" VerticalOptions="Center" />
+                </HorizontalStackLayout>
+            </FlexLayout>
+        </Border>
+    </Grid>
+
+</ContentView>

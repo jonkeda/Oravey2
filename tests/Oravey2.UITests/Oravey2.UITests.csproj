@@ -23,6 +23,7 @@
     <ProjectReference Include="..\..\Brinell\srcnew\Brinell.Maui\Brinell.Maui.csproj" />
     <ProjectReference Include="..\..\Brinell\srcnew\Brinell.Maui.FlaUI\Brinell.Maui.FlaUI.csproj" />
     <ProjectReference Include="..\..\src\Oravey2.Core\Oravey2.Core.csproj" />
+    <ProjectReference Include="..\..\src\Oravey2.MapGen\Oravey2.MapGen.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Oravey2.MapGen.ViewModels;assembly=Oravey2.MapGen"
+             xmlns:local="clr-namespace:Oravey2.MapGen.App.Views"
+             x:Class="Oravey2.MapGen.App.Views.LayoutStepView"
+             x:DataType="vm:LayoutStepViewModel"
+             AutomationId="LayoutStep">
+    
+    <ScrollView>
+        <VerticalStackLayout Spacing="16" Padding="8">
+
+            <!-- Header -->
+            <Label Text="⑦ Layout Design" Style="{StaticResource HeaderLabel}" />
+            <Label Text="Visualize and review the town layout from the spatial specification."
+                   TextColor="{StaticResource OnSurfaceVariant}" />
+
+            <!-- Status -->
+            <Label Text="{Binding StatusText}" 
+                   TextColor="{StaticResource OnSurfaceVariant}"
+                   AutomationId="LayoutStatusText" />
+
+            <!-- Toggle: Use Spatial Spec -->
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <Label Text="📍 Use Spatial Spec" 
+                       Grid.Column="0"
+                       VerticalOptions="Center"
+                       TextColor="{StaticResource OnSurface}" />
+                <Switch Grid.Column="1"
+                        IsToggled="{Binding UseSpatialSpec}"
+                        IsEnabled="{Binding HasSpatialSpec}"
+                        AutomationId="LayoutUseSpatialSpecToggle" />
+            </Grid>
+
+            <!-- Grid Information Card -->
+            <Border Style="{StaticResource CardBorder}" Padding="16" IsVisible="{Binding HasSpatialSpec}">
+                <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Grid Information" Style="{StaticResource SectionLabel}" />
+                    
+                    <Grid ColumnDefinitions="150,*" RowDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="8">
+                        <!-- Grid Dimensions -->
+                        <Label Text="Dimensions:" Grid.Row="0" Grid.Column="0"
+                               TextColor="{StaticResource OnSurfaceVariant}" />
+                        <Label Text="{Binding GridDimensionText}" Grid.Row="0" Grid.Column="1"
+                               TextColor="{StaticResource OnSurface}"
+                               AutomationId="LayoutGridDimensions"
+                               FontAttributes="Bold" />
+
+                        <!-- Building Count -->
+                        <Label Text="Buildings:" Grid.Row="1" Grid.Column="0"
+                               TextColor="{StaticResource OnSurfaceVariant}" />
+                        <Label Text="{Binding BuildingCount, StringFormat='{0} building(s)'}" 
+                               Grid.Row="1" Grid.Column="1"
+                               TextColor="{StaticResource OnSurface}"
+                               AutomationId="LayoutBuildingCount" />
+
+                        <!-- Road Network Length -->
+                        <Label Text="Road Length:" Grid.Row="2" Grid.Column="0"
+                               TextColor="{StaticResource OnSurfaceVariant}" />
+                        <Label Text="{Binding RoadNetworkLength, StringFormat='{0:F1} degrees'}" 
+                               Grid.Row="2" Grid.Column="1"
+                               TextColor="{StaticResource OnSurface}"
+                               AutomationId="LayoutRoadLength" />
+
+                        <!-- Water Surface Area -->
+                        <Label Text="Water Area:" Grid.Row="3" Grid.Column="0"
+                               TextColor="{StaticResource OnSurfaceVariant}" />
+                        <Label Text="{Binding WaterSurfaceArea, StringFormat='{0:F1} deg²'}" 
+                               Grid.Row="3" Grid.Column="1"
+                               TextColor="{StaticResource OnSurface}"
+                               AutomationId="LayoutWaterArea" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Visualization -->
+            <Border Style="{StaticResource CardBorder}" 
+                    Padding="8"
+                    IsVisible="{Binding UseSpatialSpec}"
+                    HeightRequest="400">
+                <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
+                <VerticalStackLayout Spacing="4">
+                    <local:SpatialSpecVisualizationControl x:Name="VisualizationControl" 
+                                                           VerticalOptions="FillAndExpand"
+                                                           HorizontalOptions="FillAndExpand"
+                                                           AutomationId="LayoutVisualization" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- View Controls -->
+            <FlexLayout Wrap="Wrap" JustifyContent="Start" AlignItems="Center"
+                       IsVisible="{Binding UseSpatialSpec}">
+                <Label Text="{Binding ZoomText}"
+                       TextColor="{StaticResource OnSurfaceVariant}"
+                       FontSize="12"
+                       VerticalOptions="Center"
+                       AutomationId="LayoutZoomLevel" />
+                <Button Text="Reset View"
+                        Command="{Binding ResetViewCommand}"
+                        Style="{StaticResource SecondaryButton}"
+                        AutomationId="LayoutResetViewButton"
+                        Padding="8,4"
+                        Margin="4,0,0,0" />
+                <Button Text="Fit to Screen"
+                        Command="{Binding FitToScreenCommand}"
+                        Style="{StaticResource SecondaryButton}"
+                        AutomationId="LayoutFitToScreenButton"
+                        Padding="8,4"
+                        Margin="4,0,0,0" />
+            </FlexLayout>
+
+            <!-- Instructions -->
+            <Border Style="{StaticResource CardBorder}" Padding="12" IsVisible="{Binding UseSpatialSpec}">
+                <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
+                <Label Text="🖱️ Use mouse wheel to zoom, drag to pan"
+                       TextColor="{StaticResource OnSurfaceVariant}"
+                       FontSize="12" />
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentView>

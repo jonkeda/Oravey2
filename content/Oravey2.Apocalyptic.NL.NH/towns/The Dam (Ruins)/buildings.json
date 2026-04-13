@@ -1,0 +1,522 @@
+[
+  {
+    "id": "building_0",
+    "name": "The Broken Centraal",
+    "meshAsset": "meshes/the_broken_centraal.glb",
+    "size": "large",
+    "footprint": [
+      [
+        23,
+        23
+      ],
+      [
+        23,
+        24
+      ],
+      [
+        23,
+        25
+      ],
+      [
+        24,
+        23
+      ],
+      [
+        24,
+        24
+      ],
+      [
+        24,
+        25
+      ],
+      [
+        25,
+        23
+      ],
+      [
+        25,
+        24
+      ],
+      [
+        25,
+        25
+      ]
+    ],
+    "floors": 3,
+    "condition": 0.6,
+    "placement": {
+      "chunkX": 1,
+      "chunkY": 1,
+      "localTileX": 7,
+      "localTileY": 7
+    }
+  },
+  {
+    "id": "building_1",
+    "name": "The Sunken Palace",
+    "meshAsset": "meshes/the_sunken_palace.glb",
+    "size": "large",
+    "footprint": [
+      [
+        20,
+        29
+      ],
+      [
+        20,
+        30
+      ],
+      [
+        20,
+        31
+      ],
+      [
+        21,
+        29
+      ],
+      [
+        21,
+        30
+      ],
+      [
+        21,
+        31
+      ],
+      [
+        22,
+        29
+      ],
+      [
+        22,
+        30
+      ],
+      [
+        22,
+        31
+      ]
+    ],
+    "floors": 3,
+    "condition": 0.6,
+    "placement": {
+      "chunkX": 1,
+      "chunkY": 1,
+      "localTileX": 4,
+      "localTileY": 13
+    }
+  },
+  {
+    "id": "building_2",
+    "name": "The Silent Steeple",
+    "meshAsset": "meshes/the_silent_steeple.glb",
+    "size": "medium",
+    "footprint": [
+      [
+        20,
+        17
+      ],
+      [
+        20,
+        18
+      ],
+      [
+        21,
+        17
+      ],
+      [
+        21,
+        18
+      ]
+    ],
+    "floors": 2,
+    "condition": 0.6,
+    "placement": {
+      "chunkX": 1,
+      "chunkY": 1,
+      "localTileX": 4,
+      "localTileY": 1
+    }
+  },
+  {
+    "id": "building_3",
+    "name": "The Dredged Market",
+    "meshAsset": "meshes/the_dredged_market.glb",
+    "size": "medium",
+    "footprint": [
+      [
+        29,
+        30
+      ],
+      [
+        29,
+        31
+      ],
+      [
+        30,
+        30
+      ],
+      [
+        30,
+        31
+      ]
+    ],
+    "floors": 2,
+    "condition": 0.737499,
+    "placement": {
+      "chunkX": 1,
+      "chunkY": 1,
+      "localTileX": 13,
+      "localTileY": 14
+    }
+  },
+  {
+    "id": "building_4",
+    "name": "The Chronicler\u0027s Archive",
+    "meshAsset": "meshes/the_chronicler\u0027s_archive.glb",
+    "size": "medium",
+    "footprint": [
+      [
+        16,
+        7
+      ],
+      [
+        16,
+        8
+      ],
+      [
+        17,
+        7
+      ],
+      [
+        17,
+        8
+      ]
+    ],
+    "floors": 2,
+    "condition": 0.70287514,
+    "placement": {
+      "chunkX": 1,
+      "chunkY": 0,
+      "localTileX": 0,
+      "localTileY": 7
+    }
+  },
+  {
+    "id": "building_5",
+    "name": "The Salvage Collective",
+    "meshAsset": "meshes/the_salvage_collective.glb",
+    "size": "large",
+    "footprint": [
+      [
+        32,
+        15
+      ],
+      [
+        32,
+        16
+      ],
+      [
+        32,
+        17
+      ],
+      [
+        33,
+        15
+      ],
+      [
+        33,
+        16
+      ],
+      [
+        33,
+        17
+      ],
+      [
+        34,
+        15
+      ],
+      [
+        34,
+        16
+      ],
+      [
+        34,
+        17
+      ]
+    ],
+    "floors": 3,
+    "condition": 0.6875136,
+    "placement": {
+      "chunkX": 2,
+      "chunkY": 0,
+      "localTileX": 0,
+      "localTileY": 15
+    }
+  },
+  {
+    "id": "building_6",
+    "name": "The Healer\u0027s Haven",
+    "meshAsset": "meshes/the_healer\u0027s_haven.glb",
+    "size": "medium",
+    "footprint": [
+      [
+        35,
+        25
+      ],
+      [
+        35,
+        26
+      ],
+      [
+        36,
+        25
+      ],
+      [
+        36,
+        26
+      ]
+    ],
+    "floors": 2,
+    "condition": 0.66376173,
+    "placement": {
+      "chunkX": 2,
+      "chunkY": 1,
+      "localTileX": 3,
+      "localTileY": 9
+    }
+  },
+  {
+    "id": "building_7",
+    "name": "The Iron Garrison",
+    "meshAsset": "meshes/the_iron_garrison.glb",
+    "size": "large",
+    "footprint": [
+      [
+        7,
+        25
+      ],
+      [
+        7,
+        26
+      ],
+      [
+        7,
+        27
+      ],
+      [
+        8,
+        25
+      ],
+      [
+        8,
+        26
+      ],
+      [
+        8,
+        27
+      ],
+      [
+        9,
+        25
+      ],
+      [
+        9,
+        26
+      ],
+      [
+        9,
+        27
+      ]
+    ],
+    "floors": 3,
+    "condition": 0.5141803,
+    "placement": {
+      "chunkX": 0,
+      "chunkY": 1,
+      "localTileX": 7,
+      "localTileY": 9
+    }
+  },
+  {
+    "id": "building_8",
+    "name": "The Flooded Galleries",
+    "meshAsset": "meshes/the_flooded_galleries.glb",
+    "size": "medium",
+    "footprint": [
+      [
+        40,
+        25
+      ],
+      [
+        40,
+        26
+      ],
+      [
+        41,
+        25
+      ],
+      [
+        41,
+        26
+      ]
+    ],
+    "floors": 2,
+    "condition": 0.6077443,
+    "placement": {
+      "chunkX": 2,
+      "chunkY": 1,
+      "localTileX": 8,
+      "localTileY": 9
+    }
+  },
+  {
+    "id": "building_9",
+    "name": "The Weary Refuge",
+    "meshAsset": "meshes/the_weary_refuge.glb",
+    "size": "small",
+    "footprint": [
+      [
+        45,
+        25
+      ]
+    ],
+    "floors": 1,
+    "condition": 0.6619669,
+    "placement": {
+      "chunkX": 2,
+      "chunkY": 1,
+      "localTileX": 13,
+      "localTileY": 9
+    }
+  },
+  {
+    "id": "building_10",
+    "name": "The Vault",
+    "meshAsset": "meshes/the_vault.glb",
+    "size": "large",
+    "footprint": [
+      [
+        37,
+        6
+      ],
+      [
+        37,
+        7
+      ],
+      [
+        37,
+        8
+      ],
+      [
+        38,
+        6
+      ],
+      [
+        38,
+        7
+      ],
+      [
+        38,
+        8
+      ],
+      [
+        39,
+        6
+      ],
+      [
+        39,
+        7
+      ],
+      [
+        39,
+        8
+      ]
+    ],
+    "floors": 3,
+    "condition": 0.7791131,
+    "placement": {
+      "chunkX": 2,
+      "chunkY": 0,
+      "localTileX": 5,
+      "localTileY": 6
+    }
+  },
+  {
+    "id": "building_11",
+    "name": "The Spinner\u0027s Skeleton",
+    "meshAsset": "meshes/the_spinner\u0027s_skeleton.glb",
+    "size": "medium",
+    "footprint": [
+      [
+        10,
+        25
+      ],
+      [
+        10,
+        26
+      ],
+      [
+        11,
+        25
+      ],
+      [
+        11,
+        26
+      ]
+    ],
+    "floors": 2,
+    "condition": 0.769127,
+    "placement": {
+      "chunkX": 0,
+      "chunkY": 1,
+      "localTileX": 10,
+      "localTileY": 9
+    }
+  },
+  {
+    "id": "building_12",
+    "name": "Ruin 12",
+    "meshAsset": "meshes/generic_ruin.glb",
+    "size": "small",
+    "footprint": [
+      [
+        33,
+        14
+      ],
+      [
+        34,
+        14
+      ]
+    ],
+    "floors": 1,
+    "condition": 0.26976255,
+    "placement": {
+      "chunkX": 2,
+      "chunkY": 0,
+      "localTileX": 1,
+      "localTileY": 14
+    }
+  },
+  {
+    "id": "building_13",
+    "name": "Ruin 13",
+    "meshAsset": "meshes/generic_ruin.glb",
+    "size": "small",
+    "footprint": [
+      [
+        30,
+        8
+      ],
+      [
+        31,
+        8
+      ]
+    ],
+    "floors": 1,
+    "condition": 0.47536618,
+    "placement": {
+      "chunkX": 1,
+      "chunkY": 0,
+      "localTileX": 14,
+      "localTileY": 8
+    }
+  }
+]
