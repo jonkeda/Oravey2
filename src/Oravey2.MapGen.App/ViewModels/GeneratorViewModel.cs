@@ -72,9 +72,8 @@ public sealed class GeneratorViewModel : AppBaseViewModel
     public GeneratorViewModel(MapGeneratorService service)
     {
         _service = service;
-        _service.OnProgress += OnProgress;
 
-        GenerateCommand = new Command(async () => await GenerateAsync(), () => !IsGenerating);
+        GenerateCommand= new Command(async () => await GenerateAsync(), () => !IsGenerating);
         CancelCommand = new Command(Cancel, () => IsGenerating);
         SaveBlueprintCommand = new Command(async () => await SaveBlueprintAsync(), () => LastGeneratedJson is not null);
         CopyJsonCommand = new Command(async () => await CopyJsonAsync(), () => LastGeneratedJson is not null);
@@ -88,14 +87,7 @@ public sealed class GeneratorViewModel : AppBaseViewModel
         StatusMessage = "Generating...";
         _cts = new CancellationTokenSource();
 
-        // Apply current settings to service
-        _service.CliPath = Preferences.Get("CliPath", string.Empty);
-        _service.UseBYOK = Preferences.Get("UseBYOK", false);
-        _service.ProviderType = Preferences.Get("ProviderType", string.Empty);
-        _service.BaseUrl = Preferences.Get("BaseUrl", string.Empty);
-        try { _service.ApiKey = await SecureStorage.GetAsync("ApiKey"); } catch { }
-
-        // Load content pack asset catalog if configured
+        // Loadcontent pack asset catalog if configured
         var packPath = Preferences.Get("ContentPackPath", string.Empty);
         if (!string.IsNullOrWhiteSpace(packPath))
         {
@@ -221,18 +213,4 @@ public sealed class GeneratorViewModel : AppBaseViewModel
         StatusMessage = "Blueprint compilation has been removed. Procedural generation coming soon.";
     }
 
-    private void OnProgress(GenerationProgress progress)
-    {
-        MainThread.BeginInvokeOnMainThread(() =>
-        {
-            if (progress.StreamDelta is not null)
-                StreamingLog += progress.StreamDelta;
-            else if (progress.ToolName is not null)
-                StreamingLog += $"\n[Tool: {progress.ToolName}]{(progress.ToolResult is not null ? $" → {progress.ToolResult}" : "")}\n";
-            else
-                StreamingLog += $"\n{progress.Message}\n";
-
-            StatusMessage = progress.Message;
-        });
-    }
 }

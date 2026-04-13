@@ -23,14 +23,6 @@ public sealed class MapGeneratorService : IAsyncDisposable
     private bool _preferSpatialSpecs = true;
     private Action<string>? _logger;
 
-    public event Action<GenerationProgress>? OnProgress;
-
-    public string? CliPath { get; set; }
-    public string? ProviderType { get; set; }
-    public string? BaseUrl { get; set; }
-    public string? ApiKey { get; set; }
-    public bool UseBYOK { get; set; }
-
     /// <summary>
     /// Optional override for the asset registry. When set, this is used instead
     /// of the default embedded catalog. Set from content pack catalog path.
@@ -69,20 +61,6 @@ public sealed class MapGeneratorService : IAsyncDisposable
         {
             Success = false,
             ErrorMessage = "Blueprint generation pipeline has been removed. Procedural generation coming soon.",
-            Elapsed = TimeSpan.Zero
-        });
-    }
-
-    public Task<GenerationResult> RefineAsync(
-        string sessionId,
-        string refinementPrompt,
-        CancellationToken ct = default)
-    {
-        return Task.FromResult(new GenerationResult
-        {
-            Success = false,
-            ErrorMessage = "Blueprint generation pipeline has been removed.",
-            SessionId = sessionId,
             Elapsed = TimeSpan.Zero
         });
     }

@@ -80,6 +80,7 @@ internal sealed class LlmBuildingPlacementDto
     [Description("Alignment hint: 'on_main_road', 'square_corner', 'harbour_adjacent', 'residential_area', 'hillside'")]
     public string AlignmentHint { get; set; } = "on_main_road";
 
+    // TODO: Notes is part of the LLM schema but currently unused in ToDomain() mapping
     [Description("Optional notes about this placement")]
     public string? Notes { get; set; }
 }
@@ -113,6 +114,7 @@ internal sealed class LlmRoadEdgeDto
     [Description("Ending intersection index")]
     public int ToNodeIndex { get; set; }
 
+    // TODO: RoadType is part of the LLM schema but currently unused in ToDomain() mapping
     [Description("Road type: 'main', 'secondary', 'residential', 'alley'")]
     public string RoadType { get; set; } = "main";
 }

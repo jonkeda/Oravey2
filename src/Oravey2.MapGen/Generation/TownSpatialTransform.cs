@@ -8,7 +8,6 @@ public sealed class TownSpatialTransform
 {
     private readonly GeoToTileTransform _geoTransform;
     private readonly TownSpatialSpecification _spatialSpec;
-    private readonly Random _rng;
 
     public TownSpatialTransform(
         TownSpatialSpecification spec,
@@ -18,7 +17,6 @@ public sealed class TownSpatialTransform
     {
         _spatialSpec = spec;
         _geoTransform = new GeoToTileTransform(spec.RealWorldBounds, tileSizeMeters, maxGridDimension);
-        _rng = new Random(seed);
     }
 
     /// Convert all building placements to tile coordinates
