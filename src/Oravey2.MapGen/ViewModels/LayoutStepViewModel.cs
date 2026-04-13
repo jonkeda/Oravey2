@@ -192,6 +192,7 @@ public class LayoutStepViewModel : BaseViewModel
 
     private void FitToScreen()
     {
-        ZoomLevel = 100.0; // Could be more sophisticated
+        // TODO: Calculate proper zoom to fit grid in viewport once viewport size is available to the VM
+        ZoomLevel = 100.0;
     }
 }

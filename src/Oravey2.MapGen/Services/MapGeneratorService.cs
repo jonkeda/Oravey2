@@ -111,7 +111,7 @@ public sealed class MapGeneratorService : IAsyncDisposable
     /// <summary>
     /// Generate using spatial specification path.
     /// </summary>
-    private async Task<TownMapResult> GenerateWithSpatialSpecAsync(
+    private Task<TownMapResult> GenerateWithSpatialSpecAsync(
         TownDesign design,
         CuratedTown town,
         TownEntry townEntry,
@@ -119,8 +119,6 @@ public sealed class MapGeneratorService : IAsyncDisposable
         MapGenerationParams generationParams,
         CancellationToken ct)
     {
-        await Task.CompletedTask; // No async work yet, but structured for future enhancements
-        
         // Create spatial transform from spec
         var spatialSpec = design.SpatialSpec!;
         var tileSizeMeters = 1.0f; // Standard tile size
@@ -163,18 +161,20 @@ public sealed class MapGeneratorService : IAsyncDisposable
         var result = condenser.CondenseWithSpatialSpec(chunks, spatialTransform, ct);
 
         // Attach spatial spec to result for persistence
-        return TownMapResult.CreateWithSerializedSpec(
+        var townMapResult = TownMapResult.CreateWithSerializedSpec(
             result.Layout,
             result.Buildings,
             result.Props,
             result.Zones,
             spatialSpec);
+
+        return Task.FromResult(townMapResult);
     }
 
     /// <summary>
     /// Generate using procedural (non-spatial) path.
     /// </summary>
-    private async Task<TownMapResult> GenerateProceduralAsync(
+    private Task<TownMapResult> GenerateProceduralAsync(
         TownDesign design,
         CuratedTown town,
         TownEntry townEntry,
@@ -182,10 +182,8 @@ public sealed class MapGeneratorService : IAsyncDisposable
         MapGenerationParams generationParams,
         CancellationToken ct)
     {
-        await Task.CompletedTask; // No async work yet
-        
         var condenser = new TownMapCondenser(design);
-        return condenser.Condense(town, design, region, generationParams);
+        return Task.FromResult(condenser.Condense(town, design, region, generationParams));
     }
 
     /// <summary>
@@ -221,11 +219,11 @@ internal static class TileMapDataExtensions
 {
     public static int[][] ToTileArray(this TileMapData tileData)
     {
-        var result = new int[16][];
-        for (int y = 0; y < 16; y++)
+        var result = new int[tileData.Height][];
+        for (int y = 0; y < tileData.Height; y++)
         {
-            result[y] = new int[16];
-            for (int x = 0; x < 16; x++)
+            result[y] = new int[tileData.Width];
+            for (int x = 0; x < tileData.Width; x++)
             {
                 var tile = tileData.GetTileData(x, y);
                 result[y][x] = (int)tile.Surface;

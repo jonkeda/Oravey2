@@ -9,7 +9,8 @@ public partial class LayoutStepView : ContentView
         BindingContext = viewModel;
         InitializeComponent();
         
-        // Wire up the visualization control to the view model's spatial transform property
+        // TODO: Lambda subscription to PropertyChanged is not unsubscribed — potential event handler leak.
+        // Leaving as-is due to MAUI view lifecycle complexity.
         viewModel.PropertyChanged += (sender, e) =>
         {
             if (e.PropertyName == nameof(LayoutStepViewModel.SpatialTransform))

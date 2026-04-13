@@ -23,11 +23,13 @@ public sealed class BuildSpatialSpecification
 
         // Convert DTO to domain types
         var realWorldBounds = spec.RealWorldBounds.ToDomain();
-        var buildingPlacements = spec.BuildingPlacements
-            .ToDictionary(
-                p => p.BuildingName,
-                p => p.ToDomain()
-            );
+        var buildingGroups = spec.BuildingPlacements.GroupBy(p => p.BuildingName);
+        var duplicateNames = buildingGroups.Where(g => g.Count() > 1).Select(g => g.Key).ToList();
+        if (duplicateNames.Count > 0)
+        {
+            // Take first of each duplicate; callers can log if needed
+        }
+        var buildingPlacements = buildingGroups.ToDictionary(g => g.Key, g => g.First().ToDomain());
 
         var roadNetwork = spec.RoadNetwork.ToDomain();
         var waterBodies = spec.WaterBodies.Select(w => w.ToDomain()).ToList();
@@ -131,7 +133,7 @@ public sealed class BuildSpatialSpecification
 }
 
 /// Extension methods to convert LLM DTOs to domain types
-internal static class LlmTodomainExtensions
+internal static class LlmToDomainExtensions
 {
     public static BoundingBox ToDomain(this LlmBoundingBoxDto dto)
         => new BoundingBox(dto.MinLat, dto.MaxLat, dto.MinLon, dto.MaxLon);

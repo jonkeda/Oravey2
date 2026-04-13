@@ -458,7 +458,7 @@ public enum CollisionType
 /// <summary>
 /// Results of rendering a spatial specification.
 /// </summary>
-public sealed record SpatialSpecRenderingResult
+public sealed class SpatialSpecRenderingResult
 {
     public TerrainRenderingStats? TerrainStats { get; set; }
     public WaterRenderingStats? WaterStats { get; set; }
@@ -468,27 +468,27 @@ public sealed record SpatialSpecRenderingResult
     public List<CollisionRecord> Collisions { get; set; } = new();
 }
 
-public sealed record TerrainRenderingStats
+public sealed class TerrainRenderingStats
 {
     public string? Description { get; set; }
     public DateTime Timestamp { get; set; }
 }
 
-public sealed record WaterRenderingStats
+public sealed class WaterRenderingStats
 {
     public int Count { get; set; }
     public int TilesRendered { get; set; }
     public DateTime Timestamp { get; set; }
 }
 
-public sealed record RoadRenderingStats
+public sealed class RoadRenderingStats
 {
     public int SegmentCount { get; set; }
     public int TilesRendered { get; set; }
     public DateTime Timestamp { get; set; }
 }
 
-public sealed record BuildingRenderingStats
+public sealed class BuildingRenderingStats
 {
     public int Count { get; set; }
     public int TilesRendered { get; set; }
