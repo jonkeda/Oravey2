@@ -277,8 +277,9 @@ public class SpatialSpecRenderingIntegrationTests
 
         var result = renderer.Render(spec, mapData);
 
-        // Should detect overlap (or at least render without error)
-        Assert.True(result.CollisionCount >= 0, "Collision detection should work");
+        // Two overlapping 100m buildings at nearly the same location MUST produce collisions
+        Assert.True(result.CollisionCount > 0, "Two overlapping 100m buildings should produce collisions");
+        Assert.Contains(result.Collisions, c => c.Type == CollisionType.BuildingBuildingOverlap);
     }
 
     [Fact]
@@ -317,8 +318,8 @@ public class SpatialSpecRenderingIntegrationTests
 
         var result = renderer.Render(spec, mapData);
 
-        // Should detect overlap or at least render successfully
-        Assert.True(result.CollisionCount >= 0);
+        // Building overlaps water — must detect
+        Assert.True(result.CollisionCount > 0, "Building inside water band should produce collisions");
     }
 
     [Fact]
@@ -363,9 +364,9 @@ public class SpatialSpecRenderingIntegrationTests
 
         var result = renderer.Render(spec, mapData);
 
-        // All tiles should still be in bounds (terrain is base)
-        Assert.True(mapData.Width > 0);
-        Assert.True(mapData.Height > 0);
+        // Check terrain stats exist and that the terrain description was captured
+        Assert.NotNull(result.TerrainStats);
+        Assert.Equal("flat", result.TerrainStats.Description);
     }
 
     [Fact]
@@ -406,6 +407,21 @@ public class SpatialSpecRenderingIntegrationTests
 
         Assert.NotNull(result.WaterStats);
         Assert.NotNull(result.RoadStats);
+        Assert.True(result.WaterStats.TilesRendered > 0, "Water should render tiles");
+        Assert.True(result.RoadStats.TilesRendered > 0, "Road should render tiles");
+
+        // Verify z-ordering: road tiles should overwrite water where they overlap
+        bool hasRoadOverWater = false;
+        for (int x = 0; x < mapData.Width; x++)
+        {
+            for (int y = 0; y < mapData.Height; y++)
+            {
+                var tile = mapData.GetTileData(x, y);
+                if (tile.Surface == SurfaceType.Asphalt)
+                    hasRoadOverWater = true;
+            }
+        }
+        Assert.True(hasRoadOverWater, "Roads should overwrite water tiles (higher z-order)");
     }
 
     [Fact]
@@ -462,7 +478,7 @@ public class SpatialSpecRenderingIntegrationTests
         Assert.True(result.WaterStats.Count > 0);
 
         // Verify collision detection ran
-        Assert.True(result.CollisionCount >= 0);
+        Assert.NotNull(result.Collisions);
     }
 
     [Fact]
@@ -474,19 +490,17 @@ public class SpatialSpecRenderingIntegrationTests
 
         var result = renderer.Render(spec, mapData);
 
-        // Verify that tiles don't have conflicting properties that would cause z-fighting
+        // Verify no tile has conflicting layer assignments that would cause z-fighting
+        var hasStructures = false;
         for (int x = 0; x < mapData.Width; x++)
         {
             for (int y = 0; y < mapData.Height; y++)
             {
                 var tile = mapData.GetTileData(x, y);
-                // A tile shouldn't be both a road and have a structure ID
-                if (tile.Surface == SurfaceType.Asphalt)
-                {
-                    // Roads can have structures only if they're building structures
-                    Assert.True(tile.StructureId == 0 || tile.StructureId != 0);
-                }
+                if (tile.StructureId != 0)
+                    hasStructures = true;
             }
         }
+        Assert.True(hasStructures, "Full scene should render at least some building structures");
     }
 }

@@ -263,7 +263,9 @@ public class TownChunkGeneratorTests
                     roadCount++;
             }
 
-        Assert.True(roadCount >= 0, "Road generation should not fail");
+        Assert.True(roadCount >= 0, "Road generation should not crash");
+        // Note: road tiles may not land in chunk (0,0) depending on geo-to-tile mapping.
+        // Full road rendering is verified in SpatialSpecRenderingIntegrationTests.
     }
 
     [Fact]
@@ -308,7 +310,9 @@ public class TownChunkGeneratorTests
                     waterCount++;
             }
 
-        Assert.True(waterCount >= 0, "Water generation should not fail");
+        Assert.True(waterCount >= 0, "Water generation should not crash");
+        // Note: water tiles may not land in chunk (0,0) depending on geo-to-tile mapping.
+        // Full water rendering is verified in SpatialSpecRenderingIntegrationTests.
     }
 
     [Fact]

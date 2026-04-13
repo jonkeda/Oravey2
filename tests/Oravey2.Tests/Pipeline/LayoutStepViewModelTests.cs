@@ -150,7 +150,7 @@ public class LayoutStepViewModelTests
 
         vm.UpdatePreview(design);
 
-        Assert.True(vm.RoadNetworkLength >= 0.0);
+        Assert.True(vm.RoadNetworkLength > 0.0, "Road network with edges should have positive length");
     }
 
     [Fact]
@@ -161,7 +161,7 @@ public class LayoutStepViewModelTests
 
         vm.UpdatePreview(design);
 
-        Assert.True(vm.WaterSurfaceArea >= 0.0);
+        Assert.True(vm.WaterSurfaceArea > 0.0, "Design with water bodies should have positive area");
     }
 
     // --- Spatial Transform ---

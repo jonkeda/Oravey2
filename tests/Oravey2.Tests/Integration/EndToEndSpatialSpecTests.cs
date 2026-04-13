@@ -350,7 +350,7 @@ public class EndToEndSpatialSpecTests
     }
 
     [Fact]
-    public void City_RoadsConnected_NoGaps()
+    public void City_EmptyRoadNetwork_NoRoadTiles()
     {
         // Arrange
         var spec = CreateCitySpec();
@@ -360,9 +360,10 @@ public class EndToEndSpatialSpecTests
         // Act
         var result = renderer.Render(spec, map, TileSizeMeters);
 
-        // Assert - Road network properties
+        // Assert - City spec has no road edges
         Assert.NotNull(result.RoadStats);
-        Assert.True(result.RoadStats.TilesRendered >= 0);
+        Assert.Equal(0, result.RoadStats.TilesRendered);
+        Assert.Equal(0, result.RoadStats.SegmentCount);
     }
 
     // ============ Cross-Town Tests ============
@@ -471,9 +472,10 @@ public class EndToEndSpatialSpecTests
         Assert.True(result.BuildingStats.Count > 0, "Buildings should render");
         
         Assert.NotNull(result.RoadStats);
-        Assert.True(result.RoadStats.TilesRendered >= 0, "Roads should render");
+        Assert.Equal(0, result.RoadStats.TilesRendered);  // City spec has no road edges
         
         Assert.NotNull(result.WaterStats);
-        Assert.True(result.WaterStats.Count >= 0, "Water should render");
+        Assert.True(result.WaterStats.Count > 0, "City spec includes water bodies");
+        Assert.True(result.WaterStats.TilesRendered > 0, "Water bodies should produce tiles");
     }
 }
