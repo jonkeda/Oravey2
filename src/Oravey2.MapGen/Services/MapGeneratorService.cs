@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Text;
 using GitHub.Copilot.SDK;
+using Oravey2.Contracts.Spatial;
 using Oravey2.Core.World;
 using Oravey2.MapGen.Assets;
 using Oravey2.MapGen.Generation;

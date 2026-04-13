@@ -30,7 +30,7 @@ public class RegionStepViewModelTests : IDisposable
         Iso3166_2 = ["NL-NH"],
         PbfUrl = "https://example.com/nh.osm.pbf",
         Parent = "netherlands",
-        Bounds = new BoundingBox(52.9, 52.2, 5.2, 4.5),
+        Bounds = new GeoBoundingBox(52.9, 52.2, 5.2, 4.5),
     };
 
     [Fact]

@@ -1,4 +1,5 @@
 using System.Numerics;
+using Oravey2.Contracts.Spatial;
 using Oravey2.MapGen.Generation;
 using Oravey2.MapGen.ViewModels;
 

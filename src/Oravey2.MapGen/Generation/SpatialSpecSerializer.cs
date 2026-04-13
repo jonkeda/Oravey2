@@ -1,6 +1,7 @@
 using System.Numerics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Oravey2.Contracts.Spatial;
 
 namespace Oravey2.MapGen.Generation;
 

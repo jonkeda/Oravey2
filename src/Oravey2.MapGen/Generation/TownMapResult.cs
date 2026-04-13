@@ -1,3 +1,5 @@
+using Oravey2.Contracts.Spatial;
+
 namespace Oravey2.MapGen.Generation;
 
 public sealed record TownMapResult(

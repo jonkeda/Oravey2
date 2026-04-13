@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Oravey2.Contracts.Spatial;
 using Xunit;
 using Oravey2.MapGen.Generation;
 

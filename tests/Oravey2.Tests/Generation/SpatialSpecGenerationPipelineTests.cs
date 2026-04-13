@@ -1,10 +1,10 @@
 using System.Numerics;
+using Oravey2.Contracts.Spatial;
 using Oravey2.Core.World;
 using Oravey2.MapGen.Assets;
 using Oravey2.MapGen.Generation;
 using Oravey2.MapGen.RegionTemplates;
 using Oravey2.MapGen.Services;
-using BoundingBoxGen = Oravey2.MapGen.Generation.BoundingBox;
 using Xunit;
 
 namespace Oravey2.Tests.Generation;
@@ -71,7 +71,7 @@ public class SpatialSpecGenerationPipelineTests
     private static TownSpatialSpecification CreateValidSpatialSpec()
     {
         return new TownSpatialSpecification(
-            RealWorldBounds: new BoundingBoxGen(52.50, 52.51, 4.95, 4.96),
+            RealWorldBounds: new BoundingBox(52.50, 52.51, 4.95, 4.96),
             BuildingPlacements: new Dictionary<string, BuildingPlacement>
             {
                 ["castle"] = new BuildingPlacement("Castle", 52.505, 4.955, 30, 30, 0, "town_centre"),
@@ -240,7 +240,7 @@ public class SpatialSpecGenerationPipelineTests
         
         // Create an invalid spec that might cause issues
         var invalidSpec = new TownSpatialSpecification(
-            RealWorldBounds: new BoundingBoxGen(0, 0, 0, 0), // Empty bounds
+            RealWorldBounds: new BoundingBox(0, 0, 0, 0), // Empty bounds
             BuildingPlacements: new Dictionary<string, BuildingPlacement>(),
             RoadNetwork: new RoadNetwork([], [], 0),
             WaterBodies: [],

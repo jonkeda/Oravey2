@@ -1,4 +1,5 @@
 using System.Numerics;
+using Oravey2.Contracts.Spatial;
 
 namespace Oravey2.MapGen.Generation;
 

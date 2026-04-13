@@ -1,3 +1,4 @@
+using Oravey2.Contracts.Spatial;
 using Oravey2.MapGen.Generation;
 using Oravey2.MapGen.RegionTemplates;
 using System.Numerics;
@@ -52,7 +53,7 @@ public class TownMapCondenserTests
     public void CondenseWithSpatialSpec_SmallMap_ProducesCorrectDimensions()
     {
         var design = CreateTestDesign();
-        var bounds = new Oravey2.MapGen.Generation.BoundingBox(52.0, 52.01, 4.0, 4.01);
+        var bounds = new BoundingBox(52.0, 52.01, 4.0, 4.01);
         var spec = new TownSpatialSpecification(
             bounds,
             new Dictionary<string, BuildingPlacement>(),
@@ -83,7 +84,7 @@ public class TownMapCondenserTests
     {
         var design = CreateTestDesign();
         // Larger bounds = larger grid
-        var bounds = new Oravey2.MapGen.Generation.BoundingBox(52.0, 52.1, 4.0, 4.1);
+        var bounds = new BoundingBox(52.0, 52.1, 4.0, 4.1);
         var spec = new TownSpatialSpecification(
             bounds,
             new Dictionary<string, BuildingPlacement>(),
@@ -119,7 +120,7 @@ public class TownMapCondenserTests
     public void CondenseWithSpatialSpec_InsufficientChunks_FallsBackToProcedural()
     {
         var design = CreateTestDesign();
-        var bounds = new Oravey2.MapGen.Generation.BoundingBox(52.0, 52.1, 4.0, 4.1);
+        var bounds = new BoundingBox(52.0, 52.1, 4.0, 4.1);
         var spec = new TownSpatialSpecification(
             bounds,
             new Dictionary<string, BuildingPlacement>(),
@@ -148,7 +149,7 @@ public class TownMapCondenserTests
     public void CondenseWithSpatialSpec_NonPowerOf2Grid_TilesCorrectly()
     {
         var design = CreateTestDesign();
-        var bounds = new Oravey2.MapGen.Generation.BoundingBox(52.0, 52.05, 4.0, 4.05);
+        var bounds = new BoundingBox(52.0, 52.05, 4.0, 4.05);
         var spec = new TownSpatialSpecification(
             bounds,
             new Dictionary<string, BuildingPlacement>(),

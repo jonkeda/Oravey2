@@ -48,7 +48,7 @@ public class GeofabrikIndex
             if (props.TryGetProperty("iso3166-2", out var iso2Elem) && iso2Elem.ValueKind == JsonValueKind.Array)
                 iso3166_2 = iso2Elem.EnumerateArray().Select(e => e.GetString()!).ToArray();
 
-            BoundingBox? bbox = null;
+            GeoBoundingBox? bbox = null;
             if (feature.TryGetProperty("geometry", out var geometry) && geometry.ValueKind == JsonValueKind.Object)
             {
                 bbox = ExtractBounds(geometry);
@@ -109,7 +109,7 @@ public class GeofabrikIndex
         }
     }
 
-    private static BoundingBox? ExtractBounds(JsonElement geometry)
+    private static GeoBoundingBox? ExtractBounds(JsonElement geometry)
     {
         var type = geometry.GetProperty("type").GetString();
         if (type is not "Polygon" and not "MultiPolygon")
@@ -133,7 +133,7 @@ public class GeofabrikIndex
         }
 
         if (minLat > maxLat) return null;
-        return new BoundingBox(maxLat, minLat, maxLon, minLon);
+        return new GeoBoundingBox(maxLat, minLat, maxLon, minLon);
     }
 
     private static void AccumulateRing(JsonElement ring,

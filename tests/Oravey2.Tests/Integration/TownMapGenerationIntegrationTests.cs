@@ -1,9 +1,9 @@
 using System.Numerics;
+using Oravey2.Contracts.Spatial;
 using Oravey2.Core.World;
 using Oravey2.MapGen.Generation;
 using Oravey2.MapGen.RegionTemplates;
 using Xunit;
-using BoundingBoxGen = Oravey2.MapGen.Generation.BoundingBox;
 
 namespace Oravey2.Tests.Integration;
 
@@ -21,7 +21,7 @@ public class TownMapGenerationIntegrationTests
     /// <summary>Create a small test hamlet spec (50×50 tile grid)</summary>
     private static TownSpatialSpecification CreateTestHamletSpec()
     {
-        var bounds = new BoundingBoxGen(52.0, 52.005, 4.0, 4.005);
+        var bounds = new BoundingBox(52.0, 52.005, 4.0, 4.005);
         var roads = new RoadNetwork([], [], 3f);
         return new TownSpatialSpecification(bounds, new(), roads, [], "flat");
     }
@@ -29,7 +29,7 @@ public class TownMapGenerationIntegrationTests
     /// <summary>Create a medium test village spec (100×100 tile grid)</summary>
     private static TownSpatialSpecification CreateTestVillageSpec()
     {
-        var bounds = new BoundingBoxGen(52.0, 52.01, 4.0, 4.01);
+        var bounds = new BoundingBox(52.0, 52.01, 4.0, 4.01);
         var roads = new RoadNetwork([], [], 5f);
         return new TownSpatialSpecification(bounds, new(), roads, [], "flat");
     }
@@ -37,7 +37,7 @@ public class TownMapGenerationIntegrationTests
     /// <summary>Create a large test town spec (200×200 tile grid)</summary>
     private static TownSpatialSpecification CreateTestTownSpec()
     {
-        var bounds = new BoundingBoxGen(52.0, 52.02, 4.0, 4.02);
+        var bounds = new BoundingBox(52.0, 52.02, 4.0, 4.02);
         var roads = new RoadNetwork([], [], 8f);
         return new TownSpatialSpecification(bounds, new(), roads, [], "flat");
     }
@@ -45,7 +45,7 @@ public class TownMapGenerationIntegrationTests
     /// <summary>Create a city spec with water (300×300 tile grid)</summary>
     private static TownSpatialSpecification CreateTestCitySpec()
     {
-        var bounds = new BoundingBoxGen(52.0, 52.03, 4.0, 4.03);
+        var bounds = new BoundingBox(52.0, 52.03, 4.0, 4.03);
         var roads = new RoadNetwork([], [], 10f);
         
         var waterPolygon = new List<Vector2>
@@ -278,7 +278,7 @@ public class TownMapGenerationIntegrationTests
     public void LlmSpec_Placement_NoCollisions()
     {
         // Arrange — create spec with building and road placements
-        var bounds = new BoundingBoxGen(52.0, 52.01, 4.0, 4.01);
+        var bounds = new BoundingBox(52.0, 52.01, 4.0, 4.01);
         var buildings = new Dictionary<string, BuildingPlacement>
         {
             {
@@ -343,7 +343,7 @@ public class TownMapGenerationIntegrationTests
     public void BuildingPlacements_AllWithinBounds()
     {
         // Arrange
-        var bounds = new BoundingBoxGen(52.0, 52.01, 4.0, 4.01);
+        var bounds = new BoundingBox(52.0, 52.01, 4.0, 4.01);
         var buildings = new Dictionary<string, BuildingPlacement>
         {
             {"Building1", new("B1", 52.002, 4.002, 10, 10, 0, "residential")},
@@ -373,7 +373,7 @@ public class TownMapGenerationIntegrationTests
     public void RoadNetwork_AllEdgesOnMap()
     {
         // Arrange
-        var bounds = new BoundingBoxGen(52.0, 52.01, 4.0, 4.01);
+        var bounds = new BoundingBox(52.0, 52.01, 4.0, 4.01);
         var roads = new RoadNetwork(
             [
                 new Vector2((float)52.001, (float)4.001),
@@ -409,7 +409,7 @@ public class TownMapGenerationIntegrationTests
     public void WaterBodies_AllPolygonsOnMap()
     {
         // Arrange
-        var bounds = new BoundingBoxGen(52.0, 52.01, 4.0, 4.01);
+        var bounds = new BoundingBox(52.0, 52.01, 4.0, 4.01);
         var waters = new List<SpatialWaterBody>
         {
             new("River", new List<Vector2>
@@ -447,7 +447,7 @@ public class TownMapGenerationIntegrationTests
     public void Placements_NoOverlappingBuildings()
     {
         // Arrange — buildings intentionally spaced far apart
-        var bounds = new BoundingBoxGen(52.0, 52.01, 4.0, 4.01);
+        var bounds = new BoundingBox(52.0, 52.01, 4.0, 4.01);
         var buildings = new Dictionary<string, BuildingPlacement>
         {
             {"Building1", new("B1", 52.002, 4.002, 10, 10, 0, "residential")},

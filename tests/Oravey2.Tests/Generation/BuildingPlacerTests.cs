@@ -1,3 +1,4 @@
+using Oravey2.Contracts.Spatial;
 using Xunit;
 using Oravey2.MapGen.Generation;
 

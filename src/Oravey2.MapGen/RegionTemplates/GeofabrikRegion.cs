@@ -11,7 +11,7 @@ public record GeofabrikRegion
     public string? PbfUrl { get; init; }
     public string[]? Iso3166Alpha2 { get; init; }
     public string[]? Iso3166_2 { get; init; }
-    public BoundingBox? Bounds { get; init; }
+    public GeoBoundingBox? Bounds { get; init; }
     public List<GeofabrikRegion> Children { get; } = [];
 
     /// <summary>
@@ -37,4 +37,4 @@ public record GeofabrikRegion
     }
 }
 
-public record BoundingBox(double North, double South, double East, double West);
+public record GeoBoundingBox(double North, double South, double East, double West);

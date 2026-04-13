@@ -1,9 +1,9 @@
 using System.Numerics;
+using Oravey2.Contracts.Spatial;
 using Oravey2.Core.World;
 using Oravey2.MapGen.Generation;
 using Oravey2.MapGen.RegionTemplates;
 using Xunit;
-using BoundingBoxGen = Oravey2.MapGen.Generation.BoundingBox;
 
 namespace Oravey2.Tests.Generation;
 
@@ -54,7 +54,7 @@ public class TownChunkGeneratorTests
 
     private static TownSpatialTransform CreateTestSpatialTransform()
     {
-        var bbox = new BoundingBoxGen(52.48, 52.52, 4.93, 4.97);
+        var bbox = new BoundingBox(52.48, 52.52, 4.93, 4.97);
         var spec = new TownSpatialSpecification(
             RealWorldBounds: bbox,
             BuildingPlacements: new Dictionary<string, BuildingPlacement>(),
@@ -160,7 +160,7 @@ public class TownChunkGeneratorTests
             AlignmentHint: "town_center"
         );
 
-        var bbox = new BoundingBoxGen(52.48, 52.52, 4.93, 4.97);
+        var bbox = new BoundingBox(52.48, 52.52, 4.93, 4.97);
         var spec = new TownSpatialSpecification(
             RealWorldBounds: bbox,
             BuildingPlacements: new Dictionary<string, BuildingPlacement> { { "MainHall", building } },
@@ -201,7 +201,7 @@ public class TownChunkGeneratorTests
             AlignmentHint: "none"
         );
 
-        var bbox = new BoundingBoxGen(52.48, 52.52, 4.93, 4.97);
+        var bbox = new BoundingBox(52.48, 52.52, 4.93, 4.97);
         var spec = new TownSpatialSpecification(
             RealWorldBounds: bbox,
             BuildingPlacements: new Dictionary<string, BuildingPlacement> { { "LargeBuilding", building } },
@@ -241,7 +241,7 @@ public class TownChunkGeneratorTests
             new(52.49, 4.94, 52.51, 4.96)
         };
 
-        var bbox = new BoundingBoxGen(52.48, 52.52, 4.93, 4.97);
+        var bbox = new BoundingBox(52.48, 52.52, 4.93, 4.97);
         var spec = new TownSpatialSpecification(
             RealWorldBounds: bbox,
             BuildingPlacements: new Dictionary<string, BuildingPlacement>(),
@@ -286,7 +286,7 @@ public class TownChunkGeneratorTests
             Type: SpatialWaterType.Lake
         );
 
-        var bbox = new BoundingBoxGen(52.48, 52.52, 4.93, 4.97);
+        var bbox = new BoundingBox(52.48, 52.52, 4.93, 4.97);
         var spec = new TownSpatialSpecification(
             RealWorldBounds: bbox,
             BuildingPlacements: new Dictionary<string, BuildingPlacement>(),
@@ -346,7 +346,7 @@ public class TownChunkGeneratorTests
             Type: SpatialWaterType.Lake
         );
 
-        var bbox = new BoundingBoxGen(52.48, 52.52, 4.93, 4.97);
+        var bbox = new BoundingBox(52.48, 52.52, 4.93, 4.97);
         var spec = new TownSpatialSpecification(
             RealWorldBounds: bbox,
             BuildingPlacements: new Dictionary<string, BuildingPlacement> { { "Building1", building } },
