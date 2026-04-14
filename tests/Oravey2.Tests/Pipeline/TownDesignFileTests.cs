@@ -15,6 +15,27 @@ public class TownDesignFileTests
         "compound",
         [new EnvironmentalHazard("flooding", "The harbour district floods at high tide", "south-west waterfront")]);
 
+    private static TownDesign MakeDesignWithNewFields() => new(
+        "Havenburg",
+        [
+            new LandmarkBuilding("Fort Kijkduin", "A massive coastal fortress", "large",
+                "Fort Kijkduin, a 19th-century Napoleonic coastal defence fort", 
+                "Ruined stone fortress, crumbling walls, overgrown, low-poly game asset",
+                "north-west, near the coastline"),
+            new LandmarkBuilding("The Lighthouse", "A crumbling lighthouse tower", "medium",
+                "Lange Jaap lighthouse, tallest cast-iron lighthouse in Europe, built 1877",
+                "Tall crumbling cast-iron lighthouse, broken glass, rust, low-poly game asset",
+                "north, on the harbour pier"),
+        ],
+        [
+            new KeyLocation("The Drydock Market", "shop", "An old naval drydock marketplace", "medium",
+                "Willemsoord drydock, former Royal Netherlands Navy shipyard, 19th century",
+                "Ruined industrial drydock with market stalls, low-poly game asset",
+                "centre, on the main square"),
+        ],
+        "compound",
+        [new EnvironmentalHazard("flooding", "The harbour floods at high tide", "south-west waterfront")]);
+
     [Fact]
     public void FromTownDesign_MapsAllFields()
     {
@@ -126,6 +147,67 @@ public class TownDesignFileTests
             Assert.Contains("\"layoutStyle\"", json);
             Assert.Contains("\"hazards\"", json);
             Assert.Contains("Fort Kijkduin", json);
+        }
+        finally
+        {
+            if (Directory.Exists(dir))
+                Directory.Delete(dir, true);
+        }
+    }
+
+    [Fact]
+    public void RoundTrip_NewFields_Preserved()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "test-design-newfields-" + Guid.NewGuid().ToString("N"));
+        var path = Path.Combine(dir, "design.json");
+
+        try
+        {
+            var original = MakeDesignWithNewFields();
+            var file = TownDesignFile.FromTownDesign(original);
+            file.Save(path);
+
+            var loaded = TownDesignFile.Load(path);
+            var roundTripped = loaded.ToTownDesign();
+
+            // Landmark new fields
+            Assert.Contains("Napoleonic", roundTripped.Landmarks[0].OriginalDescription);
+            Assert.Contains("low-poly game asset", roundTripped.Landmarks[0].MeshyPrompt);
+            Assert.Equal("north-west, near the coastline", roundTripped.Landmarks[0].PositionHint);
+
+            // Key location new fields
+            Assert.Contains("Willemsoord", roundTripped.KeyLocations[0].OriginalDescription);
+            Assert.Contains("low-poly game asset", roundTripped.KeyLocations[0].MeshyPrompt);
+            Assert.Equal("centre, on the main square", roundTripped.KeyLocations[0].PositionHint);
+        }
+        finally
+        {
+            if (Directory.Exists(dir))
+                Directory.Delete(dir, true);
+        }
+    }
+
+    [Fact]
+    public void RoundTrip_MultiLandmark_Preserved()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "test-design-multilm-" + Guid.NewGuid().ToString("N"));
+        var path = Path.Combine(dir, "design.json");
+
+        try
+        {
+            var original = MakeDesignWithNewFields();
+            Assert.Equal(2, original.Landmarks.Count);
+
+            var file = TownDesignFile.FromTownDesign(original);
+            file.Save(path);
+
+            var loaded = TownDesignFile.Load(path);
+            var roundTripped = loaded.ToTownDesign();
+
+            Assert.Equal(2, roundTripped.Landmarks.Count);
+            Assert.Equal("Fort Kijkduin", roundTripped.Landmarks[0].Name);
+            Assert.Equal("The Lighthouse", roundTripped.Landmarks[1].Name);
+            Assert.Contains("Lange Jaap", roundTripped.Landmarks[1].OriginalDescription);
         }
         finally
         {

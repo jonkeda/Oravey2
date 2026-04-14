@@ -37,6 +37,38 @@ public class TownDesignerTests
     }
 
     [Fact]
+    public void BuildPrompt_ContainsCoordinates()
+    {
+        var prompt = TownDesigner.BuildPrompt(SampleTown, SampleRegionContext, 42);
+
+        Assert.Contains("52.9600", prompt);
+        Assert.Contains("4.7600", prompt);
+    }
+
+    [Theory]
+    [InlineData(TownCategory.Hamlet, "1 landmark(s)", "2–3 key locations")]
+    [InlineData(TownCategory.City, "3 landmark(s)", "6–10 key locations")]
+    [InlineData(TownCategory.Metropolis, "5 landmark(s)", "8–14 key locations")]
+    public void BuildPrompt_ScalesCountsForSize(TownCategory size, string expectedLandmarks, string expectedKeyLocs)
+    {
+        var town = SampleTown with { Size = size };
+        var prompt = TownDesigner.BuildPrompt(town, SampleRegionContext, 42);
+
+        Assert.Contains(expectedLandmarks, prompt);
+        Assert.Contains(expectedKeyLocs, prompt);
+    }
+
+    [Fact]
+    public void CountsForSize_ReturnsCorrectValues()
+    {
+        Assert.Equal((1, 2, 3, 1), TownDesigner.CountsForSize(TownCategory.Hamlet));
+        Assert.Equal((1, 3, 5, 2), TownDesigner.CountsForSize(TownCategory.Village));
+        Assert.Equal((2, 4, 7, 3), TownDesigner.CountsForSize(TownCategory.Town));
+        Assert.Equal((3, 6, 10, 3), TownDesigner.CountsForSize(TownCategory.City));
+        Assert.Equal((5, 8, 14, 4), TownDesigner.CountsForSize(TownCategory.Metropolis));
+    }
+
+    [Fact]
     public void BuildPrompt_IncludesDesignInstructions()
     {
         var prompt = TownDesigner.BuildPrompt(SampleTown, SampleRegionContext, 42);
@@ -103,6 +135,92 @@ public class TownDesignerTests
         Assert.Equal("compound", design.LayoutStyle);
         Assert.Single(design.Hazards);
         Assert.Equal("flooding", design.Hazards[0].Type);
+    }
+
+    [Fact]
+    public void BuildTownDesign_MultiLandmark_MapsAll()
+    {
+        var entry = new LlmTownDesignEntry
+        {
+            Landmarks =
+            [
+                new LlmLandmarkEntry { Name = "Fort Kijkduin", VisualDescription = "A fortress", SizeCategory = "large" },
+                new LlmLandmarkEntry { Name = "Lighthouse", VisualDescription = "A lighthouse", SizeCategory = "medium" },
+                new LlmLandmarkEntry { Name = "Naval Yard", VisualDescription = "Old naval yard", SizeCategory = "large" },
+            ],
+            KeyLocations = [],
+            LayoutStyle = "organic",
+            Hazards = [],
+        };
+
+        var design = TownDesigner.BuildTownDesign("Test", entry, TownCategory.City);
+        Assert.Equal(3, design.Landmarks.Count);
+        Assert.Equal("Fort Kijkduin", design.Landmarks[0].Name);
+        Assert.Equal("Lighthouse", design.Landmarks[1].Name);
+        Assert.Equal("Naval Yard", design.Landmarks[2].Name);
+    }
+
+    [Fact]
+    public void BuildTownDesign_MapsNewFields()
+    {
+        var entry = new LlmTownDesignEntry
+        {
+            Landmarks =
+            [
+                new LlmLandmarkEntry
+                {
+                    Name = "Fort Kijkduin",
+                    VisualDescription = "A fortress",
+                    SizeCategory = "large",
+                    OriginalDescription = "Fort Kijkduin, a 19th-century Napoleonic coastal defence fort",
+                    MeshyPrompt = "Ruined stone fortress, crumbling walls, overgrown, low-poly game asset",
+                    PositionHint = "north-west, near the coastline",
+                },
+            ],
+            KeyLocations =
+            [
+                new LlmKeyLocationEntry
+                {
+                    Name = "Market",
+                    Purpose = "shop",
+                    VisualDescription = "An old market",
+                    SizeCategory = "medium",
+                    OriginalDescription = "Kaasmarkt, a traditional Dutch cheese market from the 17th century",
+                    MeshyPrompt = "Damaged market stalls, wooden beams, torn canvas, low-poly game asset",
+                    PositionHint = "centre, on the main square",
+                },
+            ],
+            LayoutStyle = "organic",
+            Hazards = [],
+        };
+
+        var design = TownDesigner.BuildTownDesign("Test", entry);
+
+        // Landmark new fields
+        Assert.Contains("Napoleonic", design.Landmarks[0].OriginalDescription);
+        Assert.Contains("low-poly game asset", design.Landmarks[0].MeshyPrompt);
+        Assert.Equal("north-west, near the coastline", design.Landmarks[0].PositionHint);
+
+        // Key location new fields
+        Assert.Contains("Kaasmarkt", design.KeyLocations[0].OriginalDescription);
+        Assert.Contains("low-poly game asset", design.KeyLocations[0].MeshyPrompt);
+        Assert.Equal("centre, on the main square", design.KeyLocations[0].PositionHint);
+    }
+
+    [Fact]
+    public void BuildTownDesign_EmptyLandmarks_AddsFallback()
+    {
+        var entry = new LlmTownDesignEntry
+        {
+            Landmarks = [],
+            KeyLocations = [],
+            LayoutStyle = "grid",
+            Hazards = [],
+        };
+
+        var design = TownDesigner.BuildTownDesign("Test", entry);
+        Assert.Single(design.Landmarks);
+        Assert.Equal("Unknown Landmark", design.Landmarks[0].Name);
     }
 
     [Fact]

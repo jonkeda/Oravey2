@@ -342,4 +342,105 @@ public class TownDesignStepViewModelTests
         Assert.True(invoked);
         Assert.True(state.TownDesign.Completed);
     }
+
+    // --- Next command enable/disable ---
+
+    [Fact]
+    public void NextCommand_EnabledWhenAtLeastOneDesigned()
+    {
+        var vm = MakeVM();
+        var state = MakeState();
+        SetupCuratedTowns(state, 3);
+        vm.Initialize(state.ContentPackPath);
+        vm.Load(state);
+
+        Assert.False(vm.NextCommand.CanExecute(null)); // 0 designed
+
+        vm.Towns[0].IsDesigned = true;
+        vm.RefreshDesignedCount();
+        Assert.Equal(1, vm.DesignedCount);
+        Assert.True(vm.NextCommand.CanExecute(null)); // 1 of 3 designed — partial is OK
+    }
+
+    [Fact]
+    public void NextCommand_DisabledWhenNoneDesigned()
+    {
+        var vm = MakeVM();
+        var state = MakeState();
+        SetupCuratedTowns(state, 3);
+        vm.Initialize(state.ContentPackPath);
+        vm.Load(state);
+
+        Assert.Equal(0, vm.DesignedCount);
+        Assert.False(vm.NextCommand.CanExecute(null));
+    }
+
+    // --- IncompleteWarning ---
+
+    [Fact]
+    public void IncompleteWarning_ShownWhenPartial()
+    {
+        var vm = MakeVM();
+        var state = MakeState();
+        SetupCuratedTowns(state, 3);
+        vm.Initialize(state.ContentPackPath);
+        vm.Load(state);
+
+        vm.Towns[0].IsDesigned = true;
+        vm.RefreshDesignedCount();
+
+        Assert.NotNull(vm.IncompleteWarning);
+        Assert.True(vm.HasIncompleteWarning);
+        Assert.Contains("2 town(s)", vm.IncompleteWarning);
+    }
+
+    [Fact]
+    public void IncompleteWarning_NullWhenAllDesigned()
+    {
+        var vm = MakeVM();
+        var state = MakeState();
+        SetupCuratedTowns(state, 2);
+        vm.Initialize(state.ContentPackPath);
+        vm.Load(state);
+
+        vm.Towns[0].IsDesigned = true;
+        vm.Towns[1].IsDesigned = true;
+        vm.RefreshDesignedCount();
+
+        Assert.Null(vm.IncompleteWarning);
+        Assert.False(vm.HasIncompleteWarning);
+    }
+
+    [Fact]
+    public void IncompleteWarning_NullWhenNoneDesigned()
+    {
+        var vm = MakeVM();
+        var state = MakeState();
+        SetupCuratedTowns(state, 2);
+        vm.Initialize(state.ContentPackPath);
+        vm.Load(state);
+
+        Assert.Null(vm.IncompleteWarning); // 0 designed → no warning (warning is only for partial)
+        Assert.False(vm.HasIncompleteWarning);
+    }
+
+    // --- LandmarkSummary multi-landmark ---
+
+    [Fact]
+    public void TownDesignItem_MultiLandmark_SummaryJoinsNames()
+    {
+        var item = new TownDesignItem { GameName = "Test" };
+        item.Design = new TownDesign(
+            "Test",
+            [
+                new LandmarkBuilding("Fort Kijkduin", "A fortress", "large", "", "", ""),
+                new LandmarkBuilding("The Lighthouse", "A lighthouse", "medium", "", "", ""),
+            ],
+            [],
+            "organic",
+            []);
+
+        Assert.Equal("Fort Kijkduin, The Lighthouse", item.LandmarkSummary);
+        Assert.Equal(2, item.LandmarkCount);
+    }
 }
