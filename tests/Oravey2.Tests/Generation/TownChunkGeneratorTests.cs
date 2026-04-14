@@ -55,13 +55,12 @@ public class TownChunkGeneratorTests
     private static TownSpatialTransform CreateTestSpatialTransform()
     {
         var bbox = new BoundingBox(52.48, 52.52, 4.93, 4.97);
-        var spec = new TownSpatialSpecification(
-            RealWorldBounds: bbox,
-            BuildingPlacements: new Dictionary<string, BuildingPlacement>(),
-            RoadNetwork: new RoadNetwork([], [], 8f),
-            WaterBodies: [],
-            TerrainDescription: "flat"
-        );
+        var spec = new TownSpatialSpecification
+        {
+            RealWorldBounds = bbox,
+            RoadNetwork = new RoadNetwork { RoadWidthMeters = 8f },
+            TerrainDescription = "flat"
+        };
         return new TownSpatialTransform(spec, tileSizeMeters: 1.0f, seed: 42);
     }
 
@@ -150,24 +149,25 @@ public class TownChunkGeneratorTests
         var (town, entry, region) = CreateTestData();
         var gen = new TownChunkGenerator();
 
-        var building = new BuildingPlacement(
-            Name: "MainHall",
-            CenterLat: 52.50,
-            CenterLon: 4.95,
-            WidthMeters: 10,
-            DepthMeters: 8,
-            RotationDegrees: 0,
-            AlignmentHint: "town_center"
-        );
+        var building = new BuildingPlacement
+        {
+            Name = "MainHall",
+            CenterLat = 52.50,
+            CenterLon = 4.95,
+            WidthMeters = 10,
+            DepthMeters = 8,
+            RotationDegrees = 0,
+            AlignmentHint = "town_center"
+        };
 
         var bbox = new BoundingBox(52.48, 52.52, 4.93, 4.97);
-        var spec = new TownSpatialSpecification(
-            RealWorldBounds: bbox,
-            BuildingPlacements: new Dictionary<string, BuildingPlacement> { { "MainHall", building } },
-            RoadNetwork: new RoadNetwork([], [], 8f),
-            WaterBodies: [],
-            TerrainDescription: "flat"
-        );
+        var spec = new TownSpatialSpecification
+        {
+            RealWorldBounds = bbox,
+            BuildingPlacements = new Dictionary<string, BuildingPlacement> { { "MainHall", building } },
+            RoadNetwork = new RoadNetwork { RoadWidthMeters = 8f },
+            TerrainDescription = "flat"
+        };
         var spatialTransform = new TownSpatialTransform(spec, tileSizeMeters: 1.0f, seed: 42);
 
         var chunk = gen.GenerateWithSpatialSpec(spatialTransform, town, entry, 0, 0, region, seed: 42);
@@ -191,24 +191,25 @@ public class TownChunkGeneratorTests
         var gen = new TownChunkGenerator();
 
         // Create building near chunk boundary
-        var building = new BuildingPlacement(
-            Name: "LargeBuilding",
-            CenterLat: 52.50,
-            CenterLon: 4.95,
-            WidthMeters: 50,
-            DepthMeters: 50,
-            RotationDegrees: 0,
-            AlignmentHint: "none"
-        );
+        var building = new BuildingPlacement
+        {
+            Name = "LargeBuilding",
+            CenterLat = 52.50,
+            CenterLon = 4.95,
+            WidthMeters = 50,
+            DepthMeters = 50,
+            RotationDegrees = 0,
+            AlignmentHint = "none"
+        };
 
         var bbox = new BoundingBox(52.48, 52.52, 4.93, 4.97);
-        var spec = new TownSpatialSpecification(
-            RealWorldBounds: bbox,
-            BuildingPlacements: new Dictionary<string, BuildingPlacement> { { "LargeBuilding", building } },
-            RoadNetwork: new RoadNetwork([], [], 8f),
-            WaterBodies: [],
-            TerrainDescription: "flat"
-        );
+        var spec = new TownSpatialSpecification
+        {
+            RealWorldBounds = bbox,
+            BuildingPlacements = new Dictionary<string, BuildingPlacement> { { "LargeBuilding", building } },
+            RoadNetwork = new RoadNetwork { RoadWidthMeters = 8f },
+            TerrainDescription = "flat"
+        };
         var spatialTransform = new TownSpatialTransform(spec, tileSizeMeters: 1.0f, seed: 42);
 
         // Generate two adjacent chunks - each should succeed without error
@@ -242,13 +243,12 @@ public class TownChunkGeneratorTests
         };
 
         var bbox = new BoundingBox(52.48, 52.52, 4.93, 4.97);
-        var spec = new TownSpatialSpecification(
-            RealWorldBounds: bbox,
-            BuildingPlacements: new Dictionary<string, BuildingPlacement>(),
-            RoadNetwork: new RoadNetwork([], roadEdges, 8f),
-            WaterBodies: [],
-            TerrainDescription: "flat"
-        );
+        var spec = new TownSpatialSpecification
+        {
+            RealWorldBounds = bbox,
+            RoadNetwork = new RoadNetwork { Edges = roadEdges, RoadWidthMeters = 8f },
+            TerrainDescription = "flat"
+        };
         var spatialTransform = new TownSpatialTransform(spec, tileSizeMeters: 1.0f, seed: 42);
 
         var chunk = gen.GenerateWithSpatialSpec(spatialTransform, town, entry, 0, 0, region, seed: 42);
@@ -282,20 +282,21 @@ public class TownChunkGeneratorTests
             new(52.500f, 4.940f)
         };
 
-        var water = new SpatialWaterBody(
-            Name: "Pond",
-            Polygon: waterPolygon,
-            Type: SpatialWaterType.Lake
-        );
+        var water = new SpatialWaterBody
+        {
+            Name = "Pond",
+            Polygon = waterPolygon,
+            Type = SpatialWaterType.Lake
+        };
 
         var bbox = new BoundingBox(52.48, 52.52, 4.93, 4.97);
-        var spec = new TownSpatialSpecification(
-            RealWorldBounds: bbox,
-            BuildingPlacements: new Dictionary<string, BuildingPlacement>(),
-            RoadNetwork: new RoadNetwork([], [], 8f),
-            WaterBodies: [water],
-            TerrainDescription: "flat"
-        );
+        var spec = new TownSpatialSpecification
+        {
+            RealWorldBounds = bbox,
+            RoadNetwork = new RoadNetwork { RoadWidthMeters = 8f },
+            WaterBodies = [water],
+            TerrainDescription = "flat"
+        };
         var spatialTransform = new TownSpatialTransform(spec, tileSizeMeters: 1.0f, seed: 42);
 
         var chunk = gen.GenerateWithSpatialSpec(spatialTransform, town, entry, 0, 0, region, seed: 42);
@@ -321,15 +322,16 @@ public class TownChunkGeneratorTests
         var (town, entry, region) = CreateTestData();
         var gen = new TownChunkGenerator();
 
-        var building = new BuildingPlacement(
-            Name: "Building1",
-            CenterLat: 52.50,
-            CenterLon: 4.95,
-            WidthMeters: 10,
-            DepthMeters: 10,
-            RotationDegrees: 0,
-            AlignmentHint: "none"
-        );
+        var building = new BuildingPlacement
+        {
+            Name = "Building1",
+            CenterLat = 52.50,
+            CenterLon = 4.95,
+            WidthMeters = 10,
+            DepthMeters = 10,
+            RotationDegrees = 0,
+            AlignmentHint = "none"
+        };
 
         var roadEdges = new List<RoadEdge>
         {
@@ -344,20 +346,22 @@ public class TownChunkGeneratorTests
             new(52.502f, 4.938f)
         };
 
-        var water = new SpatialWaterBody(
-            Name: "Pond",
-            Polygon: waterPolygon,
-            Type: SpatialWaterType.Lake
-        );
+        var water = new SpatialWaterBody
+        {
+            Name = "Pond",
+            Polygon = waterPolygon,
+            Type = SpatialWaterType.Lake
+        };
 
         var bbox = new BoundingBox(52.48, 52.52, 4.93, 4.97);
-        var spec = new TownSpatialSpecification(
-            RealWorldBounds: bbox,
-            BuildingPlacements: new Dictionary<string, BuildingPlacement> { { "Building1", building } },
-            RoadNetwork: new RoadNetwork([], roadEdges, 8f),
-            WaterBodies: [water],
-            TerrainDescription: "flat"
-        );
+        var spec = new TownSpatialSpecification
+        {
+            RealWorldBounds = bbox,
+            BuildingPlacements = new Dictionary<string, BuildingPlacement> { { "Building1", building } },
+            RoadNetwork = new RoadNetwork { Edges = roadEdges, RoadWidthMeters = 8f },
+            WaterBodies = [water],
+            TerrainDescription = "flat"
+        };
         var spatialTransform = new TownSpatialTransform(spec, tileSizeMeters: 1.0f, seed: 42);
 
         var chunk = gen.GenerateWithSpatialSpec(spatialTransform, town, entry, 0, 0, region, seed: 42);

@@ -23,35 +23,40 @@ public class TownSpatialSpecificationTests
         
         var placements = new Dictionary<string, BuildingPlacement>
         {
-            ["Cathedral"] = new BuildingPlacement("Cathedral", 52.5, 4.9, 40, 50, 45, "square_corner"),
-            ["Market"] = new BuildingPlacement("Market", 52.4, 4.8, 20, 30, 0, "on_main_road")
+            ["Cathedral"] = new BuildingPlacement { Name = "Cathedral", CenterLat = 52.5, CenterLon = 4.9, WidthMeters = 40, DepthMeters = 50, RotationDegrees = 45, AlignmentHint = "square_corner" },
+            ["Market"] = new BuildingPlacement { Name = "Market", CenterLat = 52.4, CenterLon = 4.8, WidthMeters = 20, DepthMeters = 30, RotationDegrees = 0, AlignmentHint = "on_main_road" }
         };
 
-        var network = new RoadNetwork(
-            Nodes: new List<Vector2> { new Vector2(52.5f, 4.9f), new Vector2(52.4f, 4.8f) },
-            Edges: new List<RoadEdge> { new RoadEdge(52.5, 4.9, 52.4, 4.8) },
-            RoadWidthMeters: 10.0f
-        );
+        var network = new RoadNetwork
+        {
+            Nodes = new List<Vector2> { new Vector2(52.5f, 4.9f), new Vector2(52.4f, 4.8f) },
+            Edges = new List<RoadEdge> { new RoadEdge(52.5, 4.9, 52.4, 4.8) },
+            RoadWidthMeters = 10.0f
+        };
 
         var waters = new List<SpatialWaterBody>
         {
-            new SpatialWaterBody("Main Canal", 
-                new List<Vector2> 
+            new SpatialWaterBody
+            {
+                Name = "Main Canal",
+                Polygon = new List<Vector2> 
                 { 
                     new Vector2(52.3f, 4.7f), 
                     new Vector2(52.7f, 4.7f),
                     new Vector2(52.7f, 5.1f)
-                }, 
-                SpatialWaterType.Canal)
+                },
+                Type = SpatialWaterType.Canal
+            }
         };
 
-        var spec = new TownSpatialSpecification(
-            RealWorldBounds: bbox,
-            BuildingPlacements: placements,
-            RoadNetwork: network,
-            WaterBodies: waters,
-            TerrainDescription: "flat"
-        );
+        var spec = new TownSpatialSpecification
+        {
+            RealWorldBounds = bbox,
+            BuildingPlacements = placements,
+            RoadNetwork = network,
+            WaterBodies = waters,
+            TerrainDescription = "flat"
+        };
 
         Assert.NotNull(spec);
         Assert.Equal(2, spec.BuildingPlacements.Count);
@@ -64,9 +69,9 @@ public class TownSpatialSpecificationTests
     public void TownSpatialSpecification_EmptyCollections_Valid()
     {
         var bbox = new BoundingBox(52.0, 53.0, 4.0, 5.0);
-        var network = new RoadNetwork([], [], 10.0f);
+        var network = new RoadNetwork { RoadWidthMeters = 10.0f };
 
-        var spec = new TownSpatialSpecification(bbox, [], network, [], "flat");
+        var spec = new TownSpatialSpecification { RealWorldBounds = bbox, RoadNetwork = network, TerrainDescription = "flat" };
 
         Assert.Empty(spec.BuildingPlacements);
         Assert.Empty(spec.WaterBodies);
@@ -91,8 +96,8 @@ public class TownSpatialSpecificationTests
     public void TownDesign_IncludesSpatialSpec_WithData()
     {
         var bbox = new BoundingBox(52.0, 53.0, 4.0, 5.0);
-        var network = new RoadNetwork([], [], 10.0f);
-        var spec = new TownSpatialSpecification(bbox, [], network, [], "flat");
+        var network = new RoadNetwork { RoadWidthMeters = 10.0f };
+        var spec = new TownSpatialSpecification { RealWorldBounds = bbox, RoadNetwork = network, TerrainDescription = "flat" };
 
         var design = new TownDesign(
             TownName: "TestTown",

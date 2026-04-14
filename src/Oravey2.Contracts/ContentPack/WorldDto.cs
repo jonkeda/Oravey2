@@ -1,21 +1,25 @@
 namespace Oravey2.Contracts.ContentPack;
 
-public sealed record WorldDto(
-    string Name,
-    string Description,
-    string Source,
-    int ChunksWide,
-    int ChunksHigh,
-    int TileSize,
-    PlacementDto? PlayerStart,
-    List<TownRefDto> Towns);
+public sealed class WorldDto
+{
+    public string Name { get; set; } = "";
+    public string Description { get; set; } = "";
+    public string Source { get; set; } = "";
+    public int ChunksWide { get; set; } = 0;
+    public int ChunksHigh { get; set; } = 0;
+    public int TileSize { get; set; } = 0;
+    public PlacementDto? PlayerStart { get; set; } = null;
+    public List<TownRefDto> Towns { get; set; } = [];
+}
 
-public sealed record TownRefDto(
-    string GameName,
-    string RealName,
-    float GameX,
-    float GameY,
-    string Description,
-    string Size,
-    int Inhabitants,
-    string Destruction);
+public sealed class TownRefDto
+{
+    public string GameName { get; set; } = "";
+    public string RealName { get; set; } = "";
+    public float GameX { get; set; } = 0f;
+    public float GameY { get; set; } = 0f;
+    public string Description { get; set; } = "";
+    public string Size { get; set; } = "";
+    public int Inhabitants { get; set; } = 0;
+    public string Destruction { get; set; } = "";
+}

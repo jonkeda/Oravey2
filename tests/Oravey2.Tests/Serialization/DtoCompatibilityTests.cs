@@ -9,11 +9,13 @@ public sealed class DtoCompatibilityTests
     [Fact]
     public void BuildingDto_RoundTrips_AllFields()
     {
-        var original = new BuildingDto(
-            "b1", "House", "meshes/house.glb", "medium",
-            [[0, 0], [1, 0], [0, 1]],
-            Floors: 2, Condition: 0.8f, InteriorChunkId: "chunk_interior_42",
-            new PlacementDto(1, 2, 3, 4));
+        var original = new BuildingDto
+        {
+            Id = "b1", Name = "House", MeshAsset = "meshes/house.glb", Size = "medium",
+            Footprint = [[0, 0], [1, 0], [0, 1]],
+            Floors = 2, Condition = 0.8f, InteriorChunkId = "chunk_interior_42",
+            Placement = new PlacementDto { ChunkX = 1, ChunkY = 2, LocalTileX = 3, LocalTileY = 4 },
+        };
 
         var json = JsonSerializer.Serialize(original, ContentPackSerializer.WriteOptions);
         var restored = JsonSerializer.Deserialize<BuildingDto>(json, ContentPackSerializer.ReadOptions)!;
@@ -25,24 +27,33 @@ public sealed class DtoCompatibilityTests
         Assert.Equal(original.Floors, restored.Floors);
         Assert.Equal(original.Condition, restored.Condition);
         Assert.Equal(original.InteriorChunkId, restored.InteriorChunkId);
-        Assert.Equal(original.Placement, restored.Placement);
+        Assert.Equal(original.Placement!.ChunkX, restored.Placement!.ChunkX);
+        Assert.Equal(original.Placement.ChunkY, restored.Placement.ChunkY);
+        Assert.Equal(original.Placement.LocalTileX, restored.Placement.LocalTileX);
+        Assert.Equal(original.Placement.LocalTileY, restored.Placement.LocalTileY);
         Assert.Equal(original.Footprint!.Length, restored.Footprint!.Length);
     }
 
     [Fact]
     public void PropDto_RoundTrips_AllFields()
     {
-        var original = new PropDto(
-            "p1", "meshes/barrel.glb", new PlacementDto(0, 0, 3, 4),
-            Rotation: 90f, Scale: 1.5f, BlocksWalkability: true,
-            Footprint: [[0, 0], [1, 0]]);
+        var original = new PropDto
+        {
+            Id = "p1", MeshAsset = "meshes/barrel.glb",
+            Placement = new PlacementDto { ChunkX = 0, ChunkY = 0, LocalTileX = 3, LocalTileY = 4 },
+            Rotation = 90f, Scale = 1.5f, BlocksWalkability = true,
+            Footprint = [[0, 0], [1, 0]],
+        };
 
         var json = JsonSerializer.Serialize(original, ContentPackSerializer.WriteOptions);
         var restored = JsonSerializer.Deserialize<PropDto>(json, ContentPackSerializer.ReadOptions)!;
 
         Assert.Equal(original.Id, restored.Id);
         Assert.Equal(original.MeshAsset, restored.MeshAsset);
-        Assert.Equal(original.Placement, restored.Placement);
+        Assert.Equal(original.Placement!.ChunkX, restored.Placement!.ChunkX);
+        Assert.Equal(original.Placement.ChunkY, restored.Placement.ChunkY);
+        Assert.Equal(original.Placement.LocalTileX, restored.Placement.LocalTileX);
+        Assert.Equal(original.Placement.LocalTileY, restored.Placement.LocalTileY);
         Assert.Equal(original.Rotation, restored.Rotation);
         Assert.Equal(original.Scale, restored.Scale);
         Assert.Equal(original.BlocksWalkability, restored.BlocksWalkability);
@@ -112,10 +123,12 @@ public sealed class DtoCompatibilityTests
     [Fact]
     public void BuildingDto_EmptyFootprint_RoundTrips()
     {
-        var original = new BuildingDto(
-            "b2", "Ruin", "meshes/ruin.glb", "small",
-            Footprint: [], Floors: 1, Condition: 0.1f, InteriorChunkId: null,
-            new PlacementDto(0, 0, 0, 0));
+        var original = new BuildingDto
+        {
+            Id = "b2", Name = "Ruin", MeshAsset = "meshes/ruin.glb", Size = "small",
+            Footprint = [], Floors = 1, Condition = 0.1f, InteriorChunkId = null,
+            Placement = new PlacementDto { ChunkX = 0, ChunkY = 0, LocalTileX = 0, LocalTileY = 0 },
+        };
 
         var json = JsonSerializer.Serialize(original, ContentPackSerializer.WriteOptions);
         var restored = JsonSerializer.Deserialize<BuildingDto>(json, ContentPackSerializer.ReadOptions);

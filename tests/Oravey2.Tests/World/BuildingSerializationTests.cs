@@ -9,11 +9,13 @@ public class BuildingSerializationTests
     [Fact]
     public void BuildingDto_RoundTrip()
     {
-        var original = new BuildingDto(
-            "shop_001", "Corner Shop", "meshes/shop.glb", "small",
-            [[2, 2], [3, 2], [2, 3], [3, 3]],
-            Floors: 1, Condition: 0.8f, InteriorChunkId: null,
-            new PlacementDto(0, 0, 2, 2));
+        var original = new BuildingDto
+        {
+            Id = "shop_001", Name = "Corner Shop", MeshAsset = "meshes/shop.glb", Size = "small",
+            Footprint = [[2, 2], [3, 2], [2, 3], [3, 3]],
+            Floors = 1, Condition = 0.8f, InteriorChunkId = null,
+            Placement = new PlacementDto { ChunkX = 0, ChunkY = 0, LocalTileX = 2, LocalTileY = 2 },
+        };
 
         var json = JsonSerializer.Serialize(original, ContentPackSerializer.WriteOptions);
         var restored = JsonSerializer.Deserialize<BuildingDto>(json, ContentPackSerializer.ReadOptions)!;
@@ -25,25 +27,33 @@ public class BuildingSerializationTests
         Assert.Equal(original.Floors, restored.Floors);
         Assert.Equal(original.Condition, restored.Condition);
         Assert.Equal(original.InteriorChunkId, restored.InteriorChunkId);
-        Assert.Equal(original.Placement, restored.Placement);
+        Assert.Equal(original.Placement!.ChunkX, restored.Placement!.ChunkX);
+        Assert.Equal(original.Placement.ChunkY, restored.Placement.ChunkY);
+        Assert.Equal(original.Placement.LocalTileX, restored.Placement.LocalTileX);
+        Assert.Equal(original.Placement.LocalTileY, restored.Placement.LocalTileY);
         Assert.Equal(original.Footprint!.Length, restored.Footprint!.Length);
     }
 
     [Fact]
     public void PropDto_RoundTrip()
     {
-        var original = new PropDto(
-            "car_001", "meshes/car.glb",
-            new PlacementDto(0, 0, 5, 7),
-            Rotation: 45f, Scale: 1.5f, BlocksWalkability: true,
-            Footprint: [[5, 7], [6, 7]]);
+        var original = new PropDto
+        {
+            Id = "car_001", MeshAsset = "meshes/car.glb",
+            Placement = new PlacementDto { ChunkX = 0, ChunkY = 0, LocalTileX = 5, LocalTileY = 7 },
+            Rotation = 45f, Scale = 1.5f, BlocksWalkability = true,
+            Footprint = [[5, 7], [6, 7]],
+        };
 
         var json = JsonSerializer.Serialize(original, ContentPackSerializer.WriteOptions);
         var restored = JsonSerializer.Deserialize<PropDto>(json, ContentPackSerializer.ReadOptions)!;
 
         Assert.Equal(original.Id, restored.Id);
         Assert.Equal(original.MeshAsset, restored.MeshAsset);
-        Assert.Equal(original.Placement, restored.Placement);
+        Assert.Equal(original.Placement!.ChunkX, restored.Placement!.ChunkX);
+        Assert.Equal(original.Placement.ChunkY, restored.Placement.ChunkY);
+        Assert.Equal(original.Placement.LocalTileX, restored.Placement.LocalTileX);
+        Assert.Equal(original.Placement.LocalTileY, restored.Placement.LocalTileY);
         Assert.Equal(original.Rotation, restored.Rotation);
         Assert.Equal(original.Scale, restored.Scale);
         Assert.Equal(original.BlocksWalkability, restored.BlocksWalkability);
@@ -55,11 +65,13 @@ public class BuildingSerializationTests
     {
         var buildings = new[]
         {
-            new BuildingDto("b1", "Building 1", "meshes/b1.glb", "small",
-                [[0, 0], [1, 0]], 1, 1f, null, new PlacementDto(0, 0, 0, 0)),
-            new BuildingDto("b2", "Building 2", "meshes/b2.glb", "large",
-                [[4, 4], [5, 4], [6, 4], [4, 5], [5, 5]],
-                2, 0.5f, "interior_b2", new PlacementDto(0, 0, 4, 4)),
+            new BuildingDto { Id = "b1", Name = "Building 1", MeshAsset = "meshes/b1.glb", Size = "small",
+                Footprint = [[0, 0], [1, 0]], Floors = 1, Condition = 1f, InteriorChunkId = null,
+                Placement = new PlacementDto { ChunkX = 0, ChunkY = 0, LocalTileX = 0, LocalTileY = 0 } },
+            new BuildingDto { Id = "b2", Name = "Building 2", MeshAsset = "meshes/b2.glb", Size = "large",
+                Footprint = [[4, 4], [5, 4], [6, 4], [4, 5], [5, 5]],
+                Floors = 2, Condition = 0.5f, InteriorChunkId = "interior_b2",
+                Placement = new PlacementDto { ChunkX = 0, ChunkY = 0, LocalTileX = 4, LocalTileY = 4 } },
         };
 
         var json = JsonSerializer.Serialize(buildings, ContentPackSerializer.WriteOptions);
@@ -77,11 +89,13 @@ public class BuildingSerializationTests
     {
         var props = new[]
         {
-            new PropDto("p1", "meshes/barrel.glb",
-                new PlacementDto(0, 0, 3, 3), 0f, 1f, false, null),
-            new PropDto("p2", "meshes/car.glb",
-                new PlacementDto(0, 0, 7, 2), 90f, 1f, true,
-                [[7, 2], [8, 2]]),
+            new PropDto { Id = "p1", MeshAsset = "meshes/barrel.glb",
+                Placement = new PlacementDto { ChunkX = 0, ChunkY = 0, LocalTileX = 3, LocalTileY = 3 },
+                Rotation = 0f, Scale = 1f, BlocksWalkability = false, Footprint = null },
+            new PropDto { Id = "p2", MeshAsset = "meshes/car.glb",
+                Placement = new PlacementDto { ChunkX = 0, ChunkY = 0, LocalTileX = 7, LocalTileY = 2 },
+                Rotation = 90f, Scale = 1f, BlocksWalkability = true,
+                Footprint = [[7, 2], [8, 2]] },
         };
 
         var json = JsonSerializer.Serialize(props, ContentPackSerializer.WriteOptions);
@@ -98,10 +112,12 @@ public class BuildingSerializationTests
     [Fact]
     public void BuildingDto_NullOptionalFields_OmittedInJson()
     {
-        var building = new BuildingDto(
-            "b3", "Ruin", "meshes/ruin.glb", "small",
-            Footprint: null, Floors: 1, Condition: 0.1f, InteriorChunkId: null,
-            new PlacementDto(0, 0, 0, 0));
+        var building = new BuildingDto
+        {
+            Id = "b3", Name = "Ruin", MeshAsset = "meshes/ruin.glb", Size = "small",
+            Footprint = null, Floors = 1, Condition = 0.1f, InteriorChunkId = null,
+            Placement = new PlacementDto { ChunkX = 0, ChunkY = 0, LocalTileX = 0, LocalTileY = 0 },
+        };
 
         var json = JsonSerializer.Serialize(building, ContentPackSerializer.WriteOptions);
 

@@ -1,3 +1,9 @@
 namespace Oravey2.Contracts.ContentPack;
 
-public sealed record LayoutDto(int Width, int Height, int[][]? Surface, int[][]? Liquid);
+public sealed class LayoutDto
+{
+    public int Width { get; set; } = 0;
+    public int Height { get; set; } = 0;
+    public int[][]? Surface { get; set; } = null;
+    public int[][]? Liquid { get; set; } = null;
+}

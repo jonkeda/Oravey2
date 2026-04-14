@@ -66,7 +66,7 @@ public sealed class BuildSpatialSpecification
         // Build road network leniently
         var roadNetwork = spec.RoadNetwork.ToDomain();
         if (roadNetwork.RoadWidthMeters <= 0)
-            roadNetwork = roadNetwork with { RoadWidthMeters = 6.0f };
+            roadNetwork.RoadWidthMeters = 6.0f;
 
         // Fix road edges: clamp to bounding box instead of rejecting
         var clampedEdges = roadNetwork.Edges
@@ -81,7 +81,7 @@ public sealed class BuildSpatialSpecification
                 midLat, realWorldBounds.MinLon,
                 midLat, realWorldBounds.MaxLon));
         }
-        roadNetwork = new RoadNetwork(roadNetwork.Nodes, clampedEdges, roadNetwork.RoadWidthMeters);
+        roadNetwork = new RoadNetwork { Nodes = roadNetwork.Nodes, Edges = clampedEdges, RoadWidthMeters = roadNetwork.RoadWidthMeters };
 
         // Filter water bodies: drop invalid, clamp vertices
         var waterBodies = spec.WaterBodies
@@ -89,20 +89,23 @@ public sealed class BuildSpatialSpecification
             .Where(w => w.Polygon.Count >= 3)
             .ToList();
 
-        return new TownSpatialSpecification(
-            RealWorldBounds: realWorldBounds,
-            BuildingPlacements: validPlacements,
-            RoadNetwork: roadNetwork,
-            WaterBodies: waterBodies,
-            TerrainDescription: spec.TerrainDescription ?? "mixed"
-        );
+        return new TownSpatialSpecification
+        {
+            RealWorldBounds = realWorldBounds,
+            BuildingPlacements = validPlacements,
+            RoadNetwork = roadNetwork,
+            WaterBodies = waterBodies,
+            TerrainDescription = spec.TerrainDescription ?? "mixed"
+        };
     }
 
     private static BuildingPlacement FixBuildingPlacement(BuildingPlacement p)
     {
         double w = p.WidthMeters > 0 ? Math.Min(p.WidthMeters, 500) : 10;
         double d = p.DepthMeters > 0 ? Math.Min(p.DepthMeters, 500) : 10;
-        return p with { WidthMeters = w, DepthMeters = d };
+        p.WidthMeters = w;
+        p.DepthMeters = d;
+        return p;
     }
 
     private static RoadEdge ClampRoadEdge(RoadEdge edge, BoundingBox bounds)
@@ -122,15 +125,16 @@ internal static class LlmToDomainExtensions
         => new BoundingBox(dto.MinLat, dto.MaxLat, dto.MinLon, dto.MaxLon);
 
     public static BuildingPlacement ToDomain(this LlmBuildingPlacementDto dto)
-        => new BuildingPlacement(
-            Name: dto.BuildingName,
-            CenterLat: dto.CenterLat,
-            CenterLon: dto.CenterLon,
-            WidthMeters: dto.WidthMeters,
-            DepthMeters: dto.DepthMeters,
-            RotationDegrees: dto.RotationDegrees,
-            AlignmentHint: dto.AlignmentHint ?? ""
-        );
+        => new BuildingPlacement
+        {
+            Name = dto.BuildingName,
+            CenterLat = dto.CenterLat,
+            CenterLon = dto.CenterLon,
+            WidthMeters = dto.WidthMeters,
+            DepthMeters = dto.DepthMeters,
+            RotationDegrees = dto.RotationDegrees,
+            AlignmentHint = dto.AlignmentHint ?? ""
+        };
 
     public static RoadNetwork ToDomain(this LlmRoadNetworkDto dto)
     {
@@ -149,7 +153,7 @@ internal static class LlmToDomainExtensions
             }
         }
         
-        return new RoadNetwork(nodes, edges, dto.RoadWidthMeters);
+        return new RoadNetwork { Nodes = nodes, Edges = edges, RoadWidthMeters = dto.RoadWidthMeters };
     }
 
     public static SpatialWaterBody ToDomain(this LlmWaterBodyDto dto)
@@ -166,10 +170,11 @@ internal static class LlmToDomainExtensions
             _ => SpatialWaterType.River,
         };
         
-        return new SpatialWaterBody(
-            Name: dto.Name,
-            Polygon: polygon,
-            Type: waterType
-        );
+        return new SpatialWaterBody
+        {
+            Name = dto.Name,
+            Polygon = polygon,
+            Type = waterType
+        };
     }
 }

@@ -70,21 +70,28 @@ public class SpatialSpecGenerationPipelineTests
 
     private static TownSpatialSpecification CreateValidSpatialSpec()
     {
-        return new TownSpatialSpecification(
-            RealWorldBounds: new BoundingBox(52.50, 52.51, 4.95, 4.96),
-            BuildingPlacements: new Dictionary<string, BuildingPlacement>
+        return new TownSpatialSpecification
+        {
+            RealWorldBounds = new BoundingBox(52.50, 52.51, 4.95, 4.96),
+            BuildingPlacements = new Dictionary<string, BuildingPlacement>
             {
-                ["castle"] = new BuildingPlacement("Castle", 52.505, 4.955, 30, 30, 0, "town_centre"),
-                ["well"] = new BuildingPlacement("Well", 52.504, 4.954, 5, 5, 0, "market_square")
+                ["castle"] = new BuildingPlacement { Name = "Castle", CenterLat = 52.505, CenterLon = 4.955, WidthMeters = 30, DepthMeters = 30, RotationDegrees = 0, AlignmentHint = "town_centre" },
+                ["well"] = new BuildingPlacement { Name = "Well", CenterLat = 52.504, CenterLon = 4.954, WidthMeters = 5, DepthMeters = 5, RotationDegrees = 0, AlignmentHint = "market_square" }
             },
-            RoadNetwork: new RoadNetwork(
-                Nodes: [new Vector2(52.50f, 4.95f), new Vector2(52.51f, 4.96f)],
-                Edges: [new RoadEdge(52.50, 4.95, 52.51, 4.96)],
-                RoadWidthMeters: 5f),
-            WaterBodies: [new SpatialWaterBody("River", 
-                [new Vector2(52.502f, 4.952f), new Vector2(52.503f, 4.953f)],
-                SpatialWaterType.River)],
-            TerrainDescription: "flat");
+            RoadNetwork = new RoadNetwork
+            {
+                Nodes = [new Vector2(52.50f, 4.95f), new Vector2(52.51f, 4.96f)],
+                Edges = [new RoadEdge(52.50, 4.95, 52.51, 4.96)],
+                RoadWidthMeters = 5f
+            },
+            WaterBodies = [new SpatialWaterBody
+            {
+                Name = "River",
+                Polygon = [new Vector2(52.502f, 4.952f), new Vector2(52.503f, 4.953f)],
+                Type = SpatialWaterType.River
+            }],
+            TerrainDescription = "flat"
+        };
     }
 
     [Fact]
@@ -239,12 +246,12 @@ public class SpatialSpecGenerationPipelineTests
         var (town, townEntry, region, baseDesign) = CreateTestScenario();
         
         // Create an invalid spec that might cause issues
-        var invalidSpec = new TownSpatialSpecification(
-            RealWorldBounds: new BoundingBox(0, 0, 0, 0), // Empty bounds
-            BuildingPlacements: new Dictionary<string, BuildingPlacement>(),
-            RoadNetwork: new RoadNetwork([], [], 0),
-            WaterBodies: [],
-            TerrainDescription: "");
+        var invalidSpec = new TownSpatialSpecification
+        {
+            RealWorldBounds = new BoundingBox(0, 0, 0, 0),
+            RoadNetwork = new RoadNetwork { RoadWidthMeters = 0 },
+            TerrainDescription = ""
+        };
         
         var design = baseDesign with { SpatialSpec = invalidSpec };
 

@@ -14,73 +14,79 @@ public class SpatialSpecSerializerTests
         
         var placements = new Dictionary<string, BuildingPlacement>
         {
-            ["Cathedral"] = new BuildingPlacement(
-                Name: "Cathedral",
-                CenterLat: 52.5,
-                CenterLon: 4.9,
-                WidthMeters: 40.0,
-                DepthMeters: 50.0,
-                RotationDegrees: 45.0,
-                AlignmentHint: "square_corner"
-            ),
-            ["Market"] = new BuildingPlacement(
-                Name: "Market",
-                CenterLat: 52.4,
-                CenterLon: 4.8,
-                WidthMeters: 20.0,
-                DepthMeters: 30.0,
-                RotationDegrees: 0.0,
-                AlignmentHint: "on_main_road"
-            )
+            ["Cathedral"] = new BuildingPlacement
+            {
+                Name = "Cathedral",
+                CenterLat = 52.5,
+                CenterLon = 4.9,
+                WidthMeters = 40.0,
+                DepthMeters = 50.0,
+                RotationDegrees = 45.0,
+                AlignmentHint = "square_corner"
+            },
+            ["Market"] = new BuildingPlacement
+            {
+                Name = "Market",
+                CenterLat = 52.4,
+                CenterLon = 4.8,
+                WidthMeters = 20.0,
+                DepthMeters = 30.0,
+                RotationDegrees = 0.0,
+                AlignmentHint = "on_main_road"
+            }
         };
 
-        var roadNetwork = new RoadNetwork(
-            Nodes: new List<Vector2>
+        var roadNetwork = new RoadNetwork
+        {
+            Nodes = new List<Vector2>
             {
                 new Vector2(52.5f, 4.9f),
                 new Vector2(52.4f, 4.8f),
                 new Vector2(52.6f, 5.0f)
             },
-            Edges: new List<RoadEdge>
+            Edges = new List<RoadEdge>
             {
                 new RoadEdge(52.5, 4.9, 52.4, 4.8),
                 new RoadEdge(52.4, 4.8, 52.6, 5.0)
             },
-            RoadWidthMeters: 10.0f
-        );
+            RoadWidthMeters = 10.0f
+        };
 
         var waterBodies = new List<SpatialWaterBody>
         {
-            new SpatialWaterBody(
-                Name: "Main Canal",
-                Polygon: new List<Vector2>
+            new SpatialWaterBody
+            {
+                Name = "Main Canal",
+                Polygon = new List<Vector2>
                 {
                     new Vector2(52.3f, 4.7f),
                     new Vector2(52.7f, 4.7f),
                     new Vector2(52.7f, 5.1f),
                     new Vector2(52.3f, 5.1f)
                 },
-                Type: SpatialWaterType.Canal
-            ),
-            new SpatialWaterBody(
-                Name: "Harbour",
-                Polygon: new List<Vector2>
+                Type = SpatialWaterType.Canal
+            },
+            new SpatialWaterBody
+            {
+                Name = "Harbour",
+                Polygon = new List<Vector2>
                 {
                     new Vector2(52.2f, 4.6f),
                     new Vector2(52.3f, 4.6f),
                     new Vector2(52.3f, 4.7f)
                 },
-                Type: SpatialWaterType.Harbour
-            )
+                Type = SpatialWaterType.Harbour
+            }
         };
 
-        return new TownSpatialSpecification(
-            RealWorldBounds: bbox,
-            BuildingPlacements: placements,
-            RoadNetwork: roadNetwork,
-            WaterBodies: waterBodies,
-            TerrainDescription: "flat"
-        );
+        return new TownSpatialSpecification
+        {
+            RealWorldBounds = bbox,
+            BuildingPlacements = placements,
+            RoadNetwork = roadNetwork,
+            WaterBodies = waterBodies,
+            TerrainDescription = "flat"
+        };
     }
 
     [Fact]
@@ -217,8 +223,8 @@ public class SpatialSpecSerializerTests
     {
         // Arrange
         var bbox = new BoundingBox(52.0, 53.0, 4.0, 5.0);
-        var network = new RoadNetwork(new List<Vector2>(), new List<RoadEdge>(), 10.0f);
-        var spec = new TownSpatialSpecification(bbox, new Dictionary<string, BuildingPlacement>(), network, new List<SpatialWaterBody>(), "flat");
+        var network = new RoadNetwork { RoadWidthMeters = 10.0f };
+        var spec = new TownSpatialSpecification { RealWorldBounds = bbox, RoadNetwork = network, TerrainDescription = "flat" };
 
         // Act
         var json = SpatialSpecSerializer.SerializeToJson(spec);
@@ -235,15 +241,15 @@ public class SpatialSpecSerializerTests
     {
         // Arrange
         var bbox = new BoundingBox(52.0, 53.0, 4.0, 5.0);
-        var network = new RoadNetwork(new List<Vector2>(), new List<RoadEdge>(), 10.0f);
+        var network = new RoadNetwork { RoadWidthMeters = 10.0f };
         var waters = new List<SpatialWaterBody>
         {
-            new("River", new List<Vector2> { new(52.5f, 4.9f) }, SpatialWaterType.River),
-            new("Canal", new List<Vector2> { new(52.4f, 4.8f) }, SpatialWaterType.Canal),
-            new("Harbour", new List<Vector2> { new(52.3f, 4.7f) }, SpatialWaterType.Harbour),
-            new("Lake", new List<Vector2> { new(52.2f, 4.6f) }, SpatialWaterType.Lake)
+            new SpatialWaterBody { Name = "River", Polygon = new List<Vector2> { new(52.5f, 4.9f) }, Type = SpatialWaterType.River },
+            new SpatialWaterBody { Name = "Canal", Polygon = new List<Vector2> { new(52.4f, 4.8f) }, Type = SpatialWaterType.Canal },
+            new SpatialWaterBody { Name = "Harbour", Polygon = new List<Vector2> { new(52.3f, 4.7f) }, Type = SpatialWaterType.Harbour },
+            new SpatialWaterBody { Name = "Lake", Polygon = new List<Vector2> { new(52.2f, 4.6f) }, Type = SpatialWaterType.Lake }
         };
-        var spec = new TownSpatialSpecification(bbox, new Dictionary<string, BuildingPlacement>(), network, waters, "hilly");
+        var spec = new TownSpatialSpecification { RealWorldBounds = bbox, RoadNetwork = network, WaterBodies = waters, TerrainDescription = "hilly" };
 
         // Act
         var json = SpatialSpecSerializer.SerializeToJson(spec);
@@ -268,15 +274,16 @@ public class SpatialSpecSerializerTests
 
         for (int i = 0; i < 100; i++)
         {
-            placements[$"Building{i}"] = new BuildingPlacement(
-                Name: $"Building{i}",
-                CenterLat: 52.0 + (i * 0.001),
-                CenterLon: 4.0 + (i * 0.001),
-                WidthMeters: 20.0 + i,
-                DepthMeters: 30.0 + i,
-                RotationDegrees: (i * 3.6) % 360,
-                AlignmentHint: "residential"
-            );
+            placements[$"Building{i}"] = new BuildingPlacement
+                {
+                    Name = $"Building{i}",
+                    CenterLat = 52.0 + (i * 0.001),
+                    CenterLon = 4.0 + (i * 0.001),
+                    WidthMeters = 20.0 + i,
+                    DepthMeters = 30.0 + i,
+                    RotationDegrees = (i * 3.6) % 360,
+                    AlignmentHint = "residential"
+                };
         }
 
         for (int i = 0; i < 50; i++)
@@ -289,8 +296,8 @@ public class SpatialSpecSerializerTests
             edges.Add(new RoadEdge(nodes[i].X, nodes[i].Y, nodes[i + 1].X, nodes[i + 1].Y));
         }
 
-        var network = new RoadNetwork(nodes, edges, 10.0f);
-        var spec = new TownSpatialSpecification(bbox, placements, network, new List<SpatialWaterBody>(), "sloped south-west");
+        var network = new RoadNetwork { Nodes = nodes, Edges = edges, RoadWidthMeters = 10.0f };
+        var spec = new TownSpatialSpecification { RealWorldBounds = bbox, BuildingPlacements = placements, RoadNetwork = network, TerrainDescription = "sloped south-west" };
 
         // Act
         var json = SpatialSpecSerializer.SerializeToJson(spec);
@@ -327,20 +334,20 @@ public class SpatialSpecSerializerTests
         // Arrange
         var specs = new[]
         {
-            new TownSpatialSpecification(
-                new BoundingBox(52.0, 53.0, 4.0, 5.0),
-                new Dictionary<string, BuildingPlacement>(),
-                new RoadNetwork(new List<Vector2>(), new List<RoadEdge>(), 10.0f),
-                new List<SpatialWaterBody>(),
-                "flat"
-            ),
-            new TownSpatialSpecification(
-                new BoundingBox(51.0, 52.0, 3.0, 4.0),
-                new Dictionary<string, BuildingPlacement> { ["Test"] = new("Test", 51.5, 3.5, 20, 20, 0, "test") },
-                new RoadNetwork(new List<Vector2> { new(51.5f, 3.5f) }, new List<RoadEdge>(), 10.0f),
-                new List<SpatialWaterBody> { new("Test", new List<Vector2> { new(51.4f, 3.4f) }, SpatialWaterType.River) },
-                "hilly"
-            )
+            new TownSpatialSpecification
+            {
+                RealWorldBounds = new BoundingBox(52.0, 53.0, 4.0, 5.0),
+                RoadNetwork = new RoadNetwork { RoadWidthMeters = 10.0f },
+                TerrainDescription = "flat"
+            },
+            new TownSpatialSpecification
+            {
+                RealWorldBounds = new BoundingBox(51.0, 52.0, 3.0, 4.0),
+                BuildingPlacements = new Dictionary<string, BuildingPlacement> { ["Test"] = new BuildingPlacement { Name = "Test", CenterLat = 51.5, CenterLon = 3.5, WidthMeters = 20, DepthMeters = 20, RotationDegrees = 0, AlignmentHint = "test" } },
+                RoadNetwork = new RoadNetwork { Nodes = new List<Vector2> { new(51.5f, 3.5f) }, RoadWidthMeters = 10.0f },
+                WaterBodies = new List<SpatialWaterBody> { new SpatialWaterBody { Name = "Test", Polygon = new List<Vector2> { new(51.4f, 3.4f) }, Type = SpatialWaterType.River } },
+                TerrainDescription = "hilly"
+            }
         };
 
         // Act & Assert

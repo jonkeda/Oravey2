@@ -30,19 +30,20 @@ public class SpatialSpecPersistenceTests : IDisposable
         var bbox = new BoundingBox(52.0, 53.0, 4.0, 5.0);
         var placements = new Dictionary<string, BuildingPlacement>
         {
-            ["Cathedral"] = new BuildingPlacement("Cathedral", 52.5, 4.9, 40.0, 50.0, 45.0, "square_corner")
+            ["Cathedral"] = new BuildingPlacement { Name = "Cathedral", CenterLat = 52.5, CenterLon = 4.9, WidthMeters = 40.0, DepthMeters = 50.0, RotationDegrees = 45.0, AlignmentHint = "square_corner" }
         };
-        var network = new RoadNetwork(
-            new List<Vector2> { new Vector2(52.5f, 4.9f) },
-            new List<RoadEdge> { new RoadEdge(52.5, 4.9, 52.4, 4.8) },
-            10.0f
-        );
+        var network = new RoadNetwork
+        {
+            Nodes = new List<Vector2> { new Vector2(52.5f, 4.9f) },
+            Edges = new List<RoadEdge> { new RoadEdge(52.5, 4.9, 52.4, 4.8) },
+            RoadWidthMeters = 10.0f
+        };
         var waters = new List<SpatialWaterBody>
         {
-            new SpatialWaterBody("Canal", new List<Vector2> { new Vector2(52.3f, 4.7f) }, SpatialWaterType.Canal)
+            new SpatialWaterBody { Name = "Canal", Polygon = new List<Vector2> { new Vector2(52.3f, 4.7f) }, Type = SpatialWaterType.Canal }
         };
 
-        return new TownSpatialSpecification(bbox, placements, network, waters, "flat");
+        return new TownSpatialSpecification { RealWorldBounds = bbox, BuildingPlacements = placements, RoadNetwork = network, WaterBodies = waters, TerrainDescription = "flat" };
     }
 
     [Fact]
@@ -179,13 +180,12 @@ public class SpatialSpecPersistenceTests : IDisposable
     {
         // Arrange
         var spec1 = CreateTestSpecification();
-        var spec2 = new TownSpatialSpecification(
-            new BoundingBox(51.0, 52.0, 3.0, 4.0),
-            new Dictionary<string, BuildingPlacement>(),
-            new RoadNetwork(new List<Vector2>(), new List<RoadEdge>(), 10.0f),
-            new List<SpatialWaterBody>(),
-            "hilly"
-        );
+        var spec2 = new TownSpatialSpecification
+        {
+            RealWorldBounds = new BoundingBox(51.0, 52.0, 3.0, 4.0),
+            RoadNetwork = new RoadNetwork { RoadWidthMeters = 10.0f },
+            TerrainDescription = "hilly"
+        };
 
         // Act
         await _persistence.SaveToFileAsync("spec1.json", spec1);
@@ -214,13 +214,12 @@ public class SpatialSpecPersistenceTests : IDisposable
         // Arrange
         var fileName = "overwrite-test.json";
         var spec1 = CreateTestSpecification();
-        var spec2 = new TownSpatialSpecification(
-            new BoundingBox(51.0, 52.0, 3.0, 4.0),
-            new Dictionary<string, BuildingPlacement>(),
-            new RoadNetwork(new List<Vector2>(), new List<RoadEdge>(), 10.0f),
-            new List<SpatialWaterBody>(),
-            "hilly"
-        );
+        var spec2 = new TownSpatialSpecification
+        {
+            RealWorldBounds = new BoundingBox(51.0, 52.0, 3.0, 4.0),
+            RoadNetwork = new RoadNetwork { RoadWidthMeters = 10.0f },
+            TerrainDescription = "hilly"
+        };
 
         // Act
         await _persistence.SaveToFileAsync(fileName, spec1);
@@ -242,15 +241,16 @@ public class SpatialSpecPersistenceTests : IDisposable
         var placements = new Dictionary<string, BuildingPlacement>();
         for (int i = 0; i < 50; i++)
         {
-            placements[$"Building{i}"] = new BuildingPlacement(
-                Name: $"Building{i}",
-                CenterLat: 52.0 + (i * 0.001),
-                CenterLon: 4.0 + (i * 0.001),
-                WidthMeters: 20.0 + i,
-                DepthMeters: 30.0 + i,
-                RotationDegrees: (i * 3.6) % 360,
-                AlignmentHint: "residential"
-            );
+            placements[$"Building{i}"] = new BuildingPlacement
+            {
+                Name = $"Building{i}",
+                CenterLat = 52.0 + (i * 0.001),
+                CenterLon = 4.0 + (i * 0.001),
+                WidthMeters = 20.0 + i,
+                DepthMeters = 30.0 + i,
+                RotationDegrees = (i * 3.6) % 360,
+                AlignmentHint = "residential"
+            };
         }
 
         var nodes = new List<Vector2>();
@@ -265,8 +265,8 @@ public class SpatialSpecPersistenceTests : IDisposable
             edges.Add(new RoadEdge(nodes[i].X, nodes[i].Y, nodes[i + 1].X, nodes[i + 1].Y));
         }
 
-        var network = new RoadNetwork(nodes, edges, 10.0f);
-        var spec = new TownSpatialSpecification(bbox, placements, network, new List<SpatialWaterBody>(), "mountainous");
+        var network = new RoadNetwork { Nodes = nodes, Edges = edges, RoadWidthMeters = 10.0f };
+        var spec = new TownSpatialSpecification { RealWorldBounds = bbox, BuildingPlacements = placements, RoadNetwork = network, TerrainDescription = "mountainous" };
 
         // Act
         await _persistence.SaveToFileAsync("large-spec.json", spec);
@@ -307,8 +307,8 @@ public class SpatialSpecPersistenceTests : IDisposable
     {
         // Arrange
         var bbox = new BoundingBox(52.0, 53.0, 4.0, 5.0);
-        var network = new RoadNetwork(new List<Vector2>(), new List<RoadEdge>(), 10.0f);
-        var spec = new TownSpatialSpecification(bbox, new Dictionary<string, BuildingPlacement>(), network, new List<SpatialWaterBody>(), "flat");
+        var network = new RoadNetwork { RoadWidthMeters = 10.0f };
+        var spec = new TownSpatialSpecification { RealWorldBounds = bbox, RoadNetwork = network, TerrainDescription = "flat" };
 
         // Act
         await _persistence.SaveToFileAsync("empty-buildings.json", spec);
@@ -323,9 +323,9 @@ public class SpatialSpecPersistenceTests : IDisposable
     {
         // Arrange
         var bbox = new BoundingBox(52.0, 53.0, 4.0, 5.0);
-        var network = new RoadNetwork(new List<Vector2>(), new List<RoadEdge>(), 10.0f);
-        var placements = new Dictionary<string, BuildingPlacement> { ["Test"] = new("Test", 52.5, 4.9, 20, 20, 0, "test") };
-        var spec = new TownSpatialSpecification(bbox, placements, network, new List<SpatialWaterBody>(), "flat");
+        var network = new RoadNetwork { RoadWidthMeters = 10.0f };
+        var placements = new Dictionary<string, BuildingPlacement> { ["Test"] = new BuildingPlacement { Name = "Test", CenterLat = 52.5, CenterLon = 4.9, WidthMeters = 20, DepthMeters = 20, RotationDegrees = 0, AlignmentHint = "test" } };
+        var spec = new TownSpatialSpecification { RealWorldBounds = bbox, BuildingPlacements = placements, RoadNetwork = network, TerrainDescription = "flat" };
 
         // Act
         await _persistence.SaveToFileAsync("no-roads.json", spec);

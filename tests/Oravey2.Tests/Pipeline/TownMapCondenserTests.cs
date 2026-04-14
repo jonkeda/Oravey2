@@ -54,12 +54,12 @@ public class TownMapCondenserTests
     {
         var design = CreateTestDesign();
         var bounds = new BoundingBox(52.0, 52.01, 4.0, 4.01);
-        var spec = new TownSpatialSpecification(
-            bounds,
-            new Dictionary<string, BuildingPlacement>(),
-            new RoadNetwork(new(), new(), 10f),
-            new List<SpatialWaterBody>(),
-            "flat");
+        var spec = new TownSpatialSpecification
+        {
+            RealWorldBounds = bounds,
+            RoadNetwork = new RoadNetwork { RoadWidthMeters = 10f },
+            TerrainDescription = "flat"
+        };
 
         var spatialTransform = new TownSpatialTransform(spec, tileSizeMeters: 10f, seed: 42);
         var (gridW, gridH) = spatialTransform.GetGridDimensions();
@@ -85,12 +85,12 @@ public class TownMapCondenserTests
         var design = CreateTestDesign();
         // Larger bounds = larger grid
         var bounds = new BoundingBox(52.0, 52.1, 4.0, 4.1);
-        var spec = new TownSpatialSpecification(
-            bounds,
-            new Dictionary<string, BuildingPlacement>(),
-            new RoadNetwork(new(), new(), 10f),
-            new List<SpatialWaterBody>(),
-            "flat");
+        var spec = new TownSpatialSpecification
+        {
+            RealWorldBounds = bounds,
+            RoadNetwork = new RoadNetwork { RoadWidthMeters = 10f },
+            TerrainDescription = "flat"
+        };
 
         var spatialTransform = new TownSpatialTransform(spec, tileSizeMeters: 5f, seed: 42);
         var (gridW, gridH) = spatialTransform.GetGridDimensions();
@@ -121,12 +121,12 @@ public class TownMapCondenserTests
     {
         var design = CreateTestDesign();
         var bounds = new BoundingBox(52.0, 52.1, 4.0, 4.1);
-        var spec = new TownSpatialSpecification(
-            bounds,
-            new Dictionary<string, BuildingPlacement>(),
-            new RoadNetwork(new(), new(), 10f),
-            new List<SpatialWaterBody>(),
-            "flat");
+        var spec = new TownSpatialSpecification
+        {
+            RealWorldBounds = bounds,
+            RoadNetwork = new RoadNetwork { RoadWidthMeters = 10f },
+            TerrainDescription = "flat"
+        };
 
         var spatialTransform = new TownSpatialTransform(spec, tileSizeMeters: 5f, seed: 42);
         var (gridW, gridH) = spatialTransform.GetGridDimensions();
@@ -150,12 +150,12 @@ public class TownMapCondenserTests
     {
         var design = CreateTestDesign();
         var bounds = new BoundingBox(52.0, 52.05, 4.0, 4.05);
-        var spec = new TownSpatialSpecification(
-            bounds,
-            new Dictionary<string, BuildingPlacement>(),
-            new RoadNetwork(new(), new(), 10f),
-            new List<SpatialWaterBody>(),
-            "flat");
+        var spec = new TownSpatialSpecification
+        {
+            RealWorldBounds = bounds,
+            RoadNetwork = new RoadNetwork { RoadWidthMeters = 10f },
+            TerrainDescription = "flat"
+        };
 
         var spatialTransform = new TownSpatialTransform(spec, tileSizeMeters: 8f, seed: 42);
         var (gridW, gridH) = spatialTransform.GetGridDimensions();

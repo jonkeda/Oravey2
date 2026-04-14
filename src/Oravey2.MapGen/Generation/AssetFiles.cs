@@ -40,7 +40,12 @@ public static class AssetFiles
             if (string.Equals(b.Name, buildingName, StringComparison.OrdinalIgnoreCase))
             {
                 updated = true;
-                return b with { MeshAsset = newMeshPath };
+                return new BuildingDto
+                {
+                    Id = b.Id, Name = b.Name, MeshAsset = newMeshPath, Size = b.Size,
+                    Footprint = b.Footprint, Floors = b.Floors, Condition = b.Condition,
+                    InteriorChunkId = b.InteriorChunkId, Placement = b.Placement,
+                };
             }
             return b;
         }).ToList();

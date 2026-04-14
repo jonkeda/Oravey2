@@ -27,11 +27,11 @@ public class EndToEndSpatialSpecTests
         {
             {
                 "HamletHall",
-                new BuildingPlacement("HamletHall", 52.0025, 4.0025, 30.0, 25.0, 0.0, "center")
+                new BuildingPlacement { Name = "HamletHall", CenterLat = 52.0025, CenterLon = 4.0025, WidthMeters = 30.0, DepthMeters = 25.0, RotationDegrees = 0.0, AlignmentHint = "center" }
             },
         };
-        var roads = new RoadNetwork([], [], 3f);
-        return new TownSpatialSpecification(bounds, buildings, roads, [], "flat");
+        var roads = new RoadNetwork { RoadWidthMeters = 3f };
+        return new TownSpatialSpecification { RealWorldBounds = bounds, BuildingPlacements = buildings, RoadNetwork = roads, TerrainDescription = "flat" };
     }
 
     /// <summary>Create a village spec (100×100 grid)</summary>
@@ -42,15 +42,15 @@ public class EndToEndSpatialSpecTests
         {
             {
                 "VillageTavern",
-                new BuildingPlacement("VillageTavern", 52.005, 4.005, 30.0, 25.0, 0.0, "main_road")
+                new BuildingPlacement { Name = "VillageTavern", CenterLat = 52.005, CenterLon = 4.005, WidthMeters = 30.0, DepthMeters = 25.0, RotationDegrees = 0.0, AlignmentHint = "main_road" }
             },
             {
                 "VillageSmith",
-                new BuildingPlacement("VillageSmith", 52.003, 4.003, 25.0, 20.0, 45.0, "side_road")
+                new BuildingPlacement { Name = "VillageSmith", CenterLat = 52.003, CenterLon = 4.003, WidthMeters = 25.0, DepthMeters = 20.0, RotationDegrees = 45.0, AlignmentHint = "side_road" }
             },
         };
-        var roads = new RoadNetwork([], [], 5f);
-        return new TownSpatialSpecification(bounds, buildings, roads, [], "flat");
+        var roads = new RoadNetwork { RoadWidthMeters = 5f };
+        return new TownSpatialSpecification { RealWorldBounds = bounds, BuildingPlacements = buildings, RoadNetwork = roads, TerrainDescription = "flat" };
     }
 
     /// <summary>Create a town spec (200×200 grid)</summary>
@@ -61,19 +61,19 @@ public class EndToEndSpatialSpecTests
         {
             {
                 "TownHall",
-                new BuildingPlacement("TownHall", 52.01, 4.01, 40.0, 35.0, 0.0, "center")
+                new BuildingPlacement { Name = "TownHall", CenterLat = 52.01, CenterLon = 4.01, WidthMeters = 40.0, DepthMeters = 35.0, RotationDegrees = 0.0, AlignmentHint = "center" }
             },
             {
                 "TownTemple",
-                new BuildingPlacement("TownTemple", 52.008, 4.008, 35.0, 30.0, 45.0, "north_side")
+                new BuildingPlacement { Name = "TownTemple", CenterLat = 52.008, CenterLon = 4.008, WidthMeters = 35.0, DepthMeters = 30.0, RotationDegrees = 45.0, AlignmentHint = "north_side" }
             },
             {
                 "TownMarket",
-                new BuildingPlacement("TownMarket", 52.012, 4.012, 50.0, 40.0, 0.0, "south_side")
+                new BuildingPlacement { Name = "TownMarket", CenterLat = 52.012, CenterLon = 4.012, WidthMeters = 50.0, DepthMeters = 40.0, RotationDegrees = 0.0, AlignmentHint = "south_side" }
             },
         };
-        var roads = new RoadNetwork([], [], 8f);
-        return new TownSpatialSpecification(bounds, buildings, roads, [], "flat");
+        var roads = new RoadNetwork { RoadWidthMeters = 8f };
+        return new TownSpatialSpecification { RealWorldBounds = bounds, BuildingPlacements = buildings, RoadNetwork = roads, TerrainDescription = "flat" };
     }
 
     /// <summary>Create a city spec with water (300×300 grid)</summary>
@@ -84,19 +84,19 @@ public class EndToEndSpatialSpecTests
         {
             {
                 "CityPalace",
-                new BuildingPlacement("CityPalace", 52.015, 4.015, 50.0, 45.0, 0.0, "imperial_square")
+                new BuildingPlacement { Name = "CityPalace", CenterLat = 52.015, CenterLon = 4.015, WidthMeters = 50.0, DepthMeters = 45.0, RotationDegrees = 0.0, AlignmentHint = "imperial_square" }
             },
             {
                 "CityFort",
-                new BuildingPlacement("CityFort", 52.010, 4.010, 45.0, 40.0, 45.0, "defensive_post")
+                new BuildingPlacement { Name = "CityFort", CenterLat = 52.010, CenterLon = 4.010, WidthMeters = 45.0, DepthMeters = 40.0, RotationDegrees = 45.0, AlignmentHint = "defensive_post" }
             },
             {
                 "CityGuild",
-                new BuildingPlacement("CityGuild", 52.020, 4.020, 35.0, 30.0, 0.0, "craft_district")
+                new BuildingPlacement { Name = "CityGuild", CenterLat = 52.020, CenterLon = 4.020, WidthMeters = 35.0, DepthMeters = 30.0, RotationDegrees = 0.0, AlignmentHint = "craft_district" }
             },
             {
                 "CityMerchant",
-                new BuildingPlacement("CityMerchant", 52.005, 4.025, 40.0, 35.0, 45.0, "merchant_quarter")
+                new BuildingPlacement { Name = "CityMerchant", CenterLat = 52.005, CenterLon = 4.025, WidthMeters = 40.0, DepthMeters = 35.0, RotationDegrees = 45.0, AlignmentHint = "merchant_quarter" }
             },
         };
         
@@ -109,11 +109,11 @@ public class EndToEndSpatialSpecTests
         };
         var waters = new List<SpatialWaterBody>
         {
-            new("CityHarbour", waterPolygon, SpatialWaterType.Harbour),
+            new SpatialWaterBody { Name = "CityHarbour", Polygon = waterPolygon, Type = SpatialWaterType.Harbour },
         };
         
-        var roads = new RoadNetwork([], [], 10f);
-        return new TownSpatialSpecification(bounds, buildings, roads, waters, "flat");
+        var roads = new RoadNetwork { RoadWidthMeters = 10f };
+        return new TownSpatialSpecification { RealWorldBounds = bounds, BuildingPlacements = buildings, RoadNetwork = roads, WaterBodies = waters, TerrainDescription = "flat" };
     }
 
     /// <summary>Create an empty map for rendering</summary>

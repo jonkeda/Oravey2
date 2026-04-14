@@ -1,6 +1,8 @@
 namespace Oravey2.Contracts.ContentPack;
 
-public sealed record WaterDto(
-    string Id,
-    string WaterType,
-    float[][] Geometry);
+public sealed class WaterDto
+{
+    public string Id { get; set; } = "";
+    public string WaterType { get; set; } = "";
+    public float[][] Geometry { get; set; } = [];
+}

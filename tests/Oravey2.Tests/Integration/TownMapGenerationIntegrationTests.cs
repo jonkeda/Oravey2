@@ -22,31 +22,31 @@ public class TownMapGenerationIntegrationTests
     private static TownSpatialSpecification CreateTestHamletSpec()
     {
         var bounds = new BoundingBox(52.0, 52.005, 4.0, 4.005);
-        var roads = new RoadNetwork([], [], 3f);
-        return new TownSpatialSpecification(bounds, new(), roads, [], "flat");
+        var roads = new RoadNetwork { RoadWidthMeters = 3f };
+        return new TownSpatialSpecification { RealWorldBounds = bounds, RoadNetwork = roads, TerrainDescription = "flat" };
     }
 
     /// <summary>Create a medium test village spec (100×100 tile grid)</summary>
     private static TownSpatialSpecification CreateTestVillageSpec()
     {
         var bounds = new BoundingBox(52.0, 52.01, 4.0, 4.01);
-        var roads = new RoadNetwork([], [], 5f);
-        return new TownSpatialSpecification(bounds, new(), roads, [], "flat");
+        var roads = new RoadNetwork { RoadWidthMeters = 5f };
+        return new TownSpatialSpecification { RealWorldBounds = bounds, RoadNetwork = roads, TerrainDescription = "flat" };
     }
 
     /// <summary>Create a large test town spec (200×200 tile grid)</summary>
     private static TownSpatialSpecification CreateTestTownSpec()
     {
         var bounds = new BoundingBox(52.0, 52.02, 4.0, 4.02);
-        var roads = new RoadNetwork([], [], 8f);
-        return new TownSpatialSpecification(bounds, new(), roads, [], "flat");
+        var roads = new RoadNetwork { RoadWidthMeters = 8f };
+        return new TownSpatialSpecification { RealWorldBounds = bounds, RoadNetwork = roads, TerrainDescription = "flat" };
     }
 
     /// <summary>Create a city spec with water (300×300 tile grid)</summary>
     private static TownSpatialSpecification CreateTestCitySpec()
     {
         var bounds = new BoundingBox(52.0, 52.03, 4.0, 4.03);
-        var roads = new RoadNetwork([], [], 10f);
+        var roads = new RoadNetwork { RoadWidthMeters = 10f };
         
         var waterPolygon = new List<Vector2>
         {
@@ -57,10 +57,10 @@ public class TownMapGenerationIntegrationTests
         };
         var waters = new List<SpatialWaterBody>
         {
-            new("Harbour", waterPolygon, SpatialWaterType.Harbour),
+            new SpatialWaterBody { Name = "Harbour", Polygon = waterPolygon, Type = SpatialWaterType.Harbour },
         };
         
-        return new TownSpatialSpecification(bounds, new(), roads, waters, "flat");
+        return new TownSpatialSpecification { RealWorldBounds = bounds, RoadNetwork = roads, WaterBodies = waters, TerrainDescription = "flat" };
     }
 
     /// <summary>Create a test town design with landmarks and key locations</summary>
@@ -282,21 +282,25 @@ public class TownMapGenerationIntegrationTests
         var buildings = new Dictionary<string, BuildingPlacement>
         {
             {
-                "MainHall", new BuildingPlacement(
-                    Name: "Main Hall",
-                    CenterLat: 52.005,
-                    CenterLon: 4.005,
-                    WidthMeters: 20,
-                    DepthMeters: 20,
-                    RotationDegrees: 0,
-                    AlignmentHint: "town_centre")
+                "MainHall", new BuildingPlacement
+                {
+                    Name = "Main Hall",
+                    CenterLat = 52.005,
+                    CenterLon = 4.005,
+                    WidthMeters = 20,
+                    DepthMeters = 20,
+                    RotationDegrees = 0,
+                    AlignmentHint = "town_centre"
+                }
             },
         };
-        var roads = new RoadNetwork(
-            [new Vector2((float)52.005, (float)4.003), new Vector2((float)52.005, (float)4.007)],
-            [new RoadEdge(52.005, 4.003, 52.005, 4.007)],
-            5f);
-        var spec = new TownSpatialSpecification(bounds, buildings, roads, [], "flat");
+        var roads = new RoadNetwork
+        {
+            Nodes = [new Vector2((float)52.005, (float)4.003), new Vector2((float)52.005, (float)4.007)],
+            Edges = [new RoadEdge(52.005, 4.003, 52.005, 4.007)],
+            RoadWidthMeters = 5f
+        };
+        var spec = new TownSpatialSpecification { RealWorldBounds = bounds, BuildingPlacements = buildings, RoadNetwork = roads, TerrainDescription = "flat" };
         var transform = new TownSpatialTransform(spec, TileSizeMeters, Seed);
 
         // Act
@@ -346,11 +350,11 @@ public class TownMapGenerationIntegrationTests
         var bounds = new BoundingBox(52.0, 52.01, 4.0, 4.01);
         var buildings = new Dictionary<string, BuildingPlacement>
         {
-            {"Building1", new("B1", 52.002, 4.002, 10, 10, 0, "residential")},
-            {"Building2", new("B2", 52.008, 4.008, 15, 15, 45, "commercial")},
-            {"Building3", new("B3", 52.005, 4.005, 20, 20, 90, "civic")},
+            {"Building1", new BuildingPlacement { Name = "B1", CenterLat = 52.002, CenterLon = 4.002, WidthMeters = 10, DepthMeters = 10, RotationDegrees = 0, AlignmentHint = "residential" }},
+            {"Building2", new BuildingPlacement { Name = "B2", CenterLat = 52.008, CenterLon = 4.008, WidthMeters = 15, DepthMeters = 15, RotationDegrees = 45, AlignmentHint = "commercial" }},
+            {"Building3", new BuildingPlacement { Name = "B3", CenterLat = 52.005, CenterLon = 4.005, WidthMeters = 20, DepthMeters = 20, RotationDegrees = 90, AlignmentHint = "civic" }},
         };
-        var spec = new TownSpatialSpecification(bounds, buildings, new RoadNetwork([], [], 5f), [], "flat");
+        var spec = new TownSpatialSpecification { RealWorldBounds = bounds, BuildingPlacements = buildings, RoadNetwork = new RoadNetwork { RoadWidthMeters = 5f }, TerrainDescription = "flat" };
         var transform = new TownSpatialTransform(spec, TileSizeMeters, Seed);
         var (gridW, gridH) = transform.GetGridDimensions();
 
@@ -374,18 +378,22 @@ public class TownMapGenerationIntegrationTests
     {
         // Arrange
         var bounds = new BoundingBox(52.0, 52.01, 4.0, 4.01);
-        var roads = new RoadNetwork(
+        var roads = new RoadNetwork
+        {
+            Nodes =
             [
                 new Vector2((float)52.001, (float)4.001),
                 new Vector2((float)52.005, (float)4.005),
                 new Vector2((float)52.009, (float)4.009),
             ],
+            Edges =
             [
                 new RoadEdge(52.001, 4.001, 52.005, 4.005),
                 new RoadEdge(52.005, 4.005, 52.009, 4.009),
             ],
-            5f);
-        var spec = new TownSpatialSpecification(bounds, new(), roads, [], "flat");
+            RoadWidthMeters = 5f
+        };
+        var spec = new TownSpatialSpecification { RealWorldBounds = bounds, RoadNetwork = roads, TerrainDescription = "flat" };
         var transform = new TownSpatialTransform(spec, TileSizeMeters, Seed);
         var (gridW, gridH) = transform.GetGridDimensions();
 
@@ -412,15 +420,20 @@ public class TownMapGenerationIntegrationTests
         var bounds = new BoundingBox(52.0, 52.01, 4.0, 4.01);
         var waters = new List<SpatialWaterBody>
         {
-            new("River", new List<Vector2>
+            new SpatialWaterBody
             {
-                new(52.001f, 4.001f),
-                new(52.009f, 4.001f),
-                new(52.009f, 4.009f),
-                new(52.001f, 4.009f),
-            }, SpatialWaterType.River),
+                Name = "River",
+                Polygon = new List<Vector2>
+                {
+                    new(52.001f, 4.001f),
+                    new(52.009f, 4.001f),
+                    new(52.009f, 4.009f),
+                    new(52.001f, 4.009f),
+                },
+                Type = SpatialWaterType.River
+            },
         };
-        var spec = new TownSpatialSpecification(bounds, new(), new RoadNetwork([], [], 5f), waters, "flat");
+        var spec = new TownSpatialSpecification { RealWorldBounds = bounds, RoadNetwork = new RoadNetwork { RoadWidthMeters = 5f }, WaterBodies = waters, TerrainDescription = "flat" };
         var transform = new TownSpatialTransform(spec, TileSizeMeters, Seed);
         var (gridW, gridH) = transform.GetGridDimensions();
 
@@ -450,11 +463,11 @@ public class TownMapGenerationIntegrationTests
         var bounds = new BoundingBox(52.0, 52.01, 4.0, 4.01);
         var buildings = new Dictionary<string, BuildingPlacement>
         {
-            {"Building1", new("B1", 52.002, 4.002, 10, 10, 0, "residential")},
-            {"Building2", new("B2", 52.002, 4.008, 10, 10, 0, "residential")}, // On east side
-            {"Building3", new("B3", 52.008, 4.002, 10, 10, 0, "residential")}, // On south side
+            {"Building1", new BuildingPlacement { Name = "B1", CenterLat = 52.002, CenterLon = 4.002, WidthMeters = 10, DepthMeters = 10, RotationDegrees = 0, AlignmentHint = "residential" }},
+            {"Building2", new BuildingPlacement { Name = "B2", CenterLat = 52.002, CenterLon = 4.008, WidthMeters = 10, DepthMeters = 10, RotationDegrees = 0, AlignmentHint = "residential" }}, // On east side
+            {"Building3", new BuildingPlacement { Name = "B3", CenterLat = 52.008, CenterLon = 4.002, WidthMeters = 10, DepthMeters = 10, RotationDegrees = 0, AlignmentHint = "residential" }}, // On south side
         };
-        var spec = new TownSpatialSpecification(bounds, buildings, new RoadNetwork([], [], 5f), [], "flat");
+        var spec = new TownSpatialSpecification { RealWorldBounds = bounds, BuildingPlacements = buildings, RoadNetwork = new RoadNetwork { RoadWidthMeters = 5f }, TerrainDescription = "flat" };
         var transform = new TownSpatialTransform(spec, TileSizeMeters, Seed);
 
         // Act

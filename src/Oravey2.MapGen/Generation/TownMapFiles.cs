@@ -17,31 +17,37 @@ public static class TownMapFiles
         File.WriteAllText(
             Path.Combine(townDir, "layout.json"),
             JsonSerializer.Serialize(
-                new LayoutDto(result.Layout.Width, result.Layout.Height, result.Layout.Surface, result.Layout.Liquid),
+                new LayoutDto { Width = result.Layout.Width, Height = result.Layout.Height, Surface = result.Layout.Surface, Liquid = result.Layout.Liquid },
                 ContentPackSerializer.WriteOptions));
 
         File.WriteAllText(
             Path.Combine(townDir, "buildings.json"),
-            JsonSerializer.Serialize(result.Buildings.Select(b => new BuildingDto(
-                b.Id, b.Name, b.MeshAsset, b.SizeCategory,
-                b.Footprint, b.Floors, b.Condition, null,
-                PlacementFrom(b.Placement))).ToList(),
+            JsonSerializer.Serialize(result.Buildings.Select(b => new BuildingDto
+            {
+                Id = b.Id, Name = b.Name, MeshAsset = b.MeshAsset, Size = b.SizeCategory,
+                Footprint = b.Footprint, Floors = b.Floors, Condition = b.Condition, InteriorChunkId = null,
+                Placement = PlacementFrom(b.Placement),
+            }).ToList(),
                 ContentPackSerializer.WriteOptions));
 
         File.WriteAllText(
             Path.Combine(townDir, "props.json"),
-            JsonSerializer.Serialize(result.Props.Select(p => new PropDto(
-                p.Id, p.MeshAsset, PlacementFrom(p.Placement),
-                p.Rotation, p.Scale, p.BlocksWalkability, null)).ToList(),
+            JsonSerializer.Serialize(result.Props.Select(p => new PropDto
+            {
+                Id = p.Id, MeshAsset = p.MeshAsset, Placement = PlacementFrom(p.Placement),
+                Rotation = p.Rotation, Scale = p.Scale, BlocksWalkability = p.BlocksWalkability, Footprint = null,
+            }).ToList(),
                 ContentPackSerializer.WriteOptions));
 
         File.WriteAllText(
             Path.Combine(townDir, "zones.json"),
-            JsonSerializer.Serialize(result.Zones.Select(z => new ZoneDto(
-                z.Id, z.Name, z.Biome, z.RadiationLevel,
-                z.EnemyDifficultyTier, z.IsFastTravelTarget,
-                z.ChunkStartX, z.ChunkStartY,
-                z.ChunkEndX, z.ChunkEndY)).ToList(),
+            JsonSerializer.Serialize(result.Zones.Select(z => new ZoneDto
+            {
+                Id = z.Id, Name = z.Name, Biome = z.Biome, RadiationLevel = z.RadiationLevel,
+                EnemyDifficultyTier = z.EnemyDifficultyTier, IsFastTravelTarget = z.IsFastTravelTarget,
+                ChunkStartX = z.ChunkStartX, ChunkStartY = z.ChunkStartY,
+                ChunkEndX = z.ChunkEndX, ChunkEndY = z.ChunkEndY,
+            }).ToList(),
                 ContentPackSerializer.WriteOptions));
     }
 
@@ -83,7 +89,7 @@ public static class TownMapFiles
     }
 
     private static PlacementDto PlacementFrom(TilePlacement p) =>
-        new(p.ChunkX, p.ChunkY, p.LocalTileX, p.LocalTileY);
+        new() { ChunkX = p.ChunkX, ChunkY = p.ChunkY, LocalTileX = p.LocalTileX, LocalTileY = p.LocalTileY };
 
     private static TilePlacement PlacementTo(PlacementDto? p) =>
         p is null ? new(0, 0, 0, 0) : new(p.ChunkX, p.ChunkY, p.LocalTileX, p.LocalTileY);

@@ -74,13 +74,14 @@ public sealed class SpatialSpecSerializer
             if (wrapper.RoadNetwork == null)
                 throw new JsonException("RoadNetwork cannot be null");
 
-            return new TownSpatialSpecification(
-                RealWorldBounds: wrapper.RealWorldBounds,
-                BuildingPlacements: wrapper.BuildingPlacements ?? new Dictionary<string, BuildingPlacement>(),
-                RoadNetwork: wrapper.RoadNetwork,
-                WaterBodies: wrapper.WaterBodies ?? new List<SpatialWaterBody>(),
-                TerrainDescription: wrapper.TerrainDescription ?? "unknown"
-            );
+            return new TownSpatialSpecification
+            {
+                RealWorldBounds = wrapper.RealWorldBounds,
+                BuildingPlacements = wrapper.BuildingPlacements ?? new Dictionary<string, BuildingPlacement>(),
+                RoadNetwork = wrapper.RoadNetwork,
+                WaterBodies = wrapper.WaterBodies ?? new List<SpatialWaterBody>(),
+                TerrainDescription = wrapper.TerrainDescription ?? "unknown"
+            };
         }
         catch (JsonException)
         {

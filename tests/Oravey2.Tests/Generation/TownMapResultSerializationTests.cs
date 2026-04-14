@@ -32,13 +32,12 @@ public class TownMapResultSerializationTests
     public void TownMapResult_WithSpatialSpec_CanStoreJson()
     {
         // Arrange
-        var spec = new TownSpatialSpecification(
-            new BoundingBox(52.0, 53.0, 4.0, 5.0),
-            new Dictionary<string, BuildingPlacement>(),
-            new RoadNetwork(new List<Vector2>(), new List<RoadEdge>(), 10.0f),
-            new List<SpatialWaterBody>(),
-            "flat"
-        );
+        var spec = new TownSpatialSpecification
+        {
+            RealWorldBounds = new BoundingBox(52.0, 53.0, 4.0, 5.0),
+            RoadNetwork = new RoadNetwork { RoadWidthMeters = 10.0f },
+            TerrainDescription = "flat"
+        };
         var json = SpatialSpecSerializer.SerializeToJson(spec);
 
         // Act
@@ -61,17 +60,19 @@ public class TownMapResultSerializationTests
     public void CreateWithSerializedSpec_SerializesAutomatically()
     {
         // Arrange
-        var spec = new TownSpatialSpecification(
-            new BoundingBox(52.0, 53.0, 4.0, 5.0),
-            new Dictionary<string, BuildingPlacement> { ["Test"] = new("Test", 52.5, 4.9, 20, 20, 0, "test") },
-            new RoadNetwork(
-                new List<Vector2> { new(52.5f, 4.9f) },
-                new List<RoadEdge> { new(52.5, 4.9, 52.4, 4.8) },
-                10.0f
-            ),
-            new List<SpatialWaterBody> { new("Canal", new List<Vector2> { new(52.3f, 4.7f) }, SpatialWaterType.Canal) },
-            "hilly"
-        );
+        var spec = new TownSpatialSpecification
+        {
+            RealWorldBounds = new BoundingBox(52.0, 53.0, 4.0, 5.0),
+            BuildingPlacements = new Dictionary<string, BuildingPlacement> { ["Test"] = new BuildingPlacement { Name = "Test", CenterLat = 52.5, CenterLon = 4.9, WidthMeters = 20, DepthMeters = 20, RotationDegrees = 0, AlignmentHint = "test" } },
+            RoadNetwork = new RoadNetwork
+            {
+                Nodes = new List<Vector2> { new(52.5f, 4.9f) },
+                Edges = new List<RoadEdge> { new(52.5, 4.9, 52.4, 4.8) },
+                RoadWidthMeters = 10.0f
+            },
+            WaterBodies = new List<SpatialWaterBody> { new SpatialWaterBody { Name = "Canal", Polygon = new List<Vector2> { new(52.3f, 4.7f) }, Type = SpatialWaterType.Canal } },
+            TerrainDescription = "hilly"
+        };
 
         // Act
         var result = TownMapResult.CreateWithSerializedSpec(
@@ -110,13 +111,12 @@ public class TownMapResultSerializationTests
     public void TownMapResult_JsonFieldCanBeDeserialized()
     {
         // Arrange
-        var spec = new TownSpatialSpecification(
-            new BoundingBox(52.0, 53.0, 4.0, 5.0),
-            new Dictionary<string, BuildingPlacement>(),
-            new RoadNetwork(new List<Vector2>(), new List<RoadEdge>(), 10.0f),
-            new List<SpatialWaterBody>(),
-            "flat"
-        );
+        var spec = new TownSpatialSpecification
+        {
+            RealWorldBounds = new BoundingBox(52.0, 53.0, 4.0, 5.0),
+            RoadNetwork = new RoadNetwork { RoadWidthMeters = 10.0f },
+            TerrainDescription = "flat"
+        };
 
         // Act
         var result = TownMapResult.CreateWithSerializedSpec(
@@ -151,13 +151,12 @@ public class TownMapResultSerializationTests
         {
             new("z1", "Zone1", 1, 0.5f, 2, true, 0, 0, 7, 7)
         };
-        var spec = new TownSpatialSpecification(
-            new BoundingBox(52.0, 53.0, 4.0, 5.0),
-            new Dictionary<string, BuildingPlacement>(),
-            new RoadNetwork(new List<Vector2>(), new List<RoadEdge>(), 10.0f),
-            new List<SpatialWaterBody>(),
-            "flat"
-        );
+        var spec = new TownSpatialSpecification
+        {
+            RealWorldBounds = new BoundingBox(52.0, 53.0, 4.0, 5.0),
+            RoadNetwork = new RoadNetwork { RoadWidthMeters = 10.0f },
+            TerrainDescription = "flat"
+        };
 
         // Act
         var result = TownMapResult.CreateWithSerializedSpec(layout, buildings, props, zones, spec);

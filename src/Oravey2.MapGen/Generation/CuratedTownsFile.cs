@@ -15,9 +15,11 @@ public sealed class CuratedTownsFile
     {
         Mode = mode,
         GeneratedAt = DateTime.UtcNow,
-        Towns = towns.Select(t => new CuratedTownDto(
-            t.GameName, t.RealName, t.Latitude, t.Longitude,
-            t.Description, t.Size.ToString(), t.Inhabitants, t.Destruction.ToString())).ToList(),
+        Towns = towns.Select(t => new CuratedTownDto
+        {
+            GameName = t.GameName, RealName = t.RealName, Latitude = t.Latitude, Longitude = t.Longitude,
+            Description = t.Description, Size = t.Size.ToString(), Inhabitants = t.Inhabitants, Destruction = t.Destruction.ToString(),
+        }).ToList(),
     };
 
     public void Save(string path)

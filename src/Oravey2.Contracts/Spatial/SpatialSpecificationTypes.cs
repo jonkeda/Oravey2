@@ -17,14 +17,16 @@ public sealed record BoundingBox(
 /// A single building placement in real-world coordinates.
 /// Shared across Core and MapGen via Contracts.
 /// </summary>
-public sealed record BuildingPlacement(
-    string Name,
-    double CenterLat,
-    double CenterLon,
-    double WidthMeters,
-    double DepthMeters,
-    double RotationDegrees,
-    string AlignmentHint);
+public sealed class BuildingPlacement
+{
+    public string Name { get; set; } = "";
+    public double CenterLat { get; set; }
+    public double CenterLon { get; set; }
+    public double WidthMeters { get; set; }
+    public double DepthMeters { get; set; }
+    public double RotationDegrees { get; set; }
+    public string AlignmentHint { get; set; } = "";
+}
 
 /// <summary>
 /// A road segment in real-world coordinates.
@@ -40,10 +42,12 @@ public sealed record RoadEdge(
 /// Road network: intersections + connections.
 /// Shared across Core and MapGen via Contracts.
 /// </summary>
-public sealed record RoadNetwork(
-    List<Vector2> Nodes,
-    List<RoadEdge> Edges,
-    float RoadWidthMeters);
+public sealed class RoadNetwork
+{
+    public List<Vector2> Nodes { get; set; } = [];
+    public List<RoadEdge> Edges { get; set; } = [];
+    public float RoadWidthMeters { get; set; }
+}
 
 /// <summary>
 /// Spatial water body type enumeration.
@@ -61,18 +65,22 @@ public enum SpatialWaterType
 /// Spatial water body polygon (for town design spatial specs).
 /// Shared across Core and MapGen via Contracts.
 /// </summary>
-public sealed record SpatialWaterBody(
-    string Name,
-    List<Vector2> Polygon,
-    SpatialWaterType Type);
+public sealed class SpatialWaterBody
+{
+    public string Name { get; set; } = "";
+    public List<Vector2> Polygon { get; set; } = [];
+    public SpatialWaterType Type { get; set; }
+}
 
 /// <summary>
 /// Complete spatial specification for a town.
 /// Shared across Core and MapGen via Contracts.
 /// </summary>
-public sealed record TownSpatialSpecification(
-    BoundingBox RealWorldBounds,
-    Dictionary<string, BuildingPlacement> BuildingPlacements,
-    RoadNetwork RoadNetwork,
-    List<SpatialWaterBody> WaterBodies,
-    string TerrainDescription);
+public sealed class TownSpatialSpecification
+{
+    public BoundingBox RealWorldBounds { get; set; } = new(0, 0, 0, 0);
+    public Dictionary<string, BuildingPlacement> BuildingPlacements { get; set; } = new();
+    public RoadNetwork RoadNetwork { get; set; } = new();
+    public List<SpatialWaterBody> WaterBodies { get; set; } = [];
+    public string TerrainDescription { get; set; } = "";
+}

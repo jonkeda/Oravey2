@@ -33,49 +33,55 @@ public class SpatialSpecRenderingIntegrationTests
         {
             {
                 "MainHall",
-                new BuildingPlacement("MainHall", 0.5, 0.5, 50.0, 40.0, 0.0, "square_corner")
+                new BuildingPlacement { Name = "MainHall", CenterLat = 0.5, CenterLon = 0.5, WidthMeters = 50.0, DepthMeters = 40.0, RotationDegrees = 0.0, AlignmentHint = "square_corner" }
             },
             {
                 "Barracks",
-                new BuildingPlacement("Barracks", 0.3, 0.7, 30.0, 25.0, 45.0, "on_main_road")
+                new BuildingPlacement { Name = "Barracks", CenterLat = 0.3, CenterLon = 0.7, WidthMeters = 30.0, DepthMeters = 25.0, RotationDegrees = 45.0, AlignmentHint = "on_main_road" }
             }
         };
 
-        var roadNetwork = new RoadNetwork(
-            Nodes: new List<Vector2>
+        var roadNetwork = new RoadNetwork
+        {
+            Nodes = new List<Vector2>
             {
                 new(0.25f, 0.5f),
                 new(0.75f, 0.5f),
                 new(0.5f, 0.25f),
                 new(0.5f, 0.75f)
             },
-            Edges: new List<RoadEdge>
+            Edges = new List<RoadEdge>
             {
                 new(0.25, 0.5, 0.75, 0.5),
                 new(0.5, 0.25, 0.5, 0.75)
             },
-            RoadWidthMeters: 8.0f);
+            RoadWidthMeters = 8.0f
+        };
 
         var waterBodies = new List<SpatialWaterBody>
         {
-            new(
-                "RiverNorth",
-                new List<Vector2>
+            new SpatialWaterBody
+            {
+                Name = "RiverNorth",
+                Polygon = new List<Vector2>
                 {
                     new(0.1f, 0.1f),
                     new(0.9f, 0.1f),
                     new(0.9f, 0.15f),
                     new(0.1f, 0.15f)
                 },
-                SpatialWaterType.River)
+                Type = SpatialWaterType.River
+            }
         };
 
-        return new TownSpatialSpecification(
-            RealWorldBounds: bounds,
-            BuildingPlacements: buildings,
-            RoadNetwork: roadNetwork,
-            WaterBodies: waterBodies,
-            TerrainDescription: "flat");
+        return new TownSpatialSpecification
+        {
+            RealWorldBounds = bounds,
+            BuildingPlacements = buildings,
+            RoadNetwork = roadNetwork,
+            WaterBodies = waterBodies,
+            TerrainDescription = "flat"
+        };
     }
 
     // --- Building Placement Tests ---
@@ -261,16 +267,17 @@ public class SpatialSpecRenderingIntegrationTests
         // Two heavily overlapping buildings in the center
         var buildings = new Dictionary<string, BuildingPlacement>
         {
-            { "Building1", new BuildingPlacement("Building1", 0.5, 0.5, 100.0, 100.0, 0.0, "square") },
-            { "Building2", new BuildingPlacement("Building2", 0.50001, 0.50001, 100.0, 100.0, 0.0, "square") }
+            { "Building1", new BuildingPlacement { Name = "Building1", CenterLat = 0.5, CenterLon = 0.5, WidthMeters = 100.0, DepthMeters = 100.0, RotationDegrees = 0.0, AlignmentHint = "square" } },
+            { "Building2", new BuildingPlacement { Name = "Building2", CenterLat = 0.50001, CenterLon = 0.50001, WidthMeters = 100.0, DepthMeters = 100.0, RotationDegrees = 0.0, AlignmentHint = "square" } }
         };
 
-        var spec = new TownSpatialSpecification(
-            RealWorldBounds: bounds,
-            BuildingPlacements: buildings,
-            RoadNetwork: new RoadNetwork(new List<Vector2>(), new List<RoadEdge>(), 0),
-            WaterBodies: new List<SpatialWaterBody>(),
-            TerrainDescription: "flat");
+        var spec = new TownSpatialSpecification
+        {
+            RealWorldBounds = bounds,
+            BuildingPlacements = buildings,
+            RoadNetwork = new RoadNetwork { Nodes = new List<Vector2>(), Edges = new List<RoadEdge>(), RoadWidthMeters = 0 },
+            TerrainDescription = "flat"
+        };
 
         var renderer = CreateRenderer();
         var mapData = CreateEmptyMap();
@@ -289,29 +296,33 @@ public class SpatialSpecRenderingIntegrationTests
 
         var buildings = new Dictionary<string, BuildingPlacement>
         {
-            { "BuildingNearWater", new BuildingPlacement("BuildingNearWater", 0.5, 0.12, 20.0, 20.0, 0.0, "square") }
+            { "BuildingNearWater", new BuildingPlacement { Name = "BuildingNearWater", CenterLat = 0.5, CenterLon = 0.12, WidthMeters = 20.0, DepthMeters = 20.0, RotationDegrees = 0.0, AlignmentHint = "square" } }
         };
 
         var waterBodies = new List<SpatialWaterBody>
         {
-            new(
-                "River",
-                new List<Vector2>
+            new SpatialWaterBody
+            {
+                Name = "River",
+                Polygon = new List<Vector2>
                 {
                     new(0.1f, 0.1f),
                     new(0.9f, 0.1f),
                     new(0.9f, 0.15f),
                     new(0.1f, 0.15f)
                 },
-                SpatialWaterType.River)
+                Type = SpatialWaterType.River
+            }
         };
 
-        var spec = new TownSpatialSpecification(
-            RealWorldBounds: bounds,
-            BuildingPlacements: buildings,
-            RoadNetwork: new RoadNetwork(new List<Vector2>(), new List<RoadEdge>(), 0),
-            WaterBodies: waterBodies,
-            TerrainDescription: "flat");
+        var spec = new TownSpatialSpecification
+        {
+            RealWorldBounds = bounds,
+            BuildingPlacements = buildings,
+            RoadNetwork = new RoadNetwork { Nodes = new List<Vector2>(), Edges = new List<RoadEdge>(), RoadWidthMeters = 0 },
+            WaterBodies = waterBodies,
+            TerrainDescription = "flat"
+        };
 
         var renderer = CreateRenderer();
         var mapData = CreateEmptyMap();
@@ -329,16 +340,17 @@ public class SpatialSpecRenderingIntegrationTests
 
         var buildings = new Dictionary<string, BuildingPlacement>
         {
-            { "B1", new BuildingPlacement("B1", 0.5, 0.5, 40.0, 40.0, 0.0, "square") },
-            { "B2", new BuildingPlacement("B2", 0.5, 0.55, 40.0, 40.0, 0.0, "square") }
+            { "B1", new BuildingPlacement { Name = "B1", CenterLat = 0.5, CenterLon = 0.5, WidthMeters = 40.0, DepthMeters = 40.0, RotationDegrees = 0.0, AlignmentHint = "square" } },
+            { "B2", new BuildingPlacement { Name = "B2", CenterLat = 0.5, CenterLon = 0.55, WidthMeters = 40.0, DepthMeters = 40.0, RotationDegrees = 0.0, AlignmentHint = "square" } }
         };
 
-        var spec = new TownSpatialSpecification(
-            RealWorldBounds: bounds,
-            BuildingPlacements: buildings,
-            RoadNetwork: new RoadNetwork(new List<Vector2>(), new List<RoadEdge>(), 0),
-            WaterBodies: new List<SpatialWaterBody>(),
-            TerrainDescription: "flat");
+        var spec = new TownSpatialSpecification
+        {
+            RealWorldBounds = bounds,
+            BuildingPlacements = buildings,
+            RoadNetwork = new RoadNetwork { Nodes = new List<Vector2>(), Edges = new List<RoadEdge>(), RoadWidthMeters = 0 },
+            TerrainDescription = "flat"
+        };
 
         var renderer = CreateRenderer();
         var mapData = CreateEmptyMap();
@@ -376,29 +388,34 @@ public class SpatialSpecRenderingIntegrationTests
 
         var waterBodies = new List<SpatialWaterBody>
         {
-            new(
-                "Lake",
-                new List<Vector2>
+            new SpatialWaterBody
+            {
+                Name = "Lake",
+                Polygon = new List<Vector2>
                 {
                     new(0.3f, 0.3f),
                     new(0.7f, 0.3f),
                     new(0.7f, 0.7f),
                     new(0.3f, 0.7f)
                 },
-                SpatialWaterType.Lake)
+                Type = SpatialWaterType.Lake
+            }
         };
 
-        var roadNetwork = new RoadNetwork(
-            Nodes: new List<Vector2> { new(0.5f, 0.5f) },
-            Edges: new List<RoadEdge> { new(0.3, 0.5, 0.7, 0.5) },
-            RoadWidthMeters: 8.0f);
+        var roadNetwork = new RoadNetwork
+        {
+            Nodes = new List<Vector2> { new(0.5f, 0.5f) },
+            Edges = new List<RoadEdge> { new(0.3, 0.5, 0.7, 0.5) },
+            RoadWidthMeters = 8.0f
+        };
 
-        var spec = new TownSpatialSpecification(
-            RealWorldBounds: bounds,
-            BuildingPlacements: new Dictionary<string, BuildingPlacement>(),
-            RoadNetwork: roadNetwork,
-            WaterBodies: waterBodies,
-            TerrainDescription: "flat");
+        var spec = new TownSpatialSpecification
+        {
+            RealWorldBounds = bounds,
+            RoadNetwork = roadNetwork,
+            WaterBodies = waterBodies,
+            TerrainDescription = "flat"
+        };
 
         var renderer = CreateRenderer();
         var mapData = CreateEmptyMap();
@@ -431,20 +448,23 @@ public class SpatialSpecRenderingIntegrationTests
 
         var buildings = new Dictionary<string, BuildingPlacement>
         {
-            { "Hall", new BuildingPlacement("Hall", 0.5, 0.5, 40.0, 40.0, 0.0, "square") }
+            { "Hall", new BuildingPlacement { Name = "Hall", CenterLat = 0.5, CenterLon = 0.5, WidthMeters = 40.0, DepthMeters = 40.0, RotationDegrees = 0.0, AlignmentHint = "square" } }
         };
 
-        var roadNetwork = new RoadNetwork(
-            Nodes: new List<Vector2> { new(0.5f, 0.5f) },
-            Edges: new List<RoadEdge>(),
-            RoadWidthMeters: 8.0f);
+        var roadNetwork = new RoadNetwork
+        {
+            Nodes = new List<Vector2> { new(0.5f, 0.5f) },
+            Edges = new List<RoadEdge>(),
+            RoadWidthMeters = 8.0f
+        };
 
-        var spec = new TownSpatialSpecification(
-            RealWorldBounds: bounds,
-            BuildingPlacements: buildings,
-            RoadNetwork: roadNetwork,
-            WaterBodies: new List<SpatialWaterBody>(),
-            TerrainDescription: "flat");
+        var spec = new TownSpatialSpecification
+        {
+            RealWorldBounds = bounds,
+            BuildingPlacements = buildings,
+            RoadNetwork = roadNetwork,
+            TerrainDescription = "flat"
+        };
 
         var renderer = CreateRenderer();
         var mapData = CreateEmptyMap();
@@ -510,12 +530,12 @@ public class SpatialSpecRenderingIntegrationTests
     public void Render_EmptyBuildingPlacements_NoException()
     {
         var bounds = new BoundingBox(0.0, 1.0, 0.0, 1.0);
-        var spec = new TownSpatialSpecification(
-            bounds,
-            new Dictionary<string, BuildingPlacement>(),
-            new RoadNetwork(new List<Vector2>(), new List<RoadEdge>(), 0),
-            new List<SpatialWaterBody>(),
-            "flat");
+        var spec = new TownSpatialSpecification
+        {
+            RealWorldBounds = bounds,
+            RoadNetwork = new RoadNetwork { Nodes = new List<Vector2>(), Edges = new List<RoadEdge>(), RoadWidthMeters = 0 },
+            TerrainDescription = "flat"
+        };
 
         var renderer = CreateRenderer();
         var mapData = CreateEmptyMap();
@@ -534,14 +554,15 @@ public class SpatialSpecRenderingIntegrationTests
         var bounds = new BoundingBox(0.0, 1.0, 0.0, 1.0);
         var buildings = new Dictionary<string, BuildingPlacement>
         {
-            { "Hall", new BuildingPlacement("Hall", 0.5, 0.5, 50.0, 40.0, 0.0, "square") }
+            { "Hall", new BuildingPlacement { Name = "Hall", CenterLat = 0.5, CenterLon = 0.5, WidthMeters = 50.0, DepthMeters = 40.0, RotationDegrees = 0.0, AlignmentHint = "square" } }
         };
-        var spec = new TownSpatialSpecification(
-            bounds,
-            buildings,
-            new RoadNetwork(new List<Vector2>(), new List<RoadEdge>(), 0),
-            new List<SpatialWaterBody>(),
-            "flat");
+        var spec = new TownSpatialSpecification
+        {
+            RealWorldBounds = bounds,
+            BuildingPlacements = buildings,
+            RoadNetwork = new RoadNetwork { Nodes = new List<Vector2>(), Edges = new List<RoadEdge>(), RoadWidthMeters = 0 },
+            TerrainDescription = "flat"
+        };
 
         var renderer = CreateRenderer();
         var mapData = CreateEmptyMap();
@@ -584,11 +605,15 @@ public class SpatialSpecRenderingIntegrationTests
         var bounds = new BoundingBox(0.0, 1.0, 0.0, 1.0);
         var buildings = new Dictionary<string, BuildingPlacement>
         {
-            { "Tiny", new BuildingPlacement("Tiny", 0.5, 0.5, 1.0, 1.0, 0.0, "center") }
+            { "Tiny", new BuildingPlacement { Name = "Tiny", CenterLat = 0.5, CenterLon = 0.5, WidthMeters = 1.0, DepthMeters = 1.0, RotationDegrees = 0.0, AlignmentHint = "center" } }
         };
-        var spec = new TownSpatialSpecification(bounds, buildings,
-            new RoadNetwork(new List<Vector2>(), new List<RoadEdge>(), 0),
-            new List<SpatialWaterBody>(), "flat");
+        var spec = new TownSpatialSpecification
+        {
+            RealWorldBounds = bounds,
+            BuildingPlacements = buildings,
+            RoadNetwork = new RoadNetwork { Nodes = new List<Vector2>(), Edges = new List<RoadEdge>(), RoadWidthMeters = 0 },
+            TerrainDescription = "flat"
+        };
 
         var renderer = CreateRenderer();
         var mapData = CreateEmptyMap();

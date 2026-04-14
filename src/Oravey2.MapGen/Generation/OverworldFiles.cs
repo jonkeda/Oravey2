@@ -15,12 +15,17 @@ public static class OverworldFiles
     {
         Directory.CreateDirectory(overworldDir);
 
-        var worldDto = new WorldDto(
-            result.World.Name, result.World.Description, result.World.Source,
-            result.World.ChunksWide, result.World.ChunksHigh, result.World.TileSize,
-            PlacementFrom(result.World.PlayerStart),
-            result.World.Towns.Select(t => new TownRefDto(
-                t.GameName, t.RealName, t.GameX, t.GameY, t.Description, t.Size, t.Inhabitants, t.Destruction)).ToList());
+        var worldDto = new WorldDto
+        {
+            Name = result.World.Name, Description = result.World.Description, Source = result.World.Source,
+            ChunksWide = result.World.ChunksWide, ChunksHigh = result.World.ChunksHigh, TileSize = result.World.TileSize,
+            PlayerStart = PlacementFrom(result.World.PlayerStart),
+            Towns = result.World.Towns.Select(t => new TownRefDto
+            {
+                GameName = t.GameName, RealName = t.RealName, GameX = t.GameX, GameY = t.GameY,
+                Description = t.Description, Size = t.Size, Inhabitants = t.Inhabitants, Destruction = t.Destruction,
+            }).ToList(),
+        };
 
         File.WriteAllText(
             Path.Combine(overworldDir, "world.json"),
@@ -28,17 +33,21 @@ public static class OverworldFiles
 
         File.WriteAllText(
             Path.Combine(overworldDir, "roads.json"),
-            JsonSerializer.Serialize(result.Roads.Select(r => new RoadDto(
-                r.Id, r.RoadClass,
-                r.Nodes.Select(n => new[] { n.X, n.Y }).ToArray(),
-                r.FromTown, r.ToTown)).ToList(),
+            JsonSerializer.Serialize(result.Roads.Select(r => new RoadDto
+            {
+                Id = r.Id, RoadClass = r.RoadClass,
+                Nodes = r.Nodes.Select(n => new[] { n.X, n.Y }).ToArray(),
+                FromTown = r.FromTown, ToTown = r.ToTown,
+            }).ToList(),
                 ContentPackSerializer.WriteOptions));
 
         File.WriteAllText(
             Path.Combine(overworldDir, "water.json"),
-            JsonSerializer.Serialize(result.Water.Select(w => new WaterDto(
-                w.Id, w.WaterType,
-                w.Geometry.Select(v => new[] { v.X, v.Y }).ToArray())).ToList(),
+            JsonSerializer.Serialize(result.Water.Select(w => new WaterDto
+            {
+                Id = w.Id, WaterType = w.WaterType,
+                Geometry = w.Geometry.Select(v => new[] { v.X, v.Y }).ToArray(),
+            }).ToList(),
                 ContentPackSerializer.WriteOptions));
     }
 
@@ -75,7 +84,7 @@ public static class OverworldFiles
     }
 
     private static PlacementDto PlacementFrom(TilePlacement p) =>
-        new(p.ChunkX, p.ChunkY, p.LocalTileX, p.LocalTileY);
+        new() { ChunkX = p.ChunkX, ChunkY = p.ChunkY, LocalTileX = p.LocalTileX, LocalTileY = p.LocalTileY };
 
     private static TilePlacement PlacementTo(PlacementDto? p) =>
         p is null ? new(0, 0, 0, 0) : new(p.ChunkX, p.ChunkY, p.LocalTileX, p.LocalTileY);

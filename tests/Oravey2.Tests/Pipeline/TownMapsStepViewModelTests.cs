@@ -10,20 +10,23 @@ namespace Oravey2.Tests.Pipeline;
 
 public class TownMapsStepViewModelTests
 {
-    private static TownSpatialSpecification CreateTestSpatialSpec() => new(
-        new BoundingBox(52.50, 52.51, 4.96, 4.97),
-        new Dictionary<string, BuildingPlacement>
+    private static TownSpatialSpecification CreateTestSpatialSpec() => new TownSpatialSpecification
+    {
+        RealWorldBounds = new BoundingBox(52.50, 52.51, 4.96, 4.97),
+        BuildingPlacements = new Dictionary<string, BuildingPlacement>
         {
-            ["Fort Test"] = new("Fort Test", 52.505, 4.965, 20, 30, 0, "centre"),
-            ["Shop"] = new("Shop", 52.504, 4.963, 8, 6, 0, "on_main_road"),
-            ["Inn"] = new("Inn", 52.506, 4.964, 10, 8, 0, "on_main_road"),
+            ["Fort Test"] = new BuildingPlacement { Name = "Fort Test", CenterLat = 52.505, CenterLon = 4.965, WidthMeters = 20, DepthMeters = 30, RotationDegrees = 0, AlignmentHint = "centre" },
+            ["Shop"] = new BuildingPlacement { Name = "Shop", CenterLat = 52.504, CenterLon = 4.963, WidthMeters = 8, DepthMeters = 6, RotationDegrees = 0, AlignmentHint = "on_main_road" },
+            ["Inn"] = new BuildingPlacement { Name = "Inn", CenterLat = 52.506, CenterLon = 4.964, WidthMeters = 10, DepthMeters = 8, RotationDegrees = 0, AlignmentHint = "on_main_road" },
         },
-        new RoadNetwork(
-            [new Vector2(52.50f, 4.96f), new Vector2(52.51f, 4.97f)],
-            [new RoadEdge(52.50, 4.96, 52.51, 4.97)],
-            6.0f),
-        [],
-        "flat");
+        RoadNetwork = new RoadNetwork
+        {
+            Nodes = [new Vector2(52.50f, 4.96f), new Vector2(52.51f, 4.97f)],
+            Edges = [new RoadEdge(52.50, 4.96, 52.51, 4.97)],
+            RoadWidthMeters = 6.0f
+        },
+        TerrainDescription = "flat"
+    };
 
     private static TownDesign CreateTestDesign(string townName = "TestTown") => new(
         townName,
@@ -56,9 +59,11 @@ public class TownMapsStepViewModelTests
             {
                 Mode = "A",
                 GeneratedAt = DateTime.UtcNow,
-                Towns = [new CuratedTownDto(
-                    townName, "RealTest", 52.5, 4.8,
-                    "A test town", "Town", 5000, "Moderate")],
+                Towns = [new CuratedTownDto
+                {
+                    GameName = townName, RealName = "RealTest", Latitude = 52.5, Longitude = 4.8,
+                    Description = "A test town", Size = "Town", Inhabitants = 5000, Destruction = "Moderate",
+                }],
             };
             curated.Save(curatedPath);
         }
@@ -187,8 +192,8 @@ public class TownMapsStepViewModelTests
             {
                 Mode = "A", GeneratedAt = DateTime.UtcNow,
                 Towns = [
-                    new CuratedTownDto("TownA", "A", 0, 0, "a", "Town", 5000, "Moderate"),
-                    new CuratedTownDto("TownB", "B", 0, 0, "b", "Town", 3000, "Heavy"),
+                    new CuratedTownDto { GameName = "TownA", RealName = "A", Latitude = 0, Longitude = 0, Description = "a", Size = "Town", Inhabitants = 5000, Destruction = "Moderate" },
+                    new CuratedTownDto { GameName = "TownB", RealName = "B", Latitude = 0, Longitude = 0, Description = "b", Size = "Town", Inhabitants = 3000, Destruction = "Heavy" },
                 ],
             };
             curated.Save(Path.Combine(dataDir, "curated-towns.json"));

@@ -271,21 +271,22 @@ public class TownSpatialTransformTests
         var bbox = new BoundingBox(52.0, 53.0, 4.0, 5.0);
         var placements = new Dictionary<string, BuildingPlacement>
         {
-            ["Cathedral"] = new BuildingPlacement("Cathedral", 52.5, 4.5, 40.0, 50.0, 45.0, "square_corner"),
-            ["Market"] = new BuildingPlacement("Market", 52.4, 4.4, 20.0, 30.0, 0.0, "on_main_road")
+            ["Cathedral"] = new BuildingPlacement { Name = "Cathedral", CenterLat = 52.5, CenterLon = 4.5, WidthMeters = 40.0, DepthMeters = 50.0, RotationDegrees = 45.0, AlignmentHint = "square_corner" },
+            ["Market"] = new BuildingPlacement { Name = "Market", CenterLat = 52.4, CenterLon = 4.4, WidthMeters = 20.0, DepthMeters = 30.0, RotationDegrees = 0.0, AlignmentHint = "on_main_road" }
         };
 
-        return new TownSpatialSpecification(
-            RealWorldBounds: bbox,
-            BuildingPlacements: placements,
-            RoadNetwork: new RoadNetwork(
-                Nodes: new List<Vector2> { new Vector2(52.5f, 4.5f), new Vector2(52.4f, 4.4f) },
-                Edges: new List<RoadEdge> { new RoadEdge(52.5, 4.5, 52.4, 4.4) },
-                RoadWidthMeters: 10.0f
-            ),
-            WaterBodies: [],
-            TerrainDescription: "flat"
-        );
+        return new TownSpatialSpecification
+        {
+            RealWorldBounds = bbox,
+            BuildingPlacements = placements,
+            RoadNetwork = new RoadNetwork
+            {
+                Nodes = new List<Vector2> { new Vector2(52.5f, 4.5f), new Vector2(52.4f, 4.4f) },
+                Edges = new List<RoadEdge> { new RoadEdge(52.5, 4.5, 52.4, 4.4) },
+                RoadWidthMeters = 10.0f
+            },
+            TerrainDescription = "flat"
+        };
     }
 
     private TownSpatialSpecification CreateTestSpatialSpecWithWater()
@@ -294,25 +295,27 @@ public class TownSpatialTransformTests
         
         var waterBodies = new List<SpatialWaterBody>
         {
-            new SpatialWaterBody(
-                "Main Canal",
-                new List<Vector2>
+            new SpatialWaterBody
+            {
+                Name = "Main Canal",
+                Polygon = new List<Vector2>
                 {
                     new Vector2(52.3f, 4.3f),
                     new Vector2(52.7f, 4.3f),
                     new Vector2(52.7f, 4.7f),
                     new Vector2(52.3f, 4.7f)
                 },
-                SpatialWaterType.Canal
-            )
+                Type = SpatialWaterType.Canal
+            }
         };
 
-        return new TownSpatialSpecification(
-            RealWorldBounds: spec.RealWorldBounds,
-            BuildingPlacements: spec.BuildingPlacements,
-            RoadNetwork: spec.RoadNetwork,
-            WaterBodies: waterBodies,
-            TerrainDescription: spec.TerrainDescription
-        );
+        return new TownSpatialSpecification
+        {
+            RealWorldBounds = spec.RealWorldBounds,
+            BuildingPlacements = spec.BuildingPlacements,
+            RoadNetwork = spec.RoadNetwork,
+            WaterBodies = waterBodies,
+            TerrainDescription = spec.TerrainDescription
+        };
     }
 }
