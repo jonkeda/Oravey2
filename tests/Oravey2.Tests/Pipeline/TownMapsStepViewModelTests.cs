@@ -28,14 +28,16 @@ public class TownMapsStepViewModelTests
         TerrainDescription = "flat"
     };
 
-    private static TownDesign CreateTestDesign(string townName = "TestTown") => new(
-        townName,
-        [new LandmarkBuilding("Fort Test", "A ruined fortress", "large", "", "", "")],
-        [new KeyLocation("Shop", "shop", "A small shop", "small", "", "", ""),
-         new KeyLocation("Inn", "rest", "An inn", "medium", "", "", "")],
-        "organic",
-        [new EnvironmentalHazard("flooding", "Water rises", "south")],
-        CreateTestSpatialSpec());
+    private static TownDesign CreateTestDesign(string townName = "TestTown") => new()
+    {
+        TownName = townName,
+        Landmarks = [new LandmarkBuilding { Name = "Fort Test", VisualDescription = "A ruined fortress", SizeCategory = "large", OriginalDescription = "", MeshyPrompt = "", PositionHint = "" }],
+        KeyLocations = [new KeyLocation { Name = "Shop", Purpose = "shop", VisualDescription = "A small shop", SizeCategory = "small", OriginalDescription = "", MeshyPrompt = "", PositionHint = "" },
+         new KeyLocation { Name = "Inn", Purpose = "rest", VisualDescription = "An inn", SizeCategory = "medium", OriginalDescription = "", MeshyPrompt = "", PositionHint = "" }],
+        LayoutStyle = "organic",
+        Hazards = [new EnvironmentalHazard { Type = "flooding", Description = "Water rises", LocationHint = "south" }],
+        SpatialSpec = CreateTestSpatialSpec(),
+    };
 
     private static PipelineState CreateTestState(string tempDir)
     {
@@ -134,9 +136,12 @@ public class TownMapsStepViewModelTests
                 GridOriginLat = 0, GridOriginLon = 0, GridCellSizeMetres = 100,
             };
             var result = condenser.Condense(
-                new CuratedTown("Havenburg", "RealTest", 52.5, 4.8,
-                    System.Numerics.Vector2.Zero, "",
-                    TownCategory.Town, 5000, DestructionLevel.Moderate),
+                new CuratedTown
+                {
+                    GameName = "Havenburg", RealName = "RealTest", Latitude = 52.5, Longitude = 4.8,
+                    GamePosition = System.Numerics.Vector2.Zero, Description = "",
+                    Size = TownCategory.Town, Inhabitants = 5000, Destruction = DestructionLevel.Moderate,
+                },
                 design, region, 42);
             TownMapFiles.Save(result, Path.Combine(dir, "towns", "Havenburg"));
 
@@ -243,11 +248,13 @@ public class TownMapsStepViewModelTests
         var item = new TownMapItem
         {
             GameName = "Test",
-            MapResult = new TownMapResult(
-                new TownLayout(16, 16, []),
-                [new PlacedBuilding("b_0", "Fort", "m.glb", "large", [], 2, 0.5f, new(0, 0, 0, 0))],
-                [new PlacedProp("p_0", "m.glb", new(0, 0, 1, 1), 0, 1, false)],
-                [new TownZone("z_0", "Main", 0, 0, 1, true, 0, 0, 0, 0)]),
+            MapResult = new TownMapResult
+            {
+                Layout = new TownLayout { Width = 16, Height = 16, Surface = [] },
+                Buildings = [new PlacedBuilding { Id = "b_0", Name = "Fort", MeshAsset = "m.glb", SizeCategory = "large", Footprint = [], Floors = 2, Condition = 0.5f, Placement = new TilePlacement(0, 0, 0, 0) }],
+                Props = [new PlacedProp { Id = "p_0", MeshAsset = "m.glb", Placement = new TilePlacement(0, 0, 1, 1), Rotation = 0, Scale = 1, BlocksWalkability = false }],
+                Zones = [new TownZone { Id = "z_0", Name = "Main", Biome = 0, RadiationLevel = 0, EnemyDifficultyTier = 1, IsFastTravelTarget = true, ChunkStartX = 0, ChunkStartY = 0, ChunkEndX = 0, ChunkEndY = 0 }],
+            },
         };
 
         Assert.Equal("16×16", item.GridSize);
@@ -293,9 +300,11 @@ public class TownMapsStepViewModelTests
             vm.Load(CreateTestState(dir));
 
             var item = vm.Towns[0];
-            item.MapResult = new TownMapResult(
-                new TownLayout(16, 16, [[0, 0]]),
-                [], [], []);
+            item.MapResult = new TownMapResult
+            {
+                Layout = new TownLayout { Width = 16, Height = 16, Surface = [[0, 0]] },
+                Buildings = [], Props = [], Zones = [],
+            };
             vm.SaveMap(item);
 
             var townDir = Path.Combine(dir, "towns", "TestTown");

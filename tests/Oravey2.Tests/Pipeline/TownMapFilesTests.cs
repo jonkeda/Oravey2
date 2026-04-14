@@ -6,27 +6,30 @@ public class TownMapFilesTests
 {
     private static TownMapResult CreateTestResult()
     {
-        var layout = new TownLayout(16, 16, [
-            [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-            [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-        ]);
+        var layout = new TownLayout
+        {
+            Width = 16, Height = 16, Surface = [
+                [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+                [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
+            ],
+        };
         var buildings = new List<PlacedBuilding>
         {
-            new("b_0", "Fort Test", "meshes/fort_test.glb", "large",
-                [[7, 7], [7, 8], [8, 7], [8, 8]],
-                3, 0.6f, new TilePlacement(0, 0, 7, 7)),
-            new("b_1", "Shop", "meshes/shop.glb", "small",
-                [[3, 5]], 1, 0.8f, new TilePlacement(0, 0, 3, 5)),
+            new() { Id = "b_0", Name = "Fort Test", MeshAsset = "meshes/fort_test.glb", SizeCategory = "large",
+                Footprint = [[7, 7], [7, 8], [8, 7], [8, 8]],
+                Floors = 3, Condition = 0.6f, Placement = new TilePlacement(0, 0, 7, 7) },
+            new() { Id = "b_1", Name = "Shop", MeshAsset = "meshes/shop.glb", SizeCategory = "small",
+                Footprint = [[3, 5]], Floors = 1, Condition = 0.8f, Placement = new TilePlacement(0, 0, 3, 5) },
         };
         var props = new List<PlacedProp>
         {
-            new("p_0", "meshes/barrel.glb", new TilePlacement(0, 0, 1, 1), 45f, 1.0f, false),
+            new() { Id = "p_0", MeshAsset = "meshes/barrel.glb", Placement = new TilePlacement(0, 0, 1, 1), Rotation = 45f, Scale = 1.0f, BlocksWalkability = false },
         };
         var zones = new List<TownZone>
         {
-            new("zone_main", "TestTown", 0, 0f, 2, true, 0, 0, 0, 0),
+            new() { Id = "zone_main", Name = "TestTown", Biome = 0, RadiationLevel = 0f, EnemyDifficultyTier = 2, IsFastTravelTarget = true, ChunkStartX = 0, ChunkStartY = 0, ChunkEndX = 0, ChunkEndY = 0 },
         };
-        return new TownMapResult(layout, buildings, props, zones);
+        return new TownMapResult { Layout = layout, Buildings = buildings, Props = props, Zones = zones };
     }
 
     [Fact]

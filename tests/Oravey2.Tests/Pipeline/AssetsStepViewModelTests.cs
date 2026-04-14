@@ -23,21 +23,26 @@ public class AssetsStepViewModelTests
         return root;
     }
 
-    private static TownDesign MakeDesign(string townName) => new(
-        townName,
-        [new LandmarkBuilding("The Beacon", "A tall lighthouse on a cliff", "large", "", "", "")],
-        [new KeyLocation("Market Hall", "shop", "A bustling market building", "medium", "", "", "")],
-        "organic",
-        []);
+    private static TownDesign MakeDesign(string townName) => new()
+    {
+        TownName = townName,
+        Landmarks = [new LandmarkBuilding { Name = "The Beacon", VisualDescription = "A tall lighthouse on a cliff", SizeCategory = "large", OriginalDescription = "", MeshyPrompt = "", PositionHint = "" }],
+        KeyLocations = [new KeyLocation { Name = "Market Hall", Purpose = "shop", VisualDescription = "A bustling market building", SizeCategory = "medium", OriginalDescription = "", MeshyPrompt = "", PositionHint = "" }],
+        LayoutStyle = "organic",
+        Hazards = [],
+    };
 
-    private static TownMapResult MakeMapResult() => new(
-        new TownLayout(16, 16, [[0]]),
+    private static TownMapResult MakeMapResult() => new()
+    {
+        Layout = new TownLayout { Width = 16, Height = 16, Surface = [[0]] },
+        Buildings =
         [
-            new PlacedBuilding("b_0", "The Beacon", "", "large", [[0, 0]], 2, 0.5f, new TilePlacement(0, 0, 0, 0)),
-            new PlacedBuilding("b_1", "Market Hall", "", "medium", [[1, 1]], 1, 0.8f, new TilePlacement(0, 0, 1, 1)),
+            new PlacedBuilding { Id = "b_0", Name = "The Beacon", MeshAsset = "", SizeCategory = "large", Footprint = [[0, 0]], Floors = 2, Condition = 0.5f, Placement = new TilePlacement(0, 0, 0, 0) },
+            new PlacedBuilding { Id = "b_1", Name = "Market Hall", MeshAsset = "", SizeCategory = "medium", Footprint = [[1, 1]], Floors = 1, Condition = 0.8f, Placement = new TilePlacement(0, 0, 1, 1) },
         ],
-        [new PlacedProp("p_0", "", new TilePlacement(0, 0, 3, 3), 0, 1, false)],
-        [new TownZone("z_0", "Main", 0, 0, 1, true, 0, 0, 0, 0)]);
+        Props = [new PlacedProp { Id = "p_0", MeshAsset = "", Placement = new TilePlacement(0, 0, 3, 3), Rotation = 0, Scale = 1, BlocksWalkability = false }],
+        Zones = [new TownZone { Id = "z_0", Name = "Main", Biome = 0, RadiationLevel = 0, EnemyDifficultyTier = 1, IsFastTravelTarget = true, ChunkStartX = 0, ChunkStartY = 0, ChunkEndX = 0, ChunkEndY = 0 }],
+    };
 
     [Fact]
     public void Defaults_StatusText_IsPrompt()
@@ -86,12 +91,20 @@ public class AssetsStepViewModelTests
             // Place a .glb but we need to update buildings.json to point to it
             var townDir = Path.Combine(root, "towns", "haven");
             var mapResult = TownMapFiles.Load(townDir);
-            var updated = mapResult with
+            var updatedBeacon = new PlacedBuilding
             {
-                Buildings = [
-                    mapResult.Buildings[0] with { MeshAsset = "meshes/island-haven-the-beacon.glb" },
-                    mapResult.Buildings[1],
-                ],
+                Id = mapResult.Buildings[0].Id, Name = mapResult.Buildings[0].Name,
+                MeshAsset = "meshes/island-haven-the-beacon.glb",
+                SizeCategory = mapResult.Buildings[0].SizeCategory, Footprint = mapResult.Buildings[0].Footprint,
+                Floors = mapResult.Buildings[0].Floors, Condition = mapResult.Buildings[0].Condition,
+                Placement = mapResult.Buildings[0].Placement,
+            };
+            var updated = new TownMapResult
+            {
+                Layout = mapResult.Layout,
+                Buildings = [updatedBeacon, mapResult.Buildings[1]],
+                Props = mapResult.Props,
+                Zones = mapResult.Zones,
             };
             TownMapFiles.Save(updated, townDir);
             File.WriteAllBytes(Path.Combine(meshDir, "island-haven-the-beacon.glb"), [0x01]);

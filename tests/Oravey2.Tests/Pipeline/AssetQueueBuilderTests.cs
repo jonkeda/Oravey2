@@ -17,12 +17,14 @@ public class AssetQueueBuilderTests
     }
 
     private static TownDesign MakeDesign(string townName, string landmarkDesc = "A tall tower",
-        params (string name, string desc)[] keyLocations) => new(
-        townName,
-        [new LandmarkBuilding("The Beacon", landmarkDesc, "large", "", "", "")],
-        keyLocations.Select(k => new KeyLocation(k.name, "purpose", k.desc, "medium", "", "", "")).ToList(),
-        "organic",
-        []);
+        params (string name, string desc)[] keyLocations) => new()
+    {
+        TownName = townName,
+        Landmarks = [new LandmarkBuilding { Name = "The Beacon", VisualDescription = landmarkDesc, SizeCategory = "large", OriginalDescription = "", MeshyPrompt = "", PositionHint = "" }],
+        KeyLocations = keyLocations.Select(k => new KeyLocation { Name = k.name, Purpose = "purpose", VisualDescription = k.desc, SizeCategory = "medium", OriginalDescription = "", MeshyPrompt = "", PositionHint = "" }).ToList(),
+        LayoutStyle = "organic",
+        Hazards = [],
+    };
 
     [Fact]
     public void BuildQueue_SingleTown_ReturnsLandmarkAndLocations()

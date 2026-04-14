@@ -21,8 +21,8 @@ public class OverworldGeneratorTests
     };
 
     private static CuratedTown MakeTown(string name, float x, float y, int destruction = 0) =>
-        new(name, name, 0, 0, new Vector2(x, y), "desc",
-            TownCategory.Village, 1000, (DestructionLevel)destruction);
+        new() { GameName = name, RealName = name, Latitude = 0, Longitude = 0, GamePosition = new Vector2(x, y), Description = "desc",
+            Size = TownCategory.Village, Inhabitants = 1000, Destruction = (DestructionLevel)destruction };
 
     // --- ComputeWorldBounds ---
 
@@ -204,10 +204,10 @@ public class OverworldGeneratorTests
     {
         var towns = new List<CuratedTown>
         {
-            new("small", "small", 0, 0, new Vector2(0.5f, 0.5f), "desc",
-                TownCategory.Village, 500, DestructionLevel.Moderate),
-            new("big", "big", 0, 0, new Vector2(1.5f, 0.5f), "desc",
-                TownCategory.City, 50000, DestructionLevel.Pristine),
+            new() { GameName = "small", RealName = "small", Latitude = 0, Longitude = 0, GamePosition = new Vector2(0.5f, 0.5f), Description = "desc",
+                Size = TownCategory.Village, Inhabitants = 500, Destruction = DestructionLevel.Moderate },
+            new() { GameName = "big", RealName = "big", Latitude = 0, Longitude = 0, GamePosition = new Vector2(1.5f, 0.5f), Description = "desc",
+                Size = TownCategory.City, Inhabitants = 50000, Destruction = DestructionLevel.Pristine },
         };
         var region = MakeRegion();
         var gen = new OverworldGenerator();

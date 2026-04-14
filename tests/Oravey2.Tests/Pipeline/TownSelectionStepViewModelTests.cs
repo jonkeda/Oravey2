@@ -29,16 +29,18 @@ public class TownSelectionStepViewModelTests
         var towns = new List<CuratedTown>();
         for (int i = 0; i < count; i++)
         {
-            towns.Add(new CuratedTown(
-                GameName: $"Haven-{i}",
-                RealName: $"Town{i}",
-                Latitude: 52.3 + i * 0.06,
-                Longitude: 4.6 + i * 0.05,
-                GamePosition: new Vector2(i * 20000f, i * 16700f),
-                Description: $"Town {i} description",
-                Size: i < 5 ? TownCategory.Village : i < 8 ? TownCategory.Town : TownCategory.City,
-                Inhabitants: 1000 + i * 2000,
-                Destruction: (DestructionLevel)(i % 5)));
+            towns.Add(new CuratedTown
+            {
+                GameName = $"Haven-{i}",
+                RealName = $"Town{i}",
+                Latitude = 52.3 + i * 0.06,
+                Longitude = 4.6 + i * 0.05,
+                GamePosition = new Vector2(i * 20000f, i * 16700f),
+                Description = $"Town {i} description",
+                Size = i < 5 ? TownCategory.Village : i < 8 ? TownCategory.Town : TownCategory.City,
+                Inhabitants = 1000 + i * 2000,
+                Destruction = (DestructionLevel)(i % 5),
+            });
         }
         return towns;
     }
@@ -268,10 +270,12 @@ public class TownSelectionStepViewModelTests
     [Fact]
     public void CuratedTownsFile_FromCuratedTowns_MapsAllFields()
     {
-        var town = new CuratedTown(
-            "Haven", "Purmerend", 52.5, 4.95,
-            Vector2.Zero, "Desc",
-            TownCategory.Town, 5000, DestructionLevel.Moderate);
+        var town = new CuratedTown
+        {
+            GameName = "Haven", RealName = "Purmerend", Latitude = 52.5, Longitude = 4.95,
+            GamePosition = Vector2.Zero, Description = "Desc",
+            Size = TownCategory.Town, Inhabitants = 5000, Destruction = DestructionLevel.Moderate,
+        };
         var file = CuratedTownsFile.FromCuratedTowns([town], "B");
 
         Assert.Single(file.Towns);

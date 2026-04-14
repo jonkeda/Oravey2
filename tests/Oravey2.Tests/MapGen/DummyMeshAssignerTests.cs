@@ -5,33 +5,40 @@ namespace Oravey2.Tests.MapGen;
 
 public class DummyMeshAssignerTests
 {
-    private static TownDesign CreateTestDesign() => new(
-        "TestTown",
-        [new LandmarkBuilding("The Beacon", "A towering lighthouse", "large", "", "", "")],
+    private static TownDesign CreateTestDesign() => new()
+    {
+        TownName = "TestTown",
+        Landmarks = [new LandmarkBuilding { Name = "The Beacon", VisualDescription = "A towering lighthouse", SizeCategory = "large", OriginalDescription = "", MeshyPrompt = "", PositionHint = "" }],
+        KeyLocations =
         [
-            new KeyLocation("Harbor Dock", "shop", "A dock complex", "medium", "", "", ""),
-            new KeyLocation("Watchtower", "military", "A tall watchtower", "small", "", "", ""),
+            new KeyLocation { Name = "Harbor Dock", Purpose = "shop", VisualDescription = "A dock complex", SizeCategory = "medium", OriginalDescription = "", MeshyPrompt = "", PositionHint = "" },
+            new KeyLocation { Name = "Watchtower", Purpose = "military", VisualDescription = "A tall watchtower", SizeCategory = "small", OriginalDescription = "", MeshyPrompt = "", PositionHint = "" },
         ],
-        "organic",
-        []);
+        LayoutStyle = "organic",
+        Hazards = [],
+    };
 
-    private static PlacedBuilding MakeBuilding(string name, string mesh) => new(
-        $"building_{name.GetHashCode():X}",
-        name,
-        mesh,
-        "medium",
-        [[0, 0]],
-        2,
-        0.5f,
-        new TilePlacement(0, 0, 0, 0));
+    private static PlacedBuilding MakeBuilding(string name, string mesh) => new()
+    {
+        Id = $"building_{name.GetHashCode():X}",
+        Name = name,
+        MeshAsset = mesh,
+        SizeCategory = "medium",
+        Footprint = [[0, 0]],
+        Floors = 2,
+        Condition = 0.5f,
+        Placement = new TilePlacement(0, 0, 0, 0),
+    };
 
-    private static PlacedProp MakeProp(string mesh) => new(
-        "prop_0",
-        mesh,
-        new TilePlacement(0, 0, 1, 1),
-        45f,
-        1f,
-        false);
+    private static PlacedProp MakeProp(string mesh) => new()
+    {
+        Id = "prop_0",
+        MeshAsset = mesh,
+        Placement = new TilePlacement(0, 0, 1, 1),
+        Rotation = 45f,
+        Scale = 1f,
+        BlocksWalkability = false,
+    };
 
     [Fact]
     public void ClassifyBuilding_Landmark_ReturnsLandmark()
@@ -202,10 +209,12 @@ public class DummyMeshAssignerTests
     public void AssignPrimitiveMeshes_PreservesNonMeshFields()
     {
         var design = CreateTestDesign();
-        var original = new PlacedBuilding(
-            "building_0", "The Beacon", "meshes/the_beacon.glb", "large",
-            [[5, 5], [5, 6], [6, 5], [6, 6]], 3, 0.6f,
-            new TilePlacement(0, 0, 5, 5));
+        var original = new PlacedBuilding
+        {
+            Id = "building_0", Name = "The Beacon", MeshAsset = "meshes/the_beacon.glb", SizeCategory = "large",
+            Footprint = [[5, 5], [5, 6], [6, 5], [6, 6]], Floors = 3, Condition = 0.6f,
+            Placement = new TilePlacement(0, 0, 5, 5),
+        };
 
         var assigner = new DummyMeshAssigner();
         var (updated, _) = assigner.AssignPrimitiveMeshes(design, [original], []);

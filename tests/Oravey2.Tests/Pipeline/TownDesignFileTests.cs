@@ -4,37 +4,44 @@ namespace Oravey2.Tests.Pipeline;
 
 public class TownDesignFileTests
 {
-    private static TownDesign MakeDesign() => new(
-        "Havenburg",
-        [new LandmarkBuilding("Fort Kijkduin", "A massive coastal fortress with crumbling stone walls", "large", "", "", "")],
+    private static TownDesign MakeDesign() => new()
+    {
+        TownName = "Havenburg",
+        Landmarks = [new LandmarkBuilding { Name = "Fort Kijkduin", VisualDescription = "A massive coastal fortress with crumbling stone walls", SizeCategory = "large", OriginalDescription = "", MeshyPrompt = "", PositionHint = "" }],
+        KeyLocations =
         [
-            new KeyLocation("The Drydock Market", "shop", "An old naval drydock converted into a marketplace", "medium", "", "", ""),
-            new KeyLocation("Clinic", "medical", "A converted church clinic", "small", "", "", ""),
-            new KeyLocation("Barracks", "barracks", "Reinforced concrete bunker", "medium", "", "", ""),
+            new KeyLocation { Name = "The Drydock Market", Purpose = "shop", VisualDescription = "An old naval drydock converted into a marketplace", SizeCategory = "medium", OriginalDescription = "", MeshyPrompt = "", PositionHint = "" },
+            new KeyLocation { Name = "Clinic", Purpose = "medical", VisualDescription = "A converted church clinic", SizeCategory = "small", OriginalDescription = "", MeshyPrompt = "", PositionHint = "" },
+            new KeyLocation { Name = "Barracks", Purpose = "barracks", VisualDescription = "Reinforced concrete bunker", SizeCategory = "medium", OriginalDescription = "", MeshyPrompt = "", PositionHint = "" },
         ],
-        "compound",
-        [new EnvironmentalHazard("flooding", "The harbour district floods at high tide", "south-west waterfront")]);
+        LayoutStyle = "compound",
+        Hazards = [new EnvironmentalHazard { Type = "flooding", Description = "The harbour district floods at high tide", LocationHint = "south-west waterfront" }],
+    };
 
-    private static TownDesign MakeDesignWithNewFields() => new(
-        "Havenburg",
+    private static TownDesign MakeDesignWithNewFields() => new()
+    {
+        TownName = "Havenburg",
+        Landmarks =
         [
-            new LandmarkBuilding("Fort Kijkduin", "A massive coastal fortress", "large",
-                "Fort Kijkduin, a 19th-century Napoleonic coastal defence fort", 
-                "Ruined stone fortress, crumbling walls, overgrown, low-poly game asset",
-                "north-west, near the coastline"),
-            new LandmarkBuilding("The Lighthouse", "A crumbling lighthouse tower", "medium",
-                "Lange Jaap lighthouse, tallest cast-iron lighthouse in Europe, built 1877",
-                "Tall crumbling cast-iron lighthouse, broken glass, rust, low-poly game asset",
-                "north, on the harbour pier"),
+            new LandmarkBuilding { Name = "Fort Kijkduin", VisualDescription = "A massive coastal fortress", SizeCategory = "large",
+                OriginalDescription = "Fort Kijkduin, a 19th-century Napoleonic coastal defence fort",
+                MeshyPrompt = "Ruined stone fortress, crumbling walls, overgrown, low-poly game asset",
+                PositionHint = "north-west, near the coastline" },
+            new LandmarkBuilding { Name = "The Lighthouse", VisualDescription = "A crumbling lighthouse tower", SizeCategory = "medium",
+                OriginalDescription = "Lange Jaap lighthouse, tallest cast-iron lighthouse in Europe, built 1877",
+                MeshyPrompt = "Tall crumbling cast-iron lighthouse, broken glass, rust, low-poly game asset",
+                PositionHint = "north, on the harbour pier" },
         ],
+        KeyLocations =
         [
-            new KeyLocation("The Drydock Market", "shop", "An old naval drydock marketplace", "medium",
-                "Willemsoord drydock, former Royal Netherlands Navy shipyard, 19th century",
-                "Ruined industrial drydock with market stalls, low-poly game asset",
-                "centre, on the main square"),
+            new KeyLocation { Name = "The Drydock Market", Purpose = "shop", VisualDescription = "An old naval drydock marketplace", SizeCategory = "medium",
+                OriginalDescription = "Willemsoord drydock, former Royal Netherlands Navy shipyard, 19th century",
+                MeshyPrompt = "Ruined industrial drydock with market stalls, low-poly game asset",
+                PositionHint = "centre, on the main square" },
         ],
-        "compound",
-        [new EnvironmentalHazard("flooding", "The harbour floods at high tide", "south-west waterfront")]);
+        LayoutStyle = "compound",
+        Hazards = [new EnvironmentalHazard { Type = "flooding", Description = "The harbour floods at high tide", LocationHint = "south-west waterfront" }],
+    };
 
     [Fact]
     public void FromTownDesign_MapsAllFields()

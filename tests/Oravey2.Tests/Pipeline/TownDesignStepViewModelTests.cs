@@ -35,16 +35,18 @@ public class TownDesignStepViewModelTests
         var towns = new List<CuratedTown>();
         for (int i = 0; i < count; i++)
         {
-            towns.Add(new CuratedTown(
-                GameName: $"Haven-{i}",
-                RealName: $"Town{i}",
-                Latitude: 52.3 + i * 0.06,
-                Longitude: 4.6 + i * 0.05,
-                GamePosition: new Vector2(i * 20000f, i * 16700f),
-                Description: $"Town {i} description",
-                Size: TownCategory.Village,
-                Inhabitants: 5000 + i * 1000,
-                Destruction: DestructionLevel.Moderate));
+            towns.Add(new CuratedTown
+            {
+                GameName = $"Haven-{i}",
+                RealName = $"Town{i}",
+                Latitude = 52.3 + i * 0.06,
+                Longitude = 4.6 + i * 0.05,
+                GamePosition = new Vector2(i * 20000f, i * 16700f),
+                Description = $"Town {i} description",
+                Size = TownCategory.Village,
+                Inhabitants = 5000 + i * 1000,
+                Destruction = DestructionLevel.Moderate,
+            });
         }
 
         var file = CuratedTownsFile.FromCuratedTowns(towns, "A");
@@ -53,16 +55,19 @@ public class TownDesignStepViewModelTests
         return path;
     }
 
-    private static TownDesign MakeDesign(string townName = "Haven-0") => new(
-        townName,
-        [new LandmarkBuilding("Fort Kijkduin", "A massive coastal fortress", "large", "", "", "")],
+    private static TownDesign MakeDesign(string townName = "Haven-0") => new()
+    {
+        TownName = townName,
+        Landmarks = [new LandmarkBuilding { Name = "Fort Kijkduin", VisualDescription = "A massive coastal fortress", SizeCategory = "large", OriginalDescription = "", MeshyPrompt = "", PositionHint = "" }],
+        KeyLocations =
         [
-            new KeyLocation("Market", "shop", "An old drydock market", "medium", "", "", ""),
-            new KeyLocation("Clinic", "medical", "A converted church clinic", "small", "", "", ""),
-            new KeyLocation("Barracks", "barracks", "Reinforced bunker", "medium", "", "", ""),
+            new KeyLocation { Name = "Market", Purpose = "shop", VisualDescription = "An old drydock market", SizeCategory = "medium", OriginalDescription = "", MeshyPrompt = "", PositionHint = "" },
+            new KeyLocation { Name = "Clinic", Purpose = "medical", VisualDescription = "A converted church clinic", SizeCategory = "small", OriginalDescription = "", MeshyPrompt = "", PositionHint = "" },
+            new KeyLocation { Name = "Barracks", Purpose = "barracks", VisualDescription = "Reinforced bunker", SizeCategory = "medium", OriginalDescription = "", MeshyPrompt = "", PositionHint = "" },
         ],
-        "compound",
-        [new EnvironmentalHazard("flooding", "The harbour floods at high tide", "south-west waterfront")]);
+        LayoutStyle = "compound",
+        Hazards = [new EnvironmentalHazard { Type = "flooding", Description = "The harbour floods at high tide", LocationHint = "south-west waterfront" }],
+    };
 
     // --- Default state ---
 
@@ -430,15 +435,18 @@ public class TownDesignStepViewModelTests
     public void TownDesignItem_MultiLandmark_SummaryJoinsNames()
     {
         var item = new TownDesignItem { GameName = "Test" };
-        item.Design = new TownDesign(
-            "Test",
+        item.Design = new TownDesign
+        {
+            TownName = "Test",
+            Landmarks =
             [
-                new LandmarkBuilding("Fort Kijkduin", "A fortress", "large", "", "", ""),
-                new LandmarkBuilding("The Lighthouse", "A lighthouse", "medium", "", "", ""),
+                new LandmarkBuilding { Name = "Fort Kijkduin", VisualDescription = "A fortress", SizeCategory = "large", OriginalDescription = "", MeshyPrompt = "", PositionHint = "" },
+                new LandmarkBuilding { Name = "The Lighthouse", VisualDescription = "A lighthouse", SizeCategory = "medium", OriginalDescription = "", MeshyPrompt = "", PositionHint = "" },
             ],
-            [],
-            "organic",
-            []);
+            KeyLocations = [],
+            LayoutStyle = "organic",
+            Hazards = [],
+        };
 
         Assert.Equal("Fort Kijkduin, The Lighthouse", item.LandmarkSummary);
         Assert.Equal(2, item.LandmarkCount);

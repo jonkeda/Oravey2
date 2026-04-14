@@ -69,15 +69,17 @@ public class AssetFilesTests
 
             var buildings = new List<PlacedBuilding>
             {
-                new("b_0", "The Beacon", "meshes/the_beacon.glb", "large",
-                    [[0, 0]], 2, 0.5f, new TilePlacement(0, 0, 0, 0)),
-                new("b_1", "Market", "meshes/market.glb", "medium",
-                    [[1, 1]], 1, 0.8f, new TilePlacement(0, 0, 1, 1)),
+                new() { Id = "b_0", Name = "The Beacon", MeshAsset = "meshes/the_beacon.glb", SizeCategory = "large",
+                    Footprint = [[0, 0]], Floors = 2, Condition = 0.5f, Placement = new TilePlacement(0, 0, 0, 0) },
+                new() { Id = "b_1", Name = "Market", MeshAsset = "meshes/market.glb", SizeCategory = "medium",
+                    Footprint = [[1, 1]], Floors = 1, Condition = 0.8f, Placement = new TilePlacement(0, 0, 1, 1) },
             };
 
-            var result = new TownMapResult(
-                new TownLayout(16, 16, []),
-                buildings, [], []);
+            var result = new TownMapResult
+            {
+                Layout = new TownLayout { Width = 16, Height = 16, Surface = [] },
+                Buildings = buildings, Props = [], Zones = [],
+            };
             TownMapFiles.Save(result, townDir);
 
             // Update The Beacon's mesh reference
@@ -105,12 +107,14 @@ public class AssetFilesTests
 
             var buildings = new List<PlacedBuilding>
             {
-                new("b_0", "Market", "meshes/market.glb", "medium",
-                    [[0, 0]], 1, 0.8f, new TilePlacement(0, 0, 0, 0)),
+                new() { Id = "b_0", Name = "Market", MeshAsset = "meshes/market.glb", SizeCategory = "medium",
+                    Footprint = [[0, 0]], Floors = 1, Condition = 0.8f, Placement = new TilePlacement(0, 0, 0, 0) },
             };
-            var result = new TownMapResult(
-                new TownLayout(16, 16, []),
-                buildings, [], []);
+            var result = new TownMapResult
+            {
+                Layout = new TownLayout { Width = 16, Height = 16, Surface = [] },
+                Buildings = buildings, Props = [], Zones = [],
+            };
             TownMapFiles.Save(result, townDir);
 
             AssetFiles.UpdateBuildingMeshReference(townDir, "NonExistent", "meshes/test.glb");

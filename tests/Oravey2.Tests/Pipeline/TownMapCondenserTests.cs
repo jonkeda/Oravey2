@@ -8,18 +8,22 @@ namespace Oravey2.Tests.Pipeline;
 
 public class TownMapCondenserTests
 {
-    private static TownDesign CreateTestDesign(int keyLocationCount = 3) => new(
-        "TestTown",
-        [new LandmarkBuilding("Fort Test", "A ruined fortress", "large", "", "", "")],
-        Enumerable.Range(0, keyLocationCount).Select(i =>
-            new KeyLocation($"Location_{i}", "shop", "A building", "medium", "", "", "")).ToList(),
-        "organic",
-        [new EnvironmentalHazard("flooding", "Water rises", "south-west waterfront")]);
+    private static TownDesign CreateTestDesign(int keyLocationCount = 3) => new()
+    {
+        TownName = "TestTown",
+        Landmarks = [new LandmarkBuilding { Name = "Fort Test", VisualDescription = "A ruined fortress", SizeCategory = "large", OriginalDescription = "", MeshyPrompt = "", PositionHint = "" }],
+        KeyLocations = Enumerable.Range(0, keyLocationCount).Select(i =>
+            new KeyLocation { Name = $"Location_{i}", Purpose = "shop", VisualDescription = "A building", SizeCategory = "medium", OriginalDescription = "", MeshyPrompt = "", PositionHint = "" }).ToList(),
+        LayoutStyle = "organic",
+        Hazards = [new EnvironmentalHazard { Type = "flooding", Description = "Water rises", LocationHint = "south-west waterfront" }],
+    };
 
-    private static CuratedTown CreateTestTown() => new(
-        "TestTown", "RealTest", 52.5, 4.8,
-        System.Numerics.Vector2.Zero,
-        "A test town", TownCategory.Town, 5000, DestructionLevel.Moderate);
+    private static CuratedTown CreateTestTown() => new()
+    {
+        GameName = "TestTown", RealName = "RealTest", Latitude = 52.5, Longitude = 4.8,
+        GamePosition = System.Numerics.Vector2.Zero,
+        Description = "A test town", Size = TownCategory.Town, Inhabitants = 5000, Destruction = DestructionLevel.Moderate,
+    };
 
     private static RegionTemplate CreateMinimalRegion() => new()
     {
@@ -255,7 +259,7 @@ public class TownMapCondenserTests
     [Fact]
     public void PlaceLandmark_AtCentre()
     {
-        var landmark = new LandmarkBuilding("Fort Test", "Big fort", "large", "", "", "");
+        var landmark = new LandmarkBuilding { Name = "Fort Test", VisualDescription = "Big fort", SizeCategory = "large", OriginalDescription = "", MeshyPrompt = "", PositionHint = "" };
         var occupied = new HashSet<(int, int)>();
         var building = TownMapCondenser.PlaceLandmark(landmark, 16, 16, 0, occupied);
 
@@ -271,8 +275,8 @@ public class TownMapCondenserTests
     {
         var locations = new List<KeyLocation>
         {
-            new("Shop", "shop", "A shop", "small", "", "", ""),
-            new("Inn", "rest", "An inn", "medium", "", "", ""),
+            new() { Name = "Shop", Purpose = "shop", VisualDescription = "A shop", SizeCategory = "small", OriginalDescription = "", MeshyPrompt = "", PositionHint = "" },
+            new() { Name = "Inn", Purpose = "rest", VisualDescription = "An inn", SizeCategory = "medium", OriginalDescription = "", MeshyPrompt = "", PositionHint = "" },
         };
         var rng = new Random(42);
         var roadTiles = new List<(int X, int Y)>();

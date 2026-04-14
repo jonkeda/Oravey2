@@ -20,32 +20,37 @@ public class TownAssetScannerTests
         return root;
     }
 
-    private static TownDesign MakeDesign(string townName) => new(
-        townName,
-        [new LandmarkBuilding("The Beacon", "A tall lighthouse on a cliff", "large", "", "", "")],
+    private static TownDesign MakeDesign(string townName) => new()
+    {
+        TownName = townName,
+        Landmarks = [new LandmarkBuilding { Name = "The Beacon", VisualDescription = "A tall lighthouse on a cliff", SizeCategory = "large", OriginalDescription = "", MeshyPrompt = "", PositionHint = "" }],
+        KeyLocations =
         [
-            new KeyLocation("Market Hall", "shop", "A bustling market building", "medium", "", "", ""),
-            new KeyLocation("Clinic", "medical", "A small field clinic", "small", "", "", ""),
+            new KeyLocation { Name = "Market Hall", Purpose = "shop", VisualDescription = "A bustling market building", SizeCategory = "medium", OriginalDescription = "", MeshyPrompt = "", PositionHint = "" },
+            new KeyLocation { Name = "Clinic", Purpose = "medical", VisualDescription = "A small field clinic", SizeCategory = "small", OriginalDescription = "", MeshyPrompt = "", PositionHint = "" },
         ],
-        "organic",
-        []);
+        LayoutStyle = "organic",
+        Hazards = [],
+    };
 
     private static TownMapResult MakeMapResult(string landmarkMesh = "", string marketMesh = "", string clinicMesh = "")
     {
         var buildings = new List<PlacedBuilding>
         {
-            new("b_0", "The Beacon", landmarkMesh, "large", [[0, 0]], 3, 0.85f, new TilePlacement(0, 0, 0, 0)),
-            new("b_1", "Market Hall", marketMesh, "medium", [[1, 1]], 1, 0.9f, new TilePlacement(0, 0, 1, 1)),
-            new("b_2", "Clinic", clinicMesh, "small", [[2, 2]], 1, 0.7f, new TilePlacement(0, 0, 2, 2)),
+            new() { Id = "b_0", Name = "The Beacon", MeshAsset = landmarkMesh, SizeCategory = "large", Footprint = [[0, 0]], Floors = 3, Condition = 0.85f, Placement = new TilePlacement(0, 0, 0, 0) },
+            new() { Id = "b_1", Name = "Market Hall", MeshAsset = marketMesh, SizeCategory = "medium", Footprint = [[1, 1]], Floors = 1, Condition = 0.9f, Placement = new TilePlacement(0, 0, 1, 1) },
+            new() { Id = "b_2", Name = "Clinic", MeshAsset = clinicMesh, SizeCategory = "small", Footprint = [[2, 2]], Floors = 1, Condition = 0.7f, Placement = new TilePlacement(0, 0, 2, 2) },
         };
         var props = new List<PlacedProp>
         {
-            new("p_0", "meshes/primitives/sphere.glb", new TilePlacement(0, 0, 3, 3), 0, 1, false),
+            new() { Id = "p_0", MeshAsset = "meshes/primitives/sphere.glb", Placement = new TilePlacement(0, 0, 3, 3), Rotation = 0, Scale = 1, BlocksWalkability = false },
         };
-        return new TownMapResult(
-            new TownLayout(16, 16, [[0]]),
-            buildings, props,
-            [new TownZone("z_0", "Main", 0, 0, 1, true, 0, 0, 0, 0)]);
+        return new TownMapResult
+        {
+            Layout = new TownLayout { Width = 16, Height = 16, Surface = [[0]] },
+            Buildings = buildings, Props = props,
+            Zones = [new TownZone { Id = "z_0", Name = "Main", Biome = 0, RadiationLevel = 0, EnemyDifficultyTier = 1, IsFastTravelTarget = true, ChunkStartX = 0, ChunkStartY = 0, ChunkEndX = 0, ChunkEndY = 0 }],
+        };
     }
 
     [Fact]
@@ -182,23 +187,27 @@ public class TownAssetScannerTests
     [Fact]
     public void Scan_ExtraBuildingsInMap_AddedAsGeneric()
     {
-        var design = new TownDesign(
-            "Haven",
-            [new LandmarkBuilding("The Beacon", "A lighthouse", "large", "", "", "")],
-            [new KeyLocation("Market", "shop", "Market stall", "medium", "", "", "")],
-            "organic",
-            []);
+        var design = new TownDesign
+        {
+            TownName = "Haven",
+            Landmarks = [new LandmarkBuilding { Name = "The Beacon", VisualDescription = "A lighthouse", SizeCategory = "large", OriginalDescription = "", MeshyPrompt = "", PositionHint = "" }],
+            KeyLocations = [new KeyLocation { Name = "Market", Purpose = "shop", VisualDescription = "Market stall", SizeCategory = "medium", OriginalDescription = "", MeshyPrompt = "", PositionHint = "" }],
+            LayoutStyle = "organic",
+            Hazards = [],
+        };
 
         var buildings = new List<PlacedBuilding>
         {
-            new("b_0", "The Beacon", "", "large", [[0, 0]], 2, 0.5f, new TilePlacement(0, 0, 0, 0)),
-            new("b_1", "Market", "", "medium", [[1, 1]], 1, 0.8f, new TilePlacement(0, 0, 1, 1)),
-            new("b_2", "Ruin 1", "", "small", [[2, 2]], 1, 0.3f, new TilePlacement(0, 0, 2, 2)),
+            new() { Id = "b_0", Name = "The Beacon", MeshAsset = "", SizeCategory = "large", Footprint = [[0, 0]], Floors = 2, Condition = 0.5f, Placement = new TilePlacement(0, 0, 0, 0) },
+            new() { Id = "b_1", Name = "Market", MeshAsset = "", SizeCategory = "medium", Footprint = [[1, 1]], Floors = 1, Condition = 0.8f, Placement = new TilePlacement(0, 0, 1, 1) },
+            new() { Id = "b_2", Name = "Ruin 1", MeshAsset = "", SizeCategory = "small", Footprint = [[2, 2]], Floors = 1, Condition = 0.3f, Placement = new TilePlacement(0, 0, 2, 2) },
         };
-        var mapResult = new TownMapResult(
-            new TownLayout(16, 16, [[0]]),
-            buildings, [],
-            [new TownZone("z_0", "Main", 0, 0, 1, true, 0, 0, 0, 0)]);
+        var mapResult = new TownMapResult
+        {
+            Layout = new TownLayout { Width = 16, Height = 16, Surface = [[0]] },
+            Buildings = buildings, Props = [],
+            Zones = [new TownZone { Id = "z_0", Name = "Main", Biome = 0, RadiationLevel = 0, EnemyDifficultyTier = 1, IsFastTravelTarget = true, ChunkStartX = 0, ChunkStartY = 0, ChunkEndX = 0, ChunkEndY = 0 }],
+        };
 
         var root = CreateTempContentPack(("haven", design, mapResult));
         try

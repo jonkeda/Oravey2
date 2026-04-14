@@ -7,16 +7,18 @@ namespace Oravey2.Tests.Pipeline;
 
 public class TownDesignerTests
 {
-    private static readonly CuratedTown SampleTown = new(
-        GameName: "Havenburg",
-        RealName: "Den Helder",
-        Latitude: 52.96,
-        Longitude: 4.76,
-        GamePosition: new Vector2(4760f, 52960f),
-        Description: "A fortified coastal trading settlement",
-        Size: TownCategory.Town,
-        Inhabitants: 5000,
-        Destruction: DestructionLevel.Heavy);
+    private static readonly CuratedTown SampleTown = new()
+    {
+        GameName = "Havenburg",
+        RealName = "Den Helder",
+        Latitude = 52.96,
+        Longitude = 4.76,
+        GamePosition = new Vector2(4760f, 52960f),
+        Description = "A fortified coastal trading settlement",
+        Size = TownCategory.Town,
+        Inhabitants = 5000,
+        Destruction = DestructionLevel.Heavy,
+    };
 
     private const string SampleRegionContext = "Region: noord-holland, Lat 52.20–52.90, Lon 4.50–5.20";
 
@@ -51,7 +53,13 @@ public class TownDesignerTests
     [InlineData(TownCategory.Metropolis, "5 landmark(s)", "8–14 key locations")]
     public void BuildPrompt_ScalesCountsForSize(TownCategory size, string expectedLandmarks, string expectedKeyLocs)
     {
-        var town = SampleTown with { Size = size };
+        var town = new CuratedTown
+        {
+            GameName = SampleTown.GameName, RealName = SampleTown.RealName,
+            Latitude = SampleTown.Latitude, Longitude = SampleTown.Longitude,
+            GamePosition = SampleTown.GamePosition, Description = SampleTown.Description,
+            Size = size, Inhabitants = SampleTown.Inhabitants, Destruction = SampleTown.Destruction,
+        };
         var prompt = TownDesigner.BuildPrompt(town, SampleRegionContext, 42);
 
         Assert.Contains(expectedLandmarks, prompt);

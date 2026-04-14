@@ -9,30 +9,32 @@ public class OverworldFilesTests
     {
         var townRefs = new List<OverworldTownRef>
         {
-            new("haven", "Island Haven", 0.5f, 0.5f, "A safe port town", "Town", 5000, "Pristine"),
-            new("outpost", "Fort Outpost", 1.5f, 0.5f, "A military outpost", "Village", 1000, "Moderate"),
+            new() { GameName = "haven", RealName = "Island Haven", GameX = 0.5f, GameY = 0.5f, Description = "A safe port town", Size = "Town", Inhabitants = 5000, Destruction = "Pristine" },
+            new() { GameName = "outpost", RealName = "Fort Outpost", GameX = 1.5f, GameY = 0.5f, Description = "A military outpost", Size = "Village", Inhabitants = 1000, Destruction = "Moderate" },
         };
 
-        var world = new OverworldInfo(
-            "TestRegion", "Test overworld", "test-source",
-            ChunksWide: 2, ChunksHigh: 1, TileSize: 1,
-            new TilePlacement(0, 0, 8, 8),
-            townRefs);
+        var world = new OverworldInfo
+        {
+            Name = "TestRegion", Description = "Test overworld", Source = "test-source",
+            ChunksWide = 2, ChunksHigh = 1, TileSize = 1,
+            PlayerStart = new TilePlacement(0, 0, 8, 8),
+            Towns = townRefs,
+        };
 
         var roads = new List<OverworldRoad>
         {
-            new("road_0", "Primary",
-                [new Vector2(0.5f, 0.5f), new Vector2(1.5f, 0.5f)],
-                "haven", "outpost"),
+            new() { Id = "road_0", RoadClass = "Primary",
+                Nodes = [new Vector2(0.5f, 0.5f), new Vector2(1.5f, 0.5f)],
+                FromTown = "haven", ToTown = "outpost" },
         };
 
         var water = new List<OverworldWater>
         {
-            new("water_0", "Sea",
-                [new Vector2(0, 0), new Vector2(2, 0), new Vector2(2, 1)]),
+            new() { Id = "water_0", WaterType = "Sea",
+                Geometry = [new Vector2(0, 0), new Vector2(2, 0), new Vector2(2, 1)] },
         };
 
-        return new OverworldResult(world, roads, water);
+        return new OverworldResult { World = world, Roads = roads, Water = water };
     }
 
     [Fact]
