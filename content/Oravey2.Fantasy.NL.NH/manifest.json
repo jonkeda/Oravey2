@@ -4,9 +4,13 @@
   "version": "0.1.0",
   "description": "Fantasy Noord-Holland region. Enchanted polders, mystical canal towns, and fortified coastal keeps.",
   "author": "Oravey2 Team",
-  "engineVersion": ">=0.1.0",
+  "engineVersion": "\u003E=0.1.0",
   "parent": "oravey2.fantasy.nl",
   "regionCode": "NL-NH",
-  "tags": ["fantasy", "netherlands", "noord-holland"],
+  "tags": [
+    "fantasy",
+    "netherlands",
+    "noord-holland"
+  ],
   "defaultScenario": "briarhollow"
 }
