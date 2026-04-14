@@ -9,12 +9,13 @@ public class TownMapResultSerializationTests
 {
     private TownMapResult CreateBasicMapResult()
     {
-        return new TownMapResult(
-            Layout: new TownLayout(Width: 16, Height: 16, Surface: new int[][] { new int[16] }),
-            Buildings: new List<PlacedBuilding>(),
-            Props: new List<PlacedProp>(),
-            Zones: new List<TownZone>()
-        );
+        return new TownMapResult
+        {
+            Layout = new TownLayout { Width = 16, Height = 16, Surface = new int[][] { new int[16] } },
+            Buildings = new List<PlacedBuilding>(),
+            Props = new List<PlacedProp>(),
+            Zones = new List<TownZone>()
+        };
     }
 
     [Fact]
@@ -41,14 +42,15 @@ public class TownMapResultSerializationTests
         var json = SpatialSpecSerializer.SerializeToJson(spec);
 
         // Act
-        var result = new TownMapResult(
-            Layout: new TownLayout(Width: 16, Height: 16, Surface: new int[][] { new int[16] }),
-            Buildings: new List<PlacedBuilding>(),
-            Props: new List<PlacedProp>(),
-            Zones: new List<TownZone>(),
-            SpatialSpec: spec,
-            SpatialSpecJson: json
-        );
+        var result = new TownMapResult
+        {
+            Layout = new TownLayout { Width = 16, Height = 16, Surface = new int[][] { new int[16] } },
+            Buildings = new List<PlacedBuilding>(),
+            Props = new List<PlacedProp>(),
+            Zones = new List<TownZone>(),
+            SpatialSpec = spec,
+            SpatialSpecJson = json
+        };
 
         // Assert
         Assert.NotNull(result.SpatialSpec);
@@ -76,7 +78,7 @@ public class TownMapResultSerializationTests
 
         // Act
         var result = TownMapResult.CreateWithSerializedSpec(
-            new TownLayout(Width: 16, Height: 16, Surface: new int[][] { new int[16] }),
+            new TownLayout { Width = 16, Height = 16, Surface = new int[][] { new int[16] } },
             new List<PlacedBuilding>(),
             new List<PlacedProp>(),
             new List<TownZone>(),
@@ -95,7 +97,7 @@ public class TownMapResultSerializationTests
     {
         // Act
         var result = TownMapResult.CreateWithSerializedSpec(
-            new TownLayout(Width: 16, Height: 16, Surface: new int[][] { new int[16] }),
+            new TownLayout { Width = 16, Height = 16, Surface = new int[][] { new int[16] } },
             new List<PlacedBuilding>(),
             new List<PlacedProp>(),
             new List<TownZone>(),
@@ -120,7 +122,7 @@ public class TownMapResultSerializationTests
 
         // Act
         var result = TownMapResult.CreateWithSerializedSpec(
-            new TownLayout(Width: 16, Height: 16, Surface: new int[][] { new int[16] }),
+            new TownLayout { Width = 16, Height = 16, Surface = new int[][] { new int[16] } },
             new List<PlacedBuilding>(),
             new List<PlacedProp>(),
             new List<TownZone>(),
@@ -138,18 +140,18 @@ public class TownMapResultSerializationTests
     public void CreateWithSerializedSpec_PreservesAllMapData()
     {
         // Arrange
-        var layout = new TownLayout(Width: 16, Height: 16, Surface: new int[][] { new int[16] }, Liquid: new int[][] { new int[16] });
+        var layout = new TownLayout { Width = 16, Height = 16, Surface = new int[][] { new int[16] }, Liquid = new int[][] { new int[16] } };
         var buildings = new List<PlacedBuilding>
         {
-            new("b1", "Building1", "mesh1", "large", new int[][] { new int[4] }, 2, 0.9f, new TilePlacement(0, 0, 5, 5))
+            new PlacedBuilding { Id = "b1", Name = "Building1", MeshAsset = "mesh1", SizeCategory = "large", Footprint = new int[][] { new int[4] }, Floors = 2, Condition = 0.9f, Placement = new TilePlacement(0, 0, 5, 5) }
         };
         var props = new List<PlacedProp>
         {
-            new("p1", "mesh1", new TilePlacement(0, 0, 6, 6), 45.0f, 1.0f, false)
+            new PlacedProp { Id = "p1", MeshAsset = "mesh1", Placement = new TilePlacement(0, 0, 6, 6), Rotation = 45.0f, Scale = 1.0f, BlocksWalkability = false }
         };
         var zones = new List<TownZone>
         {
-            new("z1", "Zone1", 1, 0.5f, 2, true, 0, 0, 7, 7)
+            new TownZone { Id = "z1", Name = "Zone1", Biome = 1, RadiationLevel = 0.5f, EnemyDifficultyTier = 2, IsFastTravelTarget = true, ChunkStartX = 0, ChunkStartY = 0, ChunkEndX = 7, ChunkEndY = 7 }
         };
         var spec = new TownSpatialSpecification
         {

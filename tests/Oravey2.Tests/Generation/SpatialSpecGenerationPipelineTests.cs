@@ -43,27 +43,31 @@ public class SpatialSpecGenerationPipelineTests
                 [new Vector2(-100, -100), new Vector2(100, -100), new Vector2(100, 100), new Vector2(-100, 100)])]
         };
 
-        var town = new CuratedTown(
-            GameName: "Haven",
-            RealName: "TestTown",
-            Latitude: 52.50,
-            Longitude: 4.95,
-            GamePosition: new Vector2(0, 0),
-            Description: "A fortified market town",
-            Size: TownCategory.Town,
-            Inhabitants: 5000,
-            Destruction: DestructionLevel.Pristine,
-            BoundaryPolygon: boundary);
+        var town = new CuratedTown
+        {
+            GameName = "Haven",
+            RealName = "TestTown",
+            Latitude = 52.50,
+            Longitude = 4.95,
+            GamePosition = new Vector2(0, 0),
+            Description = "A fortified market town",
+            Size = TownCategory.Town,
+            Inhabitants = 5000,
+            Destruction = DestructionLevel.Pristine,
+            BoundaryPolygon = boundary
+        };
 
         var townEntry = new TownEntry("Haven", 52.50, 4.95, 50000, new Vector2(0, 0), TownCategory.Town, boundary);
 
-        var design = new TownDesign(
-            TownName: "Haven",
-            Landmarks: [new LandmarkBuilding("Castle", "Ruined castle", "large", "castle", "castle prompt", "town_centre")],
-            KeyLocations: [new KeyLocation("Well", "Water source", "Well structure", "small", "well", "well prompt", "market_square")],
-            LayoutStyle: "grid",
-            Hazards: [],
-            SpatialSpec: null);
+        var design = new TownDesign
+        {
+            TownName = "Haven",
+            Landmarks = [new LandmarkBuilding { Name = "Castle", VisualDescription = "Ruined castle", SizeCategory = "large", OriginalDescription = "castle", MeshyPrompt = "castle prompt", PositionHint = "town_centre" }],
+            KeyLocations = [new KeyLocation { Name = "Well", Purpose = "Water source", VisualDescription = "Well structure", SizeCategory = "small", OriginalDescription = "well", MeshyPrompt = "well prompt", PositionHint = "market_square" }],
+            LayoutStyle = "grid",
+            Hazards = [],
+            SpatialSpec = null
+        };
 
         return (town, townEntry, region, design);
     }
@@ -98,9 +102,9 @@ public class SpatialSpecGenerationPipelineTests
     public async Task GenerateTownMapAsync_WithValidSpatialSpec_UsesSpatialSpecPath()
     {
         // Arrange
-        var (town, townEntry, region, baseDesign) = CreateTestScenario();
+        var (town, townEntry, region, design) = CreateTestScenario();
         var spec = CreateValidSpatialSpec();
-        var design = baseDesign with { SpatialSpec = spec };
+        design.SpatialSpec = spec;
 
         var logMessages = new List<string>();
         var service = new MapGeneratorService(new DummyAssetRegistry());
@@ -147,9 +151,9 @@ public class SpatialSpecGenerationPipelineTests
     public async Task GenerateTownMapAsync_WithSpatialSpecButDisabled_UsesProcedural()
     {
         // Arrange
-        var (town, townEntry, region, baseDesign) = CreateTestScenario();
+        var (town, townEntry, region, design) = CreateTestScenario();
         var spec = CreateValidSpatialSpec();
-        var design = baseDesign with { SpatialSpec = spec };
+        design.SpatialSpec = spec;
 
         var logMessages = new List<string>();
         var service = new MapGeneratorService(new DummyAssetRegistry());
@@ -171,9 +175,9 @@ public class SpatialSpecGenerationPipelineTests
     public async Task DecisionLogging_IncludesSpecStatistics()
     {
         // Arrange
-        var (town, townEntry, region, baseDesign) = CreateTestScenario();
+        var (town, townEntry, region, design) = CreateTestScenario();
         var spec = CreateValidSpatialSpec();
-        var design = baseDesign with { SpatialSpec = spec };
+        design.SpatialSpec = spec;
 
         var logMessages = new List<string>();
         var service = new MapGeneratorService(new DummyAssetRegistry());
@@ -196,9 +200,9 @@ public class SpatialSpecGenerationPipelineTests
     public async Task PreferSpatialSpecs_DefaultIsTrue()
     {
         // Arrange
-        var (town, townEntry, region, baseDesign) = CreateTestScenario();
+        var (town, townEntry, region, design) = CreateTestScenario();
         var spec = CreateValidSpatialSpec();
-        var design = baseDesign with { SpatialSpec = spec };
+        design.SpatialSpec = spec;
 
         var logMessages = new List<string>();
         var service = new MapGeneratorService(new DummyAssetRegistry());
@@ -219,9 +223,9 @@ public class SpatialSpecGenerationPipelineTests
     public async Task ConfigurationToggle_CanForceProcedural()
     {
         // Arrange
-        var (town, townEntry, region, baseDesign) = CreateTestScenario();
+        var (town, townEntry, region, design) = CreateTestScenario();
         var spec = CreateValidSpatialSpec();
-        var design = baseDesign with { SpatialSpec = spec };
+        design.SpatialSpec = spec;
 
         var service = new MapGeneratorService(new DummyAssetRegistry());
 
@@ -243,7 +247,7 @@ public class SpatialSpecGenerationPipelineTests
     public async Task ErrorHandling_GracefullyHandlesInvalidSpec()
     {
         // Arrange
-        var (town, townEntry, region, baseDesign) = CreateTestScenario();
+        var (town, townEntry, region, design) = CreateTestScenario();
         
         // Create an invalid spec that might cause issues
         var invalidSpec = new TownSpatialSpecification
@@ -253,7 +257,7 @@ public class SpatialSpecGenerationPipelineTests
             TerrainDescription = ""
         };
         
-        var design = baseDesign with { SpatialSpec = invalidSpec };
+        design.SpatialSpec = invalidSpec;
 
         var logMessages = new List<string>();
         var service = new MapGeneratorService(new DummyAssetRegistry());
@@ -274,9 +278,9 @@ public class SpatialSpecGenerationPipelineTests
     public async Task ResultContainsSpatialSpec_WhenUsingSpecPath()
     {
         // Arrange
-        var (town, townEntry, region, baseDesign) = CreateTestScenario();
+        var (town, townEntry, region, design) = CreateTestScenario();
         var spec = CreateValidSpatialSpec();
-        var design = baseDesign with { SpatialSpec = spec };
+        design.SpatialSpec = spec;
 
         var service = new MapGeneratorService(new DummyAssetRegistry());
         service.SetPreferSpatialSpecs(true);

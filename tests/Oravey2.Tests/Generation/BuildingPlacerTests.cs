@@ -56,10 +56,12 @@ public class BuildingPlacerTests
     [Fact]
     public void RasterizeBuilding_Rotation0Degrees_GeneratesUnrotatedFootprint()
     {
-        var placement = new WorldTilePlacement(
-            CenterX: 50, CenterZ: 50,
-            WidthTiles: 4, DepthTiles: 4,
-            RotationDegrees: 0.0, AlignmentHint: "");
+        var placement = new WorldTilePlacement
+        {
+            CenterX = 50, CenterZ = 50,
+            WidthTiles = 4, DepthTiles = 4,
+            RotationDegrees = 0.0, AlignmentHint = ""
+        };
         
         var footprint = BuildingPlacer.RasterizeBuilding(placement, TestGridWidth, TestGridHeight);
         
@@ -71,10 +73,12 @@ public class BuildingPlacerTests
     [Fact]
     public void RasterizeBuilding_Rotation45Degrees_GeneratesRotatedFootprint()
     {
-        var placement = new WorldTilePlacement(
-            CenterX: 50, CenterZ: 50,
-            WidthTiles: 4, DepthTiles: 4,
-            RotationDegrees: 45.0, AlignmentHint: "");
+        var placement = new WorldTilePlacement
+        {
+            CenterX = 50, CenterZ = 50,
+            WidthTiles = 4, DepthTiles = 4,
+            RotationDegrees = 45.0, AlignmentHint = ""
+        };
         
         var footprint = BuildingPlacer.RasterizeBuilding(placement, TestGridWidth, TestGridHeight);
         
@@ -87,10 +91,12 @@ public class BuildingPlacerTests
     [Fact]
     public void RasterizeBuilding_Rotation90Degrees_GeneratesRotatedFootprint()
     {
-        var placement = new WorldTilePlacement(
-            CenterX: 50, CenterZ: 50,
-            WidthTiles: 4, DepthTiles: 6,
-            RotationDegrees: 90.0, AlignmentHint: "");
+        var placement = new WorldTilePlacement
+        {
+            CenterX = 50, CenterZ = 50,
+            WidthTiles = 4, DepthTiles = 6,
+            RotationDegrees = 90.0, AlignmentHint = ""
+        };
         
         var footprint = BuildingPlacer.RasterizeBuilding(placement, TestGridWidth, TestGridHeight);
         
@@ -102,10 +108,12 @@ public class BuildingPlacerTests
     [Fact]
     public void RasterizeBuilding_Rotation135Degrees_GeneratesRotatedFootprint()
     {
-        var placement = new WorldTilePlacement(
-            CenterX: 50, CenterZ: 50,
-            WidthTiles: 5, DepthTiles: 5,
-            RotationDegrees: 135.0, AlignmentHint: "");
+        var placement = new WorldTilePlacement
+        {
+            CenterX = 50, CenterZ = 50,
+            WidthTiles = 5, DepthTiles = 5,
+            RotationDegrees = 135.0, AlignmentHint = ""
+        };
         
         var footprint = BuildingPlacer.RasterizeBuilding(placement, TestGridWidth, TestGridHeight);
         
@@ -117,10 +125,12 @@ public class BuildingPlacerTests
     [Fact]
     public void RasterizeBuilding_Rotation180Degrees_GeneratesRotatedFootprint()
     {
-        var placement = new WorldTilePlacement(
-            CenterX: 50, CenterZ: 50,
-            WidthTiles: 4, DepthTiles: 6,
-            RotationDegrees: 180.0, AlignmentHint: "");
+        var placement = new WorldTilePlacement
+        {
+            CenterX = 50, CenterZ = 50,
+            WidthTiles = 4, DepthTiles = 6,
+            RotationDegrees = 180.0, AlignmentHint = ""
+        };
         
         var footprint = BuildingPlacer.RasterizeBuilding(placement, TestGridWidth, TestGridHeight);
         
@@ -132,10 +142,12 @@ public class BuildingPlacerTests
     [Fact]
     public void RasterizeBuilding_Rotation225Degrees_GeneratesRotatedFootprint()
     {
-        var placement = new WorldTilePlacement(
-            CenterX: 50, CenterZ: 50,
-            WidthTiles: 5, DepthTiles: 5,
-            RotationDegrees: 225.0, AlignmentHint: "");
+        var placement = new WorldTilePlacement
+        {
+            CenterX = 50, CenterZ = 50,
+            WidthTiles = 5, DepthTiles = 5,
+            RotationDegrees = 225.0, AlignmentHint = ""
+        };
         
         var footprint = BuildingPlacer.RasterizeBuilding(placement, TestGridWidth, TestGridHeight);
         
@@ -146,10 +158,12 @@ public class BuildingPlacerTests
     [Fact]
     public void RasterizeBuilding_Rotation270Degrees_GeneratesRotatedFootprint()
     {
-        var placement = new WorldTilePlacement(
-            CenterX: 50, CenterZ: 50,
-            WidthTiles: 4, DepthTiles: 6,
-            RotationDegrees: 270.0, AlignmentHint: "");
+        var placement = new WorldTilePlacement
+        {
+            CenterX = 50, CenterZ = 50,
+            WidthTiles = 4, DepthTiles = 6,
+            RotationDegrees = 270.0, AlignmentHint = ""
+        };
         
         var footprint = BuildingPlacer.RasterizeBuilding(placement, TestGridWidth, TestGridHeight);
         
@@ -161,10 +175,12 @@ public class BuildingPlacerTests
     [Fact]
     public void RasterizeBuilding_Rotation315Degrees_GeneratesRotatedFootprint()
     {
-        var placement = new WorldTilePlacement(
-            CenterX: 50, CenterZ: 50,
-            WidthTiles: 5, DepthTiles: 5,
-            RotationDegrees: 315.0, AlignmentHint: "");
+        var placement = new WorldTilePlacement
+        {
+            CenterX = 50, CenterZ = 50,
+            WidthTiles = 5, DepthTiles = 5,
+            RotationDegrees = 315.0, AlignmentHint = ""
+        };
         
         var footprint = BuildingPlacer.RasterizeBuilding(placement, TestGridWidth, TestGridHeight);
         
@@ -179,10 +195,12 @@ public class BuildingPlacerTests
     [Fact]
     public void RasterizeBuilding_CenterAtGridCorner_ClampsToGridBounds()
     {
-        var placement = new WorldTilePlacement(
-            CenterX: 1, CenterZ: 1,
-            WidthTiles: 6, DepthTiles: 6,
-            RotationDegrees: 0.0, AlignmentHint: "");
+        var placement = new WorldTilePlacement
+        {
+            CenterX = 1, CenterZ = 1,
+            WidthTiles = 6, DepthTiles = 6,
+            RotationDegrees = 0.0, AlignmentHint = ""
+        };
         
         var footprint = BuildingPlacer.RasterizeBuilding(placement, TestGridWidth, TestGridHeight);
         
@@ -194,10 +212,12 @@ public class BuildingPlacerTests
     [Fact]
     public void RasterizeBuilding_BuildingExceedsMaxX_ClampsToGridBounds()
     {
-        var placement = new WorldTilePlacement(
-            CenterX: TestGridWidth - 2, CenterZ: 50,
-            WidthTiles: 6, DepthTiles: 4,
-            RotationDegrees: 0.0, AlignmentHint: "");
+        var placement = new WorldTilePlacement
+        {
+            CenterX = TestGridWidth - 2, CenterZ = 50,
+            WidthTiles = 6, DepthTiles = 4,
+            RotationDegrees = 0.0, AlignmentHint = ""
+        };
         
         var footprint = BuildingPlacer.RasterizeBuilding(placement, TestGridWidth, TestGridHeight);
         
@@ -212,10 +232,12 @@ public class BuildingPlacerTests
     [Fact]
     public void RasterizeBuilding_BuildingExceedsMaxZ_ClampsToGridBounds()
     {
-        var placement = new WorldTilePlacement(
-            CenterX: 50, CenterZ: TestGridHeight - 2,
-            WidthTiles: 4, DepthTiles: 6,
-            RotationDegrees: 0.0, AlignmentHint: "");
+        var placement = new WorldTilePlacement
+        {
+            CenterX = 50, CenterZ = TestGridHeight - 2,
+            WidthTiles = 4, DepthTiles = 6,
+            RotationDegrees = 0.0, AlignmentHint = ""
+        };
         
         var footprint = BuildingPlacer.RasterizeBuilding(placement, TestGridWidth, TestGridHeight);
         
@@ -230,10 +252,12 @@ public class BuildingPlacerTests
     [Fact]
     public void RasterizeBuilding_BuildingCompletelyOutOfBounds_ReturnsEmptyFootprint()
     {
-        var placement = new WorldTilePlacement(
-            CenterX: TestGridWidth + 50, CenterZ: TestGridHeight + 50,
-            WidthTiles: 4, DepthTiles: 4,
-            RotationDegrees: 0.0, AlignmentHint: "");
+        var placement = new WorldTilePlacement
+        {
+            CenterX = TestGridWidth + 50, CenterZ = TestGridHeight + 50,
+            WidthTiles = 4, DepthTiles = 4,
+            RotationDegrees = 0.0, AlignmentHint = ""
+        };
         
         var footprint = BuildingPlacer.RasterizeBuilding(placement, TestGridWidth, TestGridHeight);
         

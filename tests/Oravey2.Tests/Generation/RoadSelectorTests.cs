@@ -41,14 +41,14 @@ public class RoadSelectorTests
             LandUseZones = []
         };
 
-        var curatedA = new CuratedTown("HavenA", "TownA", 52.50, 4.95, new Vector2(0, 0),
-            "Safe town", TownCategory.Town, 5000, DestructionLevel.Pristine);
-        var curatedB = new CuratedTown("HavenB", "TownB", 52.60, 5.05, new Vector2(8000, 11000),
-            "Military base", TownCategory.Town, 3000, DestructionLevel.Moderate);
+        var curatedA = new CuratedTown { GameName = "HavenA", RealName = "TownA", Latitude = 52.50, Longitude = 4.95, GamePosition = new Vector2(0, 0),
+            Description = "Safe town", Size = TownCategory.Town, Inhabitants = 5000, Destruction = DestructionLevel.Pristine };
+        var curatedB = new CuratedTown { GameName = "HavenB", RealName = "TownB", Latitude = 52.60, Longitude = 5.05, GamePosition = new Vector2(8000, 11000),
+            Description = "Military base", Size = TownCategory.Town, Inhabitants = 3000, Destruction = DestructionLevel.Moderate };
 
-        var curated = new CuratedRegion("TestRegion",
-            new Vector2(-5000, -5000), new Vector2(55000, 55000),
-            [curatedA, curatedB]);
+        var curated = new CuratedRegion { Name = "TestRegion",
+            BoundsMin = new Vector2(-5000, -5000), BoundsMax = new Vector2(55000, 55000),
+            Towns = [curatedA, curatedB] };
 
         return (region, curated);
     }

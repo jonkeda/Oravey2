@@ -80,14 +80,15 @@ public class TownSpatialSpecificationTests
     [Fact]
     public void TownDesign_IncludesSpatialSpec_Nullable()
     {
-        var design = new TownDesign(
-            TownName: "TestTown",
-            Landmarks: [],
-            KeyLocations: [],
-            LayoutStyle: "grid",
-            Hazards: [],
-            SpatialSpec: null
-        );
+        var design = new TownDesign
+        {
+            TownName = "TestTown",
+            Landmarks = [],
+            KeyLocations = [],
+            LayoutStyle = "grid",
+            Hazards = [],
+            SpatialSpec = null
+        };
 
         Assert.Null(design.SpatialSpec);
     }
@@ -99,14 +100,15 @@ public class TownSpatialSpecificationTests
         var network = new RoadNetwork { RoadWidthMeters = 10.0f };
         var spec = new TownSpatialSpecification { RealWorldBounds = bbox, RoadNetwork = network, TerrainDescription = "flat" };
 
-        var design = new TownDesign(
-            TownName: "TestTown",
-            Landmarks: [],
-            KeyLocations: [],
-            LayoutStyle: "grid",
-            Hazards: [],
-            SpatialSpec: spec
-        );
+        var design = new TownDesign
+        {
+            TownName = "TestTown",
+            Landmarks = [],
+            KeyLocations = [],
+            LayoutStyle = "grid",
+            Hazards = [],
+            SpatialSpec = spec
+        };
 
         Assert.NotNull(design.SpatialSpec);
         Assert.Equal(52.0, design.SpatialSpec.RealWorldBounds.MinLat);

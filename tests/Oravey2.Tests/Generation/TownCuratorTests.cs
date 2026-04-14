@@ -121,9 +121,9 @@ public class TownCuratorTests
     public void Validate_UsesParamsForMinMax()
     {
         var towns = Enumerable.Range(0, 5).Select(i =>
-            new CuratedTown($"T{i}", $"R{i}", 0, 0,
-                new Vector2(i * 20000f, 0), "desc",
-                TownCategory.Village, 1000, DestructionLevel.Moderate)).ToList();
+            new CuratedTown { GameName = $"T{i}", RealName = $"R{i}", Latitude = 0, Longitude = 0,
+                GamePosition = new Vector2(i * 20000f, 0), Description = "desc",
+                Size = TownCategory.Village, Inhabitants = 1000, Destruction = DestructionLevel.Moderate }).ToList();
 
         var narrow = DefaultParams with { MinTowns = 3 };
         TownCurator.Validate(towns, narrow); // should not throw with min=3

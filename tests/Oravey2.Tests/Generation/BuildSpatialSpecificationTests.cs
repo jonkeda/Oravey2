@@ -274,14 +274,14 @@ public class BuildSpatialSpecificationTests
     {
         var landmarks = new List<LandmarkBuilding>
         {
-            new("Cathedral", "A ruined cathedral", "large", "Original Cathedral", "Gothic ruin", "centre")
+            new LandmarkBuilding { Name = "Cathedral", VisualDescription = "A ruined cathedral", SizeCategory = "large", OriginalDescription = "Original Cathedral", MeshyPrompt = "Gothic ruin", PositionHint = "centre" }
         };
 
         var locations = new List<KeyLocation>
         {
-            new("Market", "shop", "Marketplace ruins", "medium", "Former market square", "Trading hub", "centre, on the main square")
+            new KeyLocation { Name = "Market", Purpose = "shop", VisualDescription = "Marketplace ruins", SizeCategory = "medium", OriginalDescription = "Former market square", MeshyPrompt = "Trading hub", PositionHint = "centre, on the main square" }
         };
 
-        return new TownDesign("Purgatory", landmarks, locations, "grid", []);
+        return new TownDesign { TownName = "Purgatory", Landmarks = landmarks, KeyLocations = locations, LayoutStyle = "grid", Hazards = [] };
     }
 }

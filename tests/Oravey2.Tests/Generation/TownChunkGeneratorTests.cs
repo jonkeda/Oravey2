@@ -37,17 +37,19 @@ public class TownChunkGeneratorTests
                 [new Vector2(-100, -100), new Vector2(100, -100), new Vector2(100, 100), new Vector2(-100, 100)])]
         };
 
-        var town = new CuratedTown(
-            GameName: "Haven",
-            RealName: "TestTown",
-            Latitude: 52.50,
-            Longitude: 4.95,
-            GamePosition: new Vector2(0, 0),
-            Description: "A fortified market town",
-            Size: TownCategory.Town,
-            Inhabitants: 5000,
-            Destruction: DestructionLevel.Pristine,
-            BoundaryPolygon: boundary);
+        var town = new CuratedTown
+        {
+            GameName = "Haven",
+            RealName = "TestTown",
+            Latitude = 52.50,
+            Longitude = 4.95,
+            GamePosition = new Vector2(0, 0),
+            Description = "A fortified market town",
+            Size = TownCategory.Town,
+            Inhabitants = 5000,
+            Destruction = DestructionLevel.Pristine,
+            BoundaryPolygon = boundary
+        };
 
         return (town, region.Towns[0], region);
     }

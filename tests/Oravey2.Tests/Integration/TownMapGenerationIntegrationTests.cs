@@ -66,29 +66,33 @@ public class TownMapGenerationIntegrationTests
     /// <summary>Create a test town design with landmarks and key locations</summary>
     private static TownDesign CreateTestTownDesign(int locationCount = 3)
     {
-        return new(
-            "TestTown",
-            [new LandmarkBuilding("Fort Test", "A ruined fortress", "large", "", "", "town_centre")],
-            Enumerable.Range(0, locationCount)
-                .Select(i => new KeyLocation($"Location_{i}", "shop", "A building", "medium", "", "", "main_square"))
+        return new TownDesign
+        {
+            TownName = "TestTown",
+            Landmarks = [new LandmarkBuilding { Name = "Fort Test", VisualDescription = "A ruined fortress", SizeCategory = "large", PositionHint = "town_centre" }],
+            KeyLocations = Enumerable.Range(0, locationCount)
+                .Select(i => new KeyLocation { Name = $"Location_{i}", Purpose = "shop", VisualDescription = "A building", SizeCategory = "medium", PositionHint = "main_square" })
                 .ToList(),
-            "organic",
-            [new EnvironmentalHazard("flooding", "Water rises", "south-west waterfront")]);
+            LayoutStyle = "organic",
+            Hazards = [new EnvironmentalHazard { Type = "flooding", Description = "Water rises", LocationHint = "south-west waterfront" }]
+        };
     }
 
     /// <summary>Create a curated town for testing</summary>
     private static CuratedTown CreateTestTown(string name = "TestTown")
     {
-        return new(
-            GameName: name,
-            RealName: name,
-            Latitude: 52.5,
-            Longitude: 4.5,
-            GamePosition: Vector2.Zero,
-            Description: "A test town",
-            Size: TownCategory.Town,
-            Inhabitants: 5000,
-            Destruction: DestructionLevel.Pristine);
+        return new CuratedTown
+        {
+            GameName = name,
+            RealName = name,
+            Latitude = 52.5,
+            Longitude = 4.5,
+            GamePosition = Vector2.Zero,
+            Description = "A test town",
+            Size = TownCategory.Town,
+            Inhabitants = 5000,
+            Destruction = DestructionLevel.Pristine
+        };
     }
 
     /// <summary>Create a minimal region template for testing</summary>
