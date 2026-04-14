@@ -17,12 +17,14 @@ public enum LocationType : byte
 /// Three-tier description for a location: tagline (always present),
 /// summary (generated on first open), dossier (generated on "Read more").
 /// </summary>
-public sealed record LocationDescription(
-    int LocationId,
-    LocationType Type,
-    string Tagline,
-    string? Summary = null,
-    string? Dossier = null,
-    DateTime? SummaryUtc = null,
-    DateTime? DossierUtc = null,
-    string? LlmModel = null);
+public sealed class LocationDescription
+{
+    public int LocationId { get; set; }
+    public LocationType Type { get; set; }
+    public string Tagline { get; set; } = "";
+    public string? Summary { get; set; }
+    public string? Dossier { get; set; }
+    public DateTime? SummaryUtc { get; set; }
+    public DateTime? DossierUtc { get; set; }
+    public string? LlmModel { get; set; }
+}

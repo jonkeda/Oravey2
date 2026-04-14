@@ -190,12 +190,12 @@ public class TradeActionTests
         // Use a custom tree with GiveItemAction as consequence
         var nodes = new Dictionary<string, DialogueNode>
         {
-            ["start"] = new("start", "Questgiver", "Here's your reward!", null,
+            ["start"] = new DialogueNode { Id = "start", Speaker = "Questgiver", Text = "Here's your reward!", Choices =
             [
-                new DialogueChoice("Take reward", null, null, [new GiveItemAction("medkit", 2)]),
-            ]),
+                new DialogueChoice { Text = "Take reward", Consequences = [new GiveItemAction("medkit", 2)] },
+            ] },
         };
-        var tree = new DialogueTree("reward_tree", "start", nodes);
+        var tree = new DialogueTree { Id = "reward_tree", StartNodeId = "start", Nodes = nodes };
         proc.StartDialogue(tree);
 
         proc.SelectChoice(0, ctx);

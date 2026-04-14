@@ -2,8 +2,14 @@ using System.Text.Json.Serialization;
 
 namespace Oravey2.MapGen.Models.Meshy;
 
-public sealed record ImageTo3DRequest(
-    [property: JsonPropertyName("image_url")] string ImageUrl,
-    [property: JsonPropertyName("prompt")] string? Prompt = null,
-    [property: JsonPropertyName("art_style")] string? ArtStyle = null
-);
+public sealed class ImageTo3DRequest
+{
+    [JsonPropertyName("image_url")]
+    public string ImageUrl { get; set; } = "";
+
+    [JsonPropertyName("prompt")]
+    public string? Prompt { get; set; }
+
+    [JsonPropertyName("art_style")]
+    public string? ArtStyle { get; set; }
+}

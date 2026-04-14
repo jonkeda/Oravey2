@@ -51,11 +51,13 @@ public sealed class WildernessChunkGenerator
                 // Tree spawns in forested areas
                 if (flags.HasFlag(TileFlags.Forested) && rng.NextDouble() < 0.3)
                 {
-                    entities.Add(new EntitySpawnInfo(
-                        PrefabId: "tree_deciduous",
-                        LocalX: lx + (float)(rng.NextDouble() * 0.6 - 0.3),
-                        LocalZ: ly + (float)(rng.NextDouble() * 0.6 - 0.3),
-                        RotationY: (float)(rng.NextDouble() * 360)));
+                    entities.Add(new EntitySpawnInfo
+                    {
+                        PrefabId = "tree_deciduous",
+                        LocalX = lx + (float)(rng.NextDouble() * 0.6 - 0.3),
+                        LocalZ = ly + (float)(rng.NextDouble() * 0.6 - 0.3),
+                        RotationY = (float)(rng.NextDouble() * 360)
+                    });
                 }
             }
         }

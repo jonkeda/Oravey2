@@ -21,7 +21,7 @@ public class MeshyClientTests : IAsyncDisposable
     {
         _handler.SetResponse("""{"result":"task_001"}""");
 
-        var req = new TextTo3DRequest("refine", "a stone house", "realistic");
+        var req = new TextTo3DRequest { Mode = "refine", Prompt = "a stone house", ArtStyle = "realistic" };
         var resp = await _client.CreateTextTo3DAsync(req);
 
         Assert.Equal("task_001", resp.Result);
@@ -34,7 +34,7 @@ public class MeshyClientTests : IAsyncDisposable
     {
         _handler.SetResponse("""{"result":"task_002"}""");
 
-        var req = new ImageTo3DRequest("https://example.com/img.png", "a warrior");
+        var req = new ImageTo3DRequest { ImageUrl = "https://example.com/img.png", Prompt = "a warrior" };
         var resp = await _client.CreateImageTo3DAsync(req);
 
         Assert.Equal("task_002", resp.Result);
@@ -46,7 +46,7 @@ public class MeshyClientTests : IAsyncDisposable
     {
         _handler.SetResponse("""{"result":"task_003"}""");
 
-        var req = new RemeshRequest("task_001", ["glb"], TargetPolycount: 5000);
+        var req = new RemeshRequest { InputTaskId = "task_001", TargetFormats = ["glb"], TargetPolycount = 5000 };
         var resp = await _client.CreateRemeshAsync(req);
 
         Assert.Equal("task_003", resp.Result);
@@ -58,7 +58,7 @@ public class MeshyClientTests : IAsyncDisposable
     {
         _handler.SetResponse("""{"result":"task_004"}""");
 
-        var req = new RiggingRequest("task_001");
+        var req = new RiggingRequest { InputTaskId = "task_001" };
         var resp = await _client.CreateRiggingAsync(req);
 
         Assert.Equal("task_004", resp.Result);
@@ -70,7 +70,7 @@ public class MeshyClientTests : IAsyncDisposable
     {
         _handler.SetResponse("""{"result":"task_005"}""");
 
-        var req = new AnimationRequest("walk_cycle");
+        var req = new AnimationRequest { ActionId = "walk_cycle" };
         var resp = await _client.CreateAnimationAsync(req);
 
         Assert.Equal("task_005", resp.Result);
@@ -164,7 +164,7 @@ public class MeshyClientTests : IAsyncDisposable
     {
         _handler.SetResponse("""{"result":"task_auth"}""");
 
-        await _client.CreateTextTo3DAsync(new TextTo3DRequest("preview", "test"));
+        await _client.CreateTextTo3DAsync(new TextTo3DRequest { Mode = "preview", Prompt = "test" });
 
         var authHeader = _handler.LastRequest!.Headers.Authorization;
         Assert.NotNull(authHeader);
@@ -180,7 +180,7 @@ public class MeshyClientTests : IAsyncDisposable
         var progressMessages = new List<MeshyProgress>();
         _client.OnProgress += p => progressMessages.Add(p);
 
-        await _client.CreateTextTo3DAsync(new TextTo3DRequest("refine", "test"));
+        await _client.CreateTextTo3DAsync(new TextTo3DRequest { Mode = "refine", Prompt = "test" });
 
         Assert.Single(progressMessages);
         Assert.Equal(MeshyPhase.Submitting, progressMessages[0].Phase);

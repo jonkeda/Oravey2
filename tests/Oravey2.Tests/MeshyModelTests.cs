@@ -14,7 +14,7 @@ public class MeshyModelTests
     [Fact]
     public void TextTo3DRequest_Serializes_SnakeCase()
     {
-        var req = new TextTo3DRequest("refine", "a medieval house", "realistic");
+        var req = new TextTo3DRequest { Mode = "refine", Prompt = "a medieval house", ArtStyle = "realistic" };
         var json = JsonSerializer.Serialize(req, JsonOptions);
 
         Assert.Contains("\"mode\":\"refine\"", json);
@@ -25,7 +25,7 @@ public class MeshyModelTests
     [Fact]
     public void TextTo3DRequest_OmitsNulls_WhenNotSet()
     {
-        var req = new TextTo3DRequest("preview", "a house");
+        var req = new TextTo3DRequest { Mode = "preview", Prompt = "a house" };
         var json = JsonSerializer.Serialize(req, JsonOptions);
 
         Assert.DoesNotContain("art_style", json);
@@ -35,7 +35,7 @@ public class MeshyModelTests
     [Fact]
     public void ImageTo3DRequest_Serializes_SnakeCase()
     {
-        var req = new ImageTo3DRequest("https://example.com/img.png", "a warrior", "cartoon");
+        var req = new ImageTo3DRequest { ImageUrl = "https://example.com/img.png", Prompt = "a warrior", ArtStyle = "cartoon" };
         var json = JsonSerializer.Serialize(req, JsonOptions);
 
         Assert.Contains("\"image_url\":\"https://example.com/img.png\"", json);
@@ -46,7 +46,7 @@ public class MeshyModelTests
     [Fact]
     public void RemeshRequest_Serializes_WithPolycount()
     {
-        var req = new RemeshRequest("task_123", ["glb", "fbx"], TargetPolycount: 5000);
+        var req = new RemeshRequest { InputTaskId = "task_123", TargetFormats = ["glb", "fbx"], TargetPolycount = 5000 };
         var json = JsonSerializer.Serialize(req, JsonOptions);
 
         Assert.Contains("\"input_task_id\":\"task_123\"", json);
@@ -57,7 +57,7 @@ public class MeshyModelTests
     [Fact]
     public void RiggingRequest_Serializes_SnakeCase()
     {
-        var req = new RiggingRequest("task_456");
+        var req = new RiggingRequest { InputTaskId = "task_456" };
         var json = JsonSerializer.Serialize(req, JsonOptions);
 
         Assert.Contains("\"input_task_id\":\"task_456\"", json);
@@ -66,7 +66,7 @@ public class MeshyModelTests
     [Fact]
     public void AnimationRequest_Serializes_SnakeCase()
     {
-        var req = new AnimationRequest("walk_cycle");
+        var req = new AnimationRequest { ActionId = "walk_cycle" };
         var json = JsonSerializer.Serialize(req, JsonOptions);
 
         Assert.Contains("\"action_id\":\"walk_cycle\"", json);
@@ -156,17 +156,21 @@ public class MeshyModelTests
     [Fact]
     public void TextTo3DRequest_RoundTrip_PreservesValues()
     {
-        var original = new TextTo3DRequest("refine", "stone castle", "pbr", true);
+        var original = new TextTo3DRequest { Mode = "refine", Prompt = "stone castle", ArtStyle = "pbr", ShouldRemesh = true };
         var json = JsonSerializer.Serialize(original, JsonOptions);
         var deserialized = JsonSerializer.Deserialize<TextTo3DRequest>(json, JsonOptions);
 
-        Assert.Equal(original, deserialized);
+        Assert.NotNull(deserialized);
+        Assert.Equal(original.Mode, deserialized.Mode);
+        Assert.Equal(original.Prompt, deserialized.Prompt);
+        Assert.Equal(original.ArtStyle, deserialized.ArtStyle);
+        Assert.Equal(original.ShouldRemesh, deserialized.ShouldRemesh);
     }
 
     [Fact]
     public void MeshyProgress_CreatesCorrectly()
     {
-        var progress = new MeshyProgress(MeshyPhase.Processing, "Working...", 42);
+        var progress = new MeshyProgress { Phase = MeshyPhase.Processing, Message = "Working...", PercentComplete = 42 };
 
         Assert.Equal(MeshyPhase.Processing, progress.Phase);
         Assert.Equal("Working...", progress.Message);
@@ -176,7 +180,7 @@ public class MeshyModelTests
     [Fact]
     public void MeshyProgress_AllowsNullPercent()
     {
-        var progress = new MeshyProgress(MeshyPhase.Submitting, "Starting", null);
+        var progress = new MeshyProgress { Phase = MeshyPhase.Submitting, Message = "Starting" };
 
         Assert.Null(progress.PercentComplete);
     }

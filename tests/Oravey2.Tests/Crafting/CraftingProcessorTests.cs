@@ -26,10 +26,12 @@ public class CraftingProcessorTests
         SkillType? skill = null, int skillThreshold = 0,
         StationType station = StationType.Workbench)
     {
-        return new RecipeDefinition(
-            "craft_stimpak", "Craft Stimpak", "stimpak", 1,
-            new Dictionary<string, int> { { "antiseptic", 1 }, { "syringe", 1 } },
-            station, skill, skillThreshold);
+        return new RecipeDefinition
+        {
+            Id = "craft_stimpak", Name = "Craft Stimpak", OutputItemId = "stimpak", OutputCount = 1,
+            Ingredients = new Dictionary<string, int> { { "antiseptic", 1 }, { "syringe", 1 } },
+            RequiredStation = station, RequiredSkill = skill, SkillThreshold = skillThreshold,
+        };
     }
 
     private ItemInstance CreateItem(string id, int count) =>
@@ -63,10 +65,12 @@ public class CraftingProcessorTests
         inv.Add(new ItemInstance(MakeItem("antiseptic")));
         inv.Add(new ItemInstance(MakeItem("syringe")));
 
-        var recipe = new RecipeDefinition(
-            "r", "R", "out", 1,
-            new Dictionary<string, int> { { "antiseptic", 5 } },
-            StationType.Workbench);
+        var recipe = new RecipeDefinition
+        {
+            Id = "r", Name = "R", OutputItemId = "out", OutputCount = 1,
+            Ingredients = new Dictionary<string, int> { { "antiseptic", 5 } },
+            RequiredStation = StationType.Workbench,
+        };
 
         Assert.False(proc.CanCraft(inv, skills, recipe, StationType.Workbench));
     }
@@ -162,10 +166,12 @@ public class CraftingProcessorTests
         inv.Add(new ItemInstance(MakeItem("antiseptic")));
         inv.Add(new ItemInstance(MakeItem("syringe")));
 
-        var recipe = new RecipeDefinition(
-            "r", "R", "ammo_9mm", 10,
-            new Dictionary<string, int> { { "antiseptic", 1 }, { "syringe", 1 } },
-            StationType.Workbench);
+        var recipe = new RecipeDefinition
+        {
+            Id = "r", Name = "R", OutputItemId = "ammo_9mm", OutputCount = 10,
+            Ingredients = new Dictionary<string, int> { { "antiseptic", 1 }, { "syringe", 1 } },
+            RequiredStation = StationType.Workbench,
+        };
 
         ItemCraftedEvent? received = null;
         bus.Subscribe<ItemCraftedEvent>(e => received = e);

@@ -48,13 +48,15 @@ public sealed class SparseRegionGenerator
                 _ => "outpost_radio_tower"
             };
 
-            chunk.Entities.Add(new EntitySpawnInfo(
-                PrefabId: prefab,
-                LocalX: Math.Clamp(localX, 1, ChunkData.Size - 2),
-                LocalZ: Math.Clamp(localZ, 1, ChunkData.Size - 2),
-                RotationY: rng.Next(4) * 90f,
-                Faction: "neutral",
-                Level: rng.Next(1, 5)));
+            chunk.Entities.Add(new EntitySpawnInfo
+            {
+                PrefabId = prefab,
+                LocalX = Math.Clamp(localX, 1, ChunkData.Size - 2),
+                LocalZ = Math.Clamp(localZ, 1, ChunkData.Size - 2),
+                RotationY = rng.Next(4) * 90f,
+                Faction = "neutral",
+                Level = rng.Next(1, 5)
+            });
         }
 
         return chunks;

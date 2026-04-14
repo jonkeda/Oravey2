@@ -32,7 +32,7 @@ public class NpcInteractionTests
     [Fact]
     public void NpcComponent_HoldsDefinition()
     {
-        var def = new NpcDefinition("merchant", "Mara", NpcRole.Merchant, "merchant_dialogue");
+        var def = new NpcDefinition { Id = "merchant", DisplayName = "Mara", Role = NpcRole.Merchant, DialogueTreeId = "merchant_dialogue" };
         var component = new NpcComponent { Definition = def };
 
         Assert.Equal("merchant", component.Definition.Id);

@@ -16,20 +16,24 @@ public enum QuestType
     Radiant
 }
 
-public sealed record QuestStage(
-    string Id,
-    string Description,
-    IQuestCondition[] Conditions,
-    IQuestAction[] OnCompleteActions,
-    string? NextStageId,
-    IQuestCondition[] FailConditions,
-    IQuestAction[] OnFailActions);
+public sealed class QuestStage
+{
+    public string Id { get; set; } = "";
+    public string Description { get; set; } = "";
+    public IQuestCondition[] Conditions { get; set; } = [];
+    public IQuestAction[] OnCompleteActions { get; set; } = [];
+    public string? NextStageId { get; set; }
+    public IQuestCondition[] FailConditions { get; set; } = [];
+    public IQuestAction[] OnFailActions { get; set; } = [];
+}
 
-public sealed record QuestDefinition(
-    string Id,
-    string Title,
-    string Description,
-    QuestType Type,
-    string FirstStageId,
-    IReadOnlyDictionary<string, QuestStage> Stages,
-    int XPReward = 0);
+public sealed class QuestDefinition
+{
+    public string Id { get; set; } = "";
+    public string Title { get; set; } = "";
+    public string Description { get; set; } = "";
+    public QuestType Type { get; set; }
+    public string FirstStageId { get; set; } = "";
+    public IReadOnlyDictionary<string, QuestStage> Stages { get; set; } = new Dictionary<string, QuestStage>();
+    public int XPReward { get; set; }
+}

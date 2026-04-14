@@ -30,27 +30,33 @@ public class QuestProcessorTests
         IQuestCondition[]? stage2Conditions = null,
         int xpReward = 0)
     {
-        var stage1 = new QuestStage(
-            "s1", "Stage 1",
-            stage1Conditions ?? [],
-            stage1OnComplete ?? [],
-            "s2",
-            stage1FailConditions ?? [],
-            stage1OnFail ?? []);
+        var stage1 = new QuestStage
+        {
+            Id = "s1", Description = "Stage 1",
+            Conditions = stage1Conditions ?? [],
+            OnCompleteActions = stage1OnComplete ?? [],
+            NextStageId = "s2",
+            FailConditions = stage1FailConditions ?? [],
+            OnFailActions = stage1OnFail ?? [],
+        };
 
-        var stage2 = new QuestStage(
-            "s2", "Stage 2",
-            stage2Conditions ?? [],
-            [],
-            null, // last stage
-            [],
-            []);
+        var stage2 = new QuestStage
+        {
+            Id = "s2", Description = "Stage 2",
+            Conditions = stage2Conditions ?? [],
+            OnCompleteActions = [],
+            NextStageId = null,
+            FailConditions = [],
+            OnFailActions = [],
+        };
 
-        return new QuestDefinition(
-            "test_quest", "Test Quest", "A test quest",
-            QuestType.Side, "s1",
-            new Dictionary<string, QuestStage> { ["s1"] = stage1, ["s2"] = stage2 },
-            xpReward);
+        return new QuestDefinition
+        {
+            Id = "test_quest", Title = "Test Quest", Description = "A test quest",
+            Type = QuestType.Side, FirstStageId = "s1",
+            Stages = new Dictionary<string, QuestStage> { ["s1"] = stage1, ["s2"] = stage2 },
+            XPReward = xpReward,
+        };
     }
 
     private static QuestDefinition MakeSingleStageQuest(
@@ -60,19 +66,23 @@ public class QuestProcessorTests
         IQuestAction[]? onFail = null,
         int xpReward = 0)
     {
-        var stage = new QuestStage(
-            "s1", "Only stage",
-            conditions ?? [],
-            onComplete ?? [],
-            null,
-            failConditions ?? [],
-            onFail ?? []);
+        var stage = new QuestStage
+        {
+            Id = "s1", Description = "Only stage",
+            Conditions = conditions ?? [],
+            OnCompleteActions = onComplete ?? [],
+            NextStageId = null,
+            FailConditions = failConditions ?? [],
+            OnFailActions = onFail ?? [],
+        };
 
-        return new QuestDefinition(
-            "test_quest", "Test", "Test",
-            QuestType.Side, "s1",
-            new Dictionary<string, QuestStage> { ["s1"] = stage },
-            xpReward);
+        return new QuestDefinition
+        {
+            Id = "test_quest", Title = "Test", Description = "Test",
+            Type = QuestType.Side, FirstStageId = "s1",
+            Stages = new Dictionary<string, QuestStage> { ["s1"] = stage },
+            XPReward = xpReward,
+        };
     }
 
     // --- StartQuest ---

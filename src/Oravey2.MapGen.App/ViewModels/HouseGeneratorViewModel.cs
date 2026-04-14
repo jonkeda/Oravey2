@@ -84,14 +84,14 @@ public sealed class HouseGeneratorViewModel : AppBaseViewModel
             // Step 1: Create task (image-to-3D or text-to-3D)
             if (!string.IsNullOrWhiteSpace(ImageUrl))
             {
-                var req = new ImageTo3DRequest(ImageUrl, Prompt, ArtStyle);
+                var req = new ImageTo3DRequest { ImageUrl = ImageUrl, Prompt = Prompt, ArtStyle = ArtStyle };
                 var resp = await _meshyClient.CreateImageTo3DAsync(req, _cts.Token);
                 taskId = resp.Result;
                 AppendLog($"Image-to-3D task created: {taskId}");
             }
             else
             {
-                var req = new TextTo3DRequest("refine", Prompt, ArtStyle);
+                var req = new TextTo3DRequest { Mode = "refine", Prompt = Prompt, ArtStyle = ArtStyle };
                 var resp = await _meshyClient.CreateTextTo3DAsync(req, _cts.Token);
                 taskId = resp.Result;
                 AppendLog($"Text-to-3D task created: {taskId}");
@@ -119,7 +119,7 @@ public sealed class HouseGeneratorViewModel : AppBaseViewModel
             if (ShouldRemesh && finalStatus?.Status == "SUCCEEDED")
             {
                 AppendLog("Starting remesh...");
-                var remeshReq = new RemeshRequest(taskId, ["glb", "fbx"], TargetPolycount: TargetPolycount);
+                var remeshReq = new RemeshRequest { InputTaskId = taskId, TargetFormats = ["glb", "fbx"], TargetPolycount = TargetPolycount };
                 var remeshResp = await _meshyClient.CreateRemeshAsync(remeshReq, _cts.Token);
                 var remeshTaskId = remeshResp.Result;
                 AppendLog($"Remesh task created: {remeshTaskId}");

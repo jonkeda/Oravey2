@@ -123,21 +123,22 @@ public sealed class ContentPackLoader
         var nodes = new Dictionary<string, DialogueNode>();
         foreach (var (nodeId, nodeJson) in j.Nodes)
         {
-            nodes[nodeId] = new DialogueNode(
-                Id: nodeId,
-                Speaker: nodeJson.Speaker,
-                Text: nodeJson.Text,
-                Portrait: nodeJson.Portrait,
-                Choices: nodeJson.Choices.Select(MapChoice).ToArray());
+            nodes[nodeId] = new DialogueNode {
+                Id = nodeId,
+                Speaker = nodeJson.Speaker,
+                Text = nodeJson.Text,
+                Portrait = nodeJson.Portrait,
+                Choices = nodeJson.Choices.Select(MapChoice).ToArray() };
         }
-        return new DialogueTree(j.Id, j.StartNodeId, nodes);
+        return new DialogueTree { Id = j.Id, StartNodeId = j.StartNodeId, Nodes = nodes };
     }
 
-    private static DialogueChoice MapChoice(DialogueChoiceJson j) => new(
-        Text: j.Text,
-        NextNodeId: j.NextNodeId,
-        Condition: j.Condition != null ? MapCondition(j.Condition) : null,
-        Consequences: j.Consequences?.Select(MapConsequence).ToArray() ?? []);
+    private static DialogueChoice MapChoice(DialogueChoiceJson j) => new DialogueChoice {
+        Text = j.Text,
+        NextNodeId = j.NextNodeId,
+        Condition = j.Condition != null ? MapCondition(j.Condition) : null,
+        Consequences = j.Consequences?.Select(MapConsequence).ToArray() ?? []
+    };
 
     private static IDialogueCondition MapCondition(ConditionJson j) => j.Type switch
     {
@@ -180,25 +181,27 @@ public sealed class ContentPackLoader
         return quests.ToArray();
     }
 
-    private static QuestDefinition MapQuest(QuestJson j) => new(
-        Id: j.Id,
-        Title: j.Title,
-        Description: j.Description,
-        Type: Enum.Parse<QuestType>(j.Type, ignoreCase: true),
-        FirstStageId: j.FirstStageId,
-        Stages: j.Stages.ToDictionary(
+    private static QuestDefinition MapQuest(QuestJson j) => new QuestDefinition {
+        Id = j.Id,
+        Title = j.Title,
+        Description = j.Description,
+        Type = Enum.Parse<QuestType>(j.Type, ignoreCase: true),
+        FirstStageId = j.FirstStageId,
+        Stages = j.Stages.ToDictionary(
             kvp => kvp.Key,
             kvp => MapQuestStage(kvp.Key, kvp.Value)),
-        XPReward: j.XpReward ?? 0);
+        XPReward = j.XpReward ?? 0
+    };
 
-    private static QuestStage MapQuestStage(string id, QuestStageJson j) => new(
-        Id: id,
-        Description: j.Description,
-        Conditions: j.Conditions?.Select(MapQuestCondition).ToArray() ?? [],
-        OnCompleteActions: j.OnCompleteActions?.Select(MapQuestAction).ToArray() ?? [],
-        NextStageId: j.NextStageId,
-        FailConditions: j.FailConditions?.Select(MapQuestCondition).ToArray() ?? [],
-        OnFailActions: j.OnFailActions?.Select(MapQuestAction).ToArray() ?? []);
+    private static QuestStage MapQuestStage(string id, QuestStageJson j) => new QuestStage {
+        Id = id,
+        Description = j.Description,
+        Conditions = j.Conditions?.Select(MapQuestCondition).ToArray() ?? [],
+        OnCompleteActions = j.OnCompleteActions?.Select(MapQuestAction).ToArray() ?? [],
+        NextStageId = j.NextStageId,
+        FailConditions = j.FailConditions?.Select(MapQuestCondition).ToArray() ?? [],
+        OnFailActions = j.OnFailActions?.Select(MapQuestAction).ToArray() ?? []
+    };
 
     private static IQuestCondition MapQuestCondition(QuestConditionJson j) => j.Type switch
     {

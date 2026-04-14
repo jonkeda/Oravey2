@@ -2,6 +2,8 @@ using System.Text.Json.Serialization;
 
 namespace Oravey2.MapGen.Models.Meshy;
 
-public sealed record RiggingRequest(
-    [property: JsonPropertyName("input_task_id")] string InputTaskId
-);
+public sealed class RiggingRequest
+{
+    [JsonPropertyName("input_task_id")]
+    public string InputTaskId { get; set; } = "";
+}

@@ -7,7 +7,7 @@ public class NpcDefinitionTests
     [Fact]
     public void NpcDefinition_Creates_WithCorrectProperties()
     {
-        var def = new NpcDefinition("elder", "Elder Tomas", NpcRole.QuestGiver, "elder_dialogue");
+        var def = new NpcDefinition { Id = "elder", DisplayName = "Elder Tomas", Role = NpcRole.QuestGiver, DialogueTreeId = "elder_dialogue" };
 
         Assert.Equal("elder", def.Id);
         Assert.Equal("Elder Tomas", def.DisplayName);
@@ -18,30 +18,33 @@ public class NpcDefinitionTests
     [Fact]
     public void NpcDefinition_QuestGiver_Role()
     {
-        var def = new NpcDefinition("elder", "Elder Tomas", NpcRole.QuestGiver, "elder_dialogue");
+        var def = new NpcDefinition { Id = "elder", DisplayName = "Elder Tomas", Role = NpcRole.QuestGiver, DialogueTreeId = "elder_dialogue" };
         Assert.Equal(NpcRole.QuestGiver, def.Role);
     }
 
     [Fact]
     public void NpcDefinition_Merchant_Role()
     {
-        var def = new NpcDefinition("merchant", "Mara", NpcRole.Merchant, "merchant_dialogue");
+        var def = new NpcDefinition { Id = "merchant", DisplayName = "Mara", Role = NpcRole.Merchant, DialogueTreeId = "merchant_dialogue" };
         Assert.Equal(NpcRole.Merchant, def.Role);
     }
 
     [Fact]
     public void NpcDefinition_Civilian_Role()
     {
-        var def = new NpcDefinition("civilian_1", "Settler", NpcRole.Civilian, "civilian_dialogue");
+        var def = new NpcDefinition { Id = "civilian_1", DisplayName = "Settler", Role = NpcRole.Civilian, DialogueTreeId = "civilian_dialogue" };
         Assert.Equal(NpcRole.Civilian, def.Role);
     }
 
     [Fact]
     public void NpcDefinition_Equality()
     {
-        var a = new NpcDefinition("elder", "Elder Tomas", NpcRole.QuestGiver, "elder_dialogue");
-        var b = new NpcDefinition("elder", "Elder Tomas", NpcRole.QuestGiver, "elder_dialogue");
+        var a = new NpcDefinition { Id = "elder", DisplayName = "Elder Tomas", Role = NpcRole.QuestGiver, DialogueTreeId = "elder_dialogue" };
+        var b = new NpcDefinition { Id = "elder", DisplayName = "Elder Tomas", Role = NpcRole.QuestGiver, DialogueTreeId = "elder_dialogue" };
 
-        Assert.Equal(a, b);
+        Assert.Equal(a.Id, b.Id);
+        Assert.Equal(a.DisplayName, b.DisplayName);
+        Assert.Equal(a.Role, b.Role);
+        Assert.Equal(a.DialogueTreeId, b.DialogueTreeId);
     }
 }

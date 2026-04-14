@@ -27,17 +27,17 @@ public class DialogueProcessorTests
     {
         var nodes = new Dictionary<string, DialogueNode>
         {
-            ["start"] = new("start", "NPC", "Hello!", null,
+            ["start"] = new DialogueNode { Id = "start", Speaker = "NPC", Text = "Hello!", Choices =
             [
-                new("Go to next", "middle", null, []),
-                new("Goodbye", null, null, []),
-            ]),
-            ["middle"] = new("middle", "NPC", "Middle node", null,
+                new DialogueChoice { Text = "Go to next", NextNodeId = "middle", Consequences = [] },
+                new DialogueChoice { Text = "Goodbye", Consequences = [] },
+            ] },
+            ["middle"] = new DialogueNode { Id = "middle", Speaker = "NPC", Text = "Middle node", Choices =
             [
-                new("End", null, null, []),
-            ]),
+                new DialogueChoice { Text = "End", Consequences = [] },
+            ] },
         };
-        return new DialogueTree("test_tree", "start", nodes);
+        return new DialogueTree { Id = "test_tree", StartNodeId = "start", Nodes = nodes };
     }
 
     [Fact]
@@ -94,17 +94,19 @@ public class DialogueProcessorTests
     {
         var (proc, ctx, _) = Setup();
         // Speech=20 (default Charisma=5), threshold=40 → fails
-        var conditionedChoice = new DialogueChoice(
-            "[Speech 40] Persuade", "middle",
-            new SkillCheckCondition(SkillType.Speech, 40), []);
-        var normalChoice = new DialogueChoice("Normal", "middle", null, []);
+        var conditionedChoice = new DialogueChoice
+        {
+            Text = "[Speech 40] Persuade", NextNodeId = "middle",
+            Condition = new SkillCheckCondition(SkillType.Speech, 40), Consequences = [],
+        };
+        var normalChoice = new DialogueChoice { Text = "Normal", NextNodeId = "middle", Consequences = [] };
 
         var nodes = new Dictionary<string, DialogueNode>
         {
-            ["start"] = new("start", "NPC", "Hello!", null, [conditionedChoice, normalChoice]),
-            ["middle"] = new("middle", "NPC", "Ok", null, []),
+            ["start"] = new DialogueNode { Id = "start", Speaker = "NPC", Text = "Hello!", Choices = [conditionedChoice, normalChoice] },
+            ["middle"] = new DialogueNode { Id = "middle", Speaker = "NPC", Text = "Ok", Choices = [] },
         };
-        var tree = new DialogueTree("test", "start", nodes);
+        var tree = new DialogueTree { Id = "test", StartNodeId = "start", Nodes = nodes };
 
         proc.StartDialogue(tree);
         var choices = proc.GetAvailableChoices(ctx);
@@ -118,16 +120,18 @@ public class DialogueProcessorTests
     {
         var (proc, ctx, _) = Setup();
         // Speech=20, threshold=20 → passes
-        var conditionedChoice = new DialogueChoice(
-            "[Speech 20] Persuade", "middle",
-            new SkillCheckCondition(SkillType.Speech, 20), []);
+        var conditionedChoice = new DialogueChoice
+        {
+            Text = "[Speech 20] Persuade", NextNodeId = "middle",
+            Condition = new SkillCheckCondition(SkillType.Speech, 20), Consequences = [],
+        };
 
         var nodes = new Dictionary<string, DialogueNode>
         {
-            ["start"] = new("start", "NPC", "Hello!", null, [conditionedChoice]),
-            ["middle"] = new("middle", "NPC", "Ok", null, []),
+            ["start"] = new DialogueNode { Id = "start", Speaker = "NPC", Text = "Hello!", Choices = [conditionedChoice] },
+            ["middle"] = new DialogueNode { Id = "middle", Speaker = "NPC", Text = "Ok", Choices = [] },
         };
-        var tree = new DialogueTree("test", "start", nodes);
+        var tree = new DialogueTree { Id = "test", StartNodeId = "start", Nodes = nodes };
 
         proc.StartDialogue(tree);
         var choices = proc.GetAvailableChoices(ctx);
@@ -164,15 +168,17 @@ public class DialogueProcessorTests
     public void SelectChoice_UnavailableCondition_ReturnsFalse()
     {
         var (proc, ctx, _) = Setup();
-        var conditionedChoice = new DialogueChoice(
-            "[Speech 99] Impossible", null,
-            new SkillCheckCondition(SkillType.Speech, 99), []);
+        var conditionedChoice = new DialogueChoice
+        {
+            Text = "[Speech 99] Impossible",
+            Condition = new SkillCheckCondition(SkillType.Speech, 99), Consequences = [],
+        };
 
         var nodes = new Dictionary<string, DialogueNode>
         {
-            ["start"] = new("start", "NPC", "Hello!", null, [conditionedChoice]),
+            ["start"] = new DialogueNode { Id = "start", Speaker = "NPC", Text = "Hello!", Choices = [conditionedChoice] },
         };
-        var tree = new DialogueTree("test", "start", nodes);
+        var tree = new DialogueTree { Id = "test", StartNodeId = "start", Nodes = nodes };
         proc.StartDialogue(tree);
 
         Assert.False(proc.SelectChoice(0, ctx));
@@ -184,13 +190,13 @@ public class DialogueProcessorTests
     {
         var (proc, ctx, _) = Setup();
         var flagAction = new SetFlagAction("choice_made");
-        var choice = new DialogueChoice("Do it", null, null, [flagAction]);
+        var choice = new DialogueChoice { Text = "Do it", Consequences = [flagAction] };
 
         var nodes = new Dictionary<string, DialogueNode>
         {
-            ["start"] = new("start", "NPC", "Hello!", null, [choice]),
+            ["start"] = new DialogueNode { Id = "start", Speaker = "NPC", Text = "Hello!", Choices = [choice] },
         };
-        var tree = new DialogueTree("test", "start", nodes);
+        var tree = new DialogueTree { Id = "test", StartNodeId = "start", Nodes = nodes };
         proc.StartDialogue(tree);
         proc.SelectChoice(0, ctx);
 

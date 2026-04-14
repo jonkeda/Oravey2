@@ -2,10 +2,16 @@ using System.Numerics;
 
 namespace Oravey2.Core.World;
 
-public sealed record LinearFeatureNode(Vector2 Position, float? OverrideHeight = null);
+public sealed class LinearFeatureNode
+{
+    public Vector2 Position { get; set; }
+    public float? OverrideHeight { get; set; }
+}
 
-public sealed record LinearFeature(
-    LinearFeatureType Type,
-    string Style,
-    float Width,
-    IReadOnlyList<LinearFeatureNode> Nodes);
+public sealed class LinearFeature
+{
+    public LinearFeatureType Type { get; set; }
+    public string Style { get; set; } = "";
+    public float Width { get; set; }
+    public IReadOnlyList<LinearFeatureNode> Nodes { get; set; } = [];
+}

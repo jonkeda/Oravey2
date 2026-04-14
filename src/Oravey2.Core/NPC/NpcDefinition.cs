@@ -2,8 +2,10 @@ namespace Oravey2.Core.NPC;
 
 public enum NpcRole { QuestGiver, Merchant, Civilian }
 
-public record NpcDefinition(
-    string Id,
-    string DisplayName,
-    NpcRole Role,
-    string DialogueTreeId);
+public sealed class NpcDefinition
+{
+    public string Id { get; set; } = "";
+    public string DisplayName { get; set; } = "";
+    public NpcRole Role { get; set; }
+    public string DialogueTreeId { get; set; } = "";
+}

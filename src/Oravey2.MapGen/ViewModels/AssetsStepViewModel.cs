@@ -230,7 +230,7 @@ public class AssetsStepViewModel : BaseViewModel
 
         try
         {
-            var request = new TextTo3DRequest("preview", item.VisualDescription, "realistic");
+            var request = new TextTo3DRequest { Mode = "preview", Prompt = item.VisualDescription, ArtStyle = "realistic" };
             var response = await _meshyClient!.CreateTextTo3DAsync(request);
             var taskId = response.Result;
             item.MeshyTaskId = taskId;

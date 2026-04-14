@@ -39,7 +39,7 @@ public sealed class MeshyClient : IAsyncDisposable
 
     public async Task<MeshyTaskResponse> CreateTextTo3DAsync(TextTo3DRequest request, CancellationToken ct = default)
     {
-        OnProgress?.Invoke(new MeshyProgress(MeshyPhase.Submitting, "Submitting text-to-3D task...", null));
+        OnProgress?.Invoke(new MeshyProgress { Phase = MeshyPhase.Submitting, Message = "Submitting text-to-3D task..." });
         return await PostAsync<TextTo3DRequest, MeshyTaskResponse>("/v2/text-to-3d", request, ct);
     }
 
@@ -57,7 +57,7 @@ public sealed class MeshyClient : IAsyncDisposable
 
     public async Task<MeshyTaskResponse> CreateImageTo3DAsync(ImageTo3DRequest request, CancellationToken ct = default)
     {
-        OnProgress?.Invoke(new MeshyProgress(MeshyPhase.Submitting, "Submitting image-to-3D task...", null));
+        OnProgress?.Invoke(new MeshyProgress { Phase = MeshyPhase.Submitting, Message = "Submitting image-to-3D task..." });
         return await PostAsync<ImageTo3DRequest, MeshyTaskResponse>("/v1/image-to-3d", request, ct);
     }
 
@@ -70,7 +70,7 @@ public sealed class MeshyClient : IAsyncDisposable
 
     public async Task<MeshyTaskResponse> CreateRemeshAsync(RemeshRequest request, CancellationToken ct = default)
     {
-        OnProgress?.Invoke(new MeshyProgress(MeshyPhase.Submitting, "Submitting remesh task...", null));
+        OnProgress?.Invoke(new MeshyProgress { Phase = MeshyPhase.Submitting, Message = "Submitting remesh task..." });
         return await PostAsync<RemeshRequest, MeshyTaskResponse>("/v1/remesh", request, ct);
     }
 
@@ -83,7 +83,7 @@ public sealed class MeshyClient : IAsyncDisposable
 
     public async Task<MeshyTaskResponse> CreateRiggingAsync(RiggingRequest request, CancellationToken ct = default)
     {
-        OnProgress?.Invoke(new MeshyProgress(MeshyPhase.Submitting, "Submitting rigging task...", null));
+        OnProgress?.Invoke(new MeshyProgress { Phase = MeshyPhase.Submitting, Message = "Submitting rigging task..." });
         return await PostAsync<RiggingRequest, MeshyTaskResponse>("/v1/rigging", request, ct);
     }
 
@@ -96,7 +96,7 @@ public sealed class MeshyClient : IAsyncDisposable
 
     public async Task<MeshyTaskResponse> CreateAnimationAsync(AnimationRequest request, CancellationToken ct = default)
     {
-        OnProgress?.Invoke(new MeshyProgress(MeshyPhase.Submitting, "Submitting animation task...", null));
+        OnProgress?.Invoke(new MeshyProgress { Phase = MeshyPhase.Submitting, Message = "Submitting animation task..." });
         return await PostAsync<AnimationRequest, MeshyTaskResponse>("/v1/animation", request, ct);
     }
 
@@ -150,7 +150,7 @@ public sealed class MeshyClient : IAsyncDisposable
                 _ => MeshyPhase.Processing
             };
 
-            OnProgress?.Invoke(new MeshyProgress(phase, $"{status.Status}: {status.Progress}%", status.Progress));
+            OnProgress?.Invoke(new MeshyProgress { Phase = phase, Message = $"{status.Status}: {status.Progress}%", PercentComplete = status.Progress });
 
             yield return status;
 
@@ -163,7 +163,7 @@ public sealed class MeshyClient : IAsyncDisposable
 
     public async Task<byte[]> DownloadModelAsync(string url, CancellationToken ct = default)
     {
-        OnProgress?.Invoke(new MeshyProgress(MeshyPhase.Downloading, "Downloading model...", null));
+        OnProgress?.Invoke(new MeshyProgress { Phase = MeshyPhase.Downloading, Message = "Downloading model..." });
         return await _http.GetByteArrayAsync(url, ct);
     }
 

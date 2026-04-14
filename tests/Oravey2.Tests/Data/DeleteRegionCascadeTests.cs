@@ -32,7 +32,7 @@ public class DeleteRegionCascadeTests : IDisposable
         // Add chunks with children
         var tileData = new byte[] { 1, 2, 3, 4 };
         var chunkId = _store.InsertChunk(rid, 0, 0, tileData);
-        _store.InsertEntitySpawn(chunkId, new EntitySpawnInfo("npc:test", 1, 1, 0));
+        _store.InsertEntitySpawn(chunkId, new EntitySpawnInfo { PrefabId = "npc:test", LocalX = 1, LocalZ = 1, RotationY = 0 });
         _store.InsertChunkLayer(chunkId, MapLayer.Underground, tileData);
 
         // Add region-level children

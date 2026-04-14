@@ -379,11 +379,13 @@ public sealed class TownChunkGenerator
                 }
 
             placed.Add(pos);
-            entities.Add(new EntitySpawnInfo(
-                PrefabId: "building_ruin",
-                LocalX: lx + 1f,
-                LocalZ: ly + 1f,
-                RotationY: rng.Next(4) * 90f));
+            entities.Add(new EntitySpawnInfo
+            {
+                PrefabId = "building_ruin",
+                LocalX = lx + 1f,
+                LocalZ = ly + 1f,
+                RotationY = rng.Next(4) * 90f
+            });
         }
     }
 }

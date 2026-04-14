@@ -2,6 +2,8 @@ using System.Text.Json.Serialization;
 
 namespace Oravey2.MapGen.Models.Meshy;
 
-public sealed record MeshyTaskResponse(
-    [property: JsonPropertyName("result")] string Result
-);
+public sealed class MeshyTaskResponse
+{
+    [JsonPropertyName("result")]
+    public string Result { get; set; } = "";
+}

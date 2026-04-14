@@ -28,15 +28,7 @@ public class SaveMigrationChainTests
         public SaveData Migrate(SaveData data)
         {
             _action?.Invoke(data);
-            data.Header = new SaveHeader
-            {
-                FormatVersion = ToVersion,
-                GameVersion = data.Header.GameVersion,
-                Timestamp = data.Header.Timestamp,
-                PlayerName = data.Header.PlayerName,
-                PlayerLevel = data.Header.PlayerLevel,
-                PlayTime = data.Header.PlayTime,
-            };
+            data.Header.FormatVersion = ToVersion;
             return data;
         }
     }
