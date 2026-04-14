@@ -119,17 +119,19 @@ public sealed class RegionLoader
         var provider = new MapDataProvider(store, _saveStore);
         var chunkRecords = store.GetChunksForRegion(region.Id);
 
-        // Determine grid extents
-        int maxCx = 0, maxCy = 0;
-        foreach (var cr in chunkRecords)
+        if (chunkRecords.Count == 0)
         {
-            if (cr.GridX > maxCx) maxCx = cr.GridX;
-            if (cr.GridY > maxCy) maxCy = cr.GridY;
+            logger.LogWarning("Region '{Region}' has no chunks.", regionName);
+            return;
         }
-        int chunksW = maxCx + 1;
-        int chunksH = maxCy + 1;
 
-        // Build WorldMapData and a combined TileMapData
+        // Cluster-pack: find contiguous groups of chunks and lay them out
+        // adjacently to avoid sparse grids that waste memory.
+        var chunkCoordMap = CompactChunkLayout(chunkRecords);
+        int chunksW = chunkCoordMap.Values.Max(v => v.NewX) + 1;
+        int chunksH = chunkCoordMap.Values.Max(v => v.NewY) + 1;
+
+        // Build WorldMapData and a combined TileMapData (compacted)
         var worldMap = new WorldMapData(chunksW, chunksH);
         int totalW = chunksW * ChunkData.Size;
         int totalH = chunksH * ChunkData.Size;
@@ -139,14 +141,16 @@ public sealed class RegionLoader
         {
             var chunkData = provider.GetChunkData(region.Id, cr.GridX, cr.GridY);
             if (chunkData == null) continue;
-            worldMap.SetChunk(cr.GridX, cr.GridY, chunkData);
+
+            var (newX, newY) = chunkCoordMap[(cr.GridX, cr.GridY)];
+            worldMap.SetChunk(newX, newY, chunkData);
 
             // Copy tiles into the combined grid
             for (int lx = 0; lx < ChunkData.Size; lx++)
             for (int ly = 0; ly < ChunkData.Size; ly++)
             {
-                int gx = cr.GridX * ChunkData.Size + lx;
-                int gy = cr.GridY * ChunkData.Size + ly;
+                int gx = newX * ChunkData.Size + lx;
+                int gy = newY * ChunkData.Size + ly;
                 mapData.SetTileData(gx, gy, chunkData.Tiles.GetTileData(lx, ly));
             }
         }
@@ -160,14 +164,20 @@ public sealed class RegionLoader
         playerMovement.TileSize = tileMapRenderer.TileSize;
         WireTerrainHeight(playerMovement, playerEntity, mapData, tileMapRenderer.TileSize);
 
-        // ---- Entity spawns from DB ----
+        // ---- Entity spawns from DB (remapped to compacted grid) ----
         float tileSize = tileMapRenderer.TileSize;
         float halfWorldX = totalW * tileSize / 2f;
         float halfWorldZ = totalH * tileSize / 2f;
         var worldOffset = new Vector3(-halfWorldX, 0f, -halfWorldZ);
 
         var dbSpawns = store.GetEntitySpawnsForRegion(region.Id);
-        var spawnTuples = dbSpawns.Select(s => (s.ChunkX, s.ChunkY, s.Spawn));
+        var spawnTuples = dbSpawns
+            .Where(s => chunkCoordMap.ContainsKey((s.ChunkX, s.ChunkY)))
+            .Select(s =>
+            {
+                var (nx, ny) = chunkCoordMap[(s.ChunkX, s.ChunkY)];
+                return (nx, ny, s.Spawn);
+            });
         _spawnerDispatcher.SpawnAll(WorldScene, spawnTuples, tileSize, worldOffset);
 
         // ---- Notification feed ----
@@ -232,6 +242,68 @@ public sealed class RegionLoader
     }
 
     // ---- Helpers (copied from ScenarioLoader patterns) ----
+
+    /// <summary>
+    /// Clusters chunks by spatial adjacency and packs them into a compact grid.
+    /// Returns a mapping from original (gridX, gridY) → compacted (newX, newY).
+    /// </summary>
+    internal static Dictionary<(int, int), (int NewX, int NewY)> CompactChunkLayout(
+        IReadOnlyList<ChunkRecord> records)
+    {
+        var result = new Dictionary<(int, int), (int NewX, int NewY)>();
+        if (records.Count == 0) return result;
+
+        // Build set of occupied positions for fast neighbor lookup
+        var occupied = new HashSet<(int, int)>();
+        foreach (var cr in records)
+            occupied.Add((cr.GridX, cr.GridY));
+
+        // Find connected clusters via flood-fill
+        var visited = new HashSet<(int, int)>();
+        var clusters = new List<List<(int X, int Y)>>();
+
+        foreach (var pos in occupied)
+        {
+            if (visited.Contains(pos)) continue;
+
+            var cluster = new List<(int, int)>();
+            var queue = new Queue<(int, int)>();
+            queue.Enqueue(pos);
+            visited.Add(pos);
+
+            while (queue.Count > 0)
+            {
+                var (cx, cy) = queue.Dequeue();
+                cluster.Add((cx, cy));
+
+                // Check 4-connected neighbors (chunks are adjacent within a town)
+                foreach (var (dx, dy) in new[] { (1, 0), (-1, 0), (0, 1), (0, -1) })
+                {
+                    var neighbor = (cx + dx, cy + dy);
+                    if (occupied.Contains(neighbor) && visited.Add(neighbor))
+                        queue.Enqueue(neighbor);
+                }
+            }
+
+            clusters.Add(cluster);
+        }
+
+        // Pack clusters left-to-right with a 1-chunk gap between them
+        int cursorX = 0;
+        foreach (var cluster in clusters)
+        {
+            int cMinX = cluster.Min(c => c.X);
+            int cMinY = cluster.Min(c => c.Y);
+            int cW = cluster.Max(c => c.X) - cMinX + 1;
+
+            foreach (var (ox, oy) in cluster)
+                result[(ox, oy)] = (cursorX + (ox - cMinX), oy - cMinY);
+
+            cursorX += cW + 1; // 1-chunk gap
+        }
+
+        return result;
+    }
 
     private Entity AddEntity(Entity entity, Scene scene)
     {

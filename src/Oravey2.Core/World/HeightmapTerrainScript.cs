@@ -66,6 +66,10 @@ public class HeightmapTerrainScript : SyncScript
         {
             for (int cx = 0; cx < chunksX; cx++)
             {
+                // Skip chunks that have no data in WorldMap (sparse region grids)
+                if (WorldMap != null && WorldMap.GetChunk(cx, cy) == null)
+                    continue;
+
                 // Extract the 16×16 sub-grid for this chunk
                 var chunkTiles = new TileData[chunkSize, chunkSize];
                 for (int lx = 0; lx < chunkSize; lx++)
