@@ -27,6 +27,10 @@ public partial class TownMapsStepView : ContentView
             WatchSelectedTown();
             RefreshPreview();
         }
+        else if (e.PropertyName == nameof(TownMapsStepViewModel.SpatialTransform))
+        {
+            SpatialVizControl.SetSpatialTransform(_viewModel.SpatialTransform);
+        }
     }
 
     private void WatchSelectedTown()

@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Oravey2.Contracts.Spatial;
+using Oravey2.Core.World;
 using Oravey2.MapGen.Generation;
 using Oravey2.MapGen.Pipeline;
 using Oravey2.MapGen.RegionTemplates;
@@ -27,6 +29,7 @@ public class TownMapsStepViewModel : BaseViewModel
                 _generateMapCommand.RaiseCanExecuteChanged();
                 _acceptCommand.RaiseCanExecuteChanged();
                 _regenerateCommand.RaiseCanExecuteChanged();
+                UpdateSpatialPreview();
             }
         }
     }
@@ -131,6 +134,51 @@ public class TownMapsStepViewModel : BaseViewModel
 
     public List<GridSizeMode> GridSizeModes { get; } =
         [GridSizeMode.Auto, GridSizeMode.Small_16, GridSizeMode.Medium_32, GridSizeMode.Large_48, GridSizeMode.Custom];
+
+    // --- Spatial preview ---
+    private TownSpatialTransform? _spatialTransform;
+    public TownSpatialTransform? SpatialTransform
+    {
+        get => _spatialTransform;
+        private set => SetProperty(ref _spatialTransform, value);
+    }
+
+    public bool HasSpatialSpec => SpatialTransform is not null;
+
+    private string _spatialInfoText = "";
+    public string SpatialInfoText
+    {
+        get => _spatialInfoText;
+        private set => SetProperty(ref _spatialInfoText, value);
+    }
+
+    private void UpdateSpatialPreview()
+    {
+        if (SelectedTown?.Design?.SpatialSpec == null)
+        {
+            SpatialTransform = null;
+            SpatialInfoText = "";
+            OnPropertyChanged(nameof(HasSpatialSpec));
+            return;
+        }
+
+        try
+        {
+            var spec = SelectedTown.Design.SpatialSpec;
+            var transform = new TownSpatialTransform(spec, tileSizeMeters: 1.0f, seed: 0);
+            SpatialTransform = transform;
+
+            var (w, h) = transform.GetGridDimensions();
+            var bCount = spec.BuildingPlacements.Count;
+            SpatialInfoText = $"{w}×{h} tiles · {bCount} building(s)";
+        }
+        catch
+        {
+            SpatialTransform = null;
+            SpatialInfoText = "Error loading spatial spec";
+        }
+        OnPropertyChanged(nameof(HasSpatialSpec));
+    }
 
     internal MapGenerationParams BuildParams()
     {
@@ -252,6 +300,11 @@ public class TownMapsStepViewModel : BaseViewModel
             StatusText = $"Error: No design for {item.GameName}.";
             return;
         }
+        if (item.Design.SpatialSpec is null)
+        {
+            StatusText = $"Error: No spatial specification for {item.GameName}. Re-run town design.";
+            return;
+        }
 
         IsRunning = true;
         StatusText = $"Generating map for {item.GameName}...";
@@ -259,14 +312,14 @@ public class TownMapsStepViewModel : BaseViewModel
         try
         {
             var town = BuildCuratedTown(item);
-            var condenser = new TownMapCondenser();
             var region = _regionTemplate ?? CreateMinimalRegion();
-            var result = condenser.Condense(town, item.Design, region, BuildParams());
+            var seed = BuildParams().Seed ?? Random.Shared.Next();
+
+            var result = GenerateSpatialMap(item, town, region, seed);
 
             item.MapResult = result;
             item.HasPendingMap = true;
 
-            // Auto-accept
             SaveMap(item);
             StatusText = $"Map generated for {item.GameName}.";
         }
@@ -292,7 +345,6 @@ public class TownMapsStepViewModel : BaseViewModel
 
         try
         {
-            var condenser = new TownMapCondenser();
             var region = _regionTemplate ?? CreateMinimalRegion();
             var baseParms = BuildParams();
 
@@ -300,16 +352,20 @@ public class TownMapsStepViewModel : BaseViewModel
             {
                 if (_cts.IsCancellationRequested) break;
                 if (item.Design is null) continue;
+                if (item.Design.SpatialSpec is null)
+                {
+                    StatusText = $"Skipped {item.GameName} — no spatial specification.";
+                    continue;
+                }
 
                 done++;
                 StatusText = $"Generating {item.GameName} ({done}/{total})...";
 
                 var town = BuildCuratedTown(item);
-                // Use a unique seed per town if no explicit seed
-                var parms = baseParms.Seed is null
-                    ? baseParms with { Seed = Random.Shared.Next() }
-                    : baseParms with { Seed = baseParms.Seed.Value + done };
-                var result = condenser.Condense(town, item.Design, region, parms);
+                var seed = baseParms.Seed is null
+                    ? Random.Shared.Next()
+                    : baseParms.Seed.Value + done;
+                var result = GenerateSpatialMap(item, town, region, seed);
 
                 item.MapResult = result;
                 item.HasPendingMap = false;
@@ -427,6 +483,50 @@ public class TownMapsStepViewModel : BaseViewModel
         Enum.TryParse<TownCategory>(item.Size, true, out var sz) ? sz : TownCategory.Village,
         item.Inhabitants,
         Enum.TryParse<DestructionLevel>(item.Destruction, true, out var dl) ? dl : DestructionLevel.Moderate);
+
+    internal TownMapResult GenerateSpatialMap(TownMapItem item, CuratedTown town, RegionTemplate region, int seed)
+    {
+        var design = item.Design!;
+        var spec = design.SpatialSpec
+            ?? throw new InvalidOperationException($"Town '{item.GameName}' has no spatial specification.");
+
+        var transform = new TownSpatialTransform(spec, tileSizeMeters: 1.0f, seed: seed);
+        var (gridWidth, gridHeight) = transform.GetGridDimensions();
+        var chunksWide = (gridWidth + 15) / 16;
+        var chunksHigh = (gridHeight + 15) / 16;
+
+        var chunkGen = new TownChunkGenerator();
+        var townEntry = new TownEntry(
+            town.GameName, town.Latitude, town.Longitude,
+            town.Inhabitants, town.GamePosition, town.Size);
+
+        var chunks = new TownChunk[chunksHigh][];
+        for (var cy = 0; cy < chunksHigh; cy++)
+        {
+            chunks[cy] = new TownChunk[chunksWide];
+            for (var cx = 0; cx < chunksWide; cx++)
+            {
+                var result = chunkGen.GenerateWithSpatialSpec(
+                    transform, town, townEntry, cx, cy, region, seed);
+                chunks[cy][cx] = new TownChunk(cx, cy, ExtractTileData(result.Tiles));
+            }
+        }
+
+        var condenser = new TownMapCondenser(design);
+        return condenser.CondenseWithSpatialSpec(chunks, transform);
+    }
+
+    internal static int[][] ExtractTileData(TileMapData tiles)
+    {
+        var data = new int[tiles.Height][];
+        for (var y = 0; y < tiles.Height; y++)
+        {
+            data[y] = new int[tiles.Width];
+            for (var x = 0; x < tiles.Width; x++)
+                data[y][x] = (int)tiles.GetTileData(x, y).Surface;
+        }
+        return data;
+    }
 
     private static RegionTemplate CreateMinimalRegion() => new()
     {

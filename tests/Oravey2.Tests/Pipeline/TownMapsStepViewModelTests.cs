@@ -1,4 +1,6 @@
+using System.Numerics;
 using Oravey2.Contracts.ContentPack;
+using Oravey2.Contracts.Spatial;
 using Oravey2.MapGen.Generation;
 using Oravey2.MapGen.Pipeline;
 using Oravey2.MapGen.RegionTemplates;
@@ -8,13 +10,29 @@ namespace Oravey2.Tests.Pipeline;
 
 public class TownMapsStepViewModelTests
 {
+    private static TownSpatialSpecification CreateTestSpatialSpec() => new(
+        new BoundingBox(52.50, 52.51, 4.96, 4.97),
+        new Dictionary<string, BuildingPlacement>
+        {
+            ["Fort Test"] = new("Fort Test", 52.505, 4.965, 20, 30, 0, "centre"),
+            ["Shop"] = new("Shop", 52.504, 4.963, 8, 6, 0, "on_main_road"),
+            ["Inn"] = new("Inn", 52.506, 4.964, 10, 8, 0, "on_main_road"),
+        },
+        new RoadNetwork(
+            [new Vector2(52.50f, 4.96f), new Vector2(52.51f, 4.97f)],
+            [new RoadEdge(52.50, 4.96, 52.51, 4.97)],
+            6.0f),
+        [],
+        "flat");
+
     private static TownDesign CreateTestDesign(string townName = "TestTown") => new(
         townName,
         [new LandmarkBuilding("Fort Test", "A ruined fortress", "large", "", "", "")],
         [new KeyLocation("Shop", "shop", "A small shop", "small", "", "", ""),
          new KeyLocation("Inn", "rest", "An inn", "medium", "", "", "")],
         "organic",
-        [new EnvironmentalHazard("flooding", "Water rises", "south")]);
+        [new EnvironmentalHazard("flooding", "Water rises", "south")],
+        CreateTestSpatialSpec());
 
     private static PipelineState CreateTestState(string tempDir)
     {

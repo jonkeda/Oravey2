@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Oravey2.MapGen.ViewModels;assembly=Oravey2.MapGen"
              xmlns:gen="clr-namespace:Oravey2.MapGen.Generation;assembly=Oravey2.MapGen"
+             xmlns:local="clr-namespace:Oravey2.MapGen.App.Views"
              x:Class="Oravey2.MapGen.App.Views.TownMapsStepView"
              x:DataType="vm:TownMapsStepViewModel">
     <ScrollView>
@@ -92,6 +93,26 @@
                                     <Label Text="{Binding ThreatLevel, StringFormat='Threat: {0}'}"
                                            FontSize="13" TextColor="{StaticResource Warning}" FontAttributes="Bold" />
                                 </HorizontalStackLayout>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Spatial Layout Preview -->
+                        <Border Style="{StaticResource CardBorder}" Padding="8"
+                                IsVisible="{Binding HasSpatialSpec}"
+                                HeightRequest="300"
+                                x:DataType="vm:TownMapsStepViewModel">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
+                            <VerticalStackLayout Spacing="4">
+                                <HorizontalStackLayout Spacing="8">
+                                    <Label Text="📍 Spatial Layout" FontSize="15"
+                                           FontAttributes="Bold" TextColor="{StaticResource OnSurface}" />
+                                    <Label Text="{Binding SpatialInfoText}" FontSize="12"
+                                           TextColor="{StaticResource OnSurfaceVariant}" VerticalOptions="Center" />
+                                </HorizontalStackLayout>
+                                <local:SpatialSpecVisualizationControl x:Name="SpatialVizControl"
+                                                                        VerticalOptions="FillAndExpand"
+                                                                        HorizontalOptions="FillAndExpand"
+                                                                        AutomationId="TownMapsSpatialPreview" />
                             </VerticalStackLayout>
                         </Border>
 

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Oravey2.Contracts.Spatial;
 
 namespace Oravey2.MapGen.Generation;
 
@@ -10,6 +11,7 @@ public sealed class TownDesignFile
     public List<KeyLocationEntry> KeyLocations { get; set; } = [];
     public string LayoutStyle { get; set; } = "";
     public List<HazardEntry> Hazards { get; set; } = [];
+    public TownSpatialSpecification? SpatialSpec { get; set; }
 
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
@@ -47,6 +49,7 @@ public sealed class TownDesignFile
             Description = h.Description,
             LocationHint = h.LocationHint,
         }).ToList(),
+        SpatialSpec = design.SpatialSpec,
     };
 
     public TownDesign ToTownDesign() => new(
@@ -58,7 +61,8 @@ public sealed class TownDesignFile
             k.Name, k.Purpose, k.VisualDescription, k.SizeCategory,
             k.OriginalDescription, k.MeshyPrompt, k.PositionHint)).ToList(),
         LayoutStyle,
-        Hazards.Select(h => new EnvironmentalHazard(h.Type, h.Description, h.LocationHint)).ToList());
+        Hazards.Select(h => new EnvironmentalHazard(h.Type, h.Description, h.LocationHint)).ToList(),
+        SpatialSpec);
 
     public void Save(string path)
     {
