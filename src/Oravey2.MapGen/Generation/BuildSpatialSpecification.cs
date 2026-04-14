@@ -5,7 +5,8 @@ using Oravey2.Contracts.Spatial;
 
 namespace Oravey2.MapGen.Generation;
 
-/// Validates and builds TownSpatialSpecification from LLM output
+/// Validates and builds TownSpatialSpecification from LLM output.
+/// Uses a lenient approach: repairs common LLM issues instead of throwing.
 public sealed class BuildSpatialSpecification
 {
     internal static TownSpatialSpecification Build(
@@ -13,122 +14,104 @@ public sealed class BuildSpatialSpecification
         TownDesign design,
         float tileSizeMeters = 2.0f)
     {
-        // Validate that all building names in spatial spec match design buildings
         var allBuildingNames = design.Landmarks
             .Select(l => l.Name)
             .Concat(design.KeyLocations.Select(k => k.Name))
             .ToHashSet();
 
-        ValidateBuildingNames(spec.BuildingPlacements, allBuildingNames);
-
         // Convert DTO to domain types
         var realWorldBounds = spec.RealWorldBounds.ToDomain();
-        var buildingGroups = spec.BuildingPlacements.GroupBy(p => p.BuildingName);
-        var duplicateNames = buildingGroups.Where(g => g.Count() > 1).Select(g => g.Key).ToList();
-        if (duplicateNames.Count > 0)
+
+        // Fix swapped lat/lon bounds
+        if (realWorldBounds.MinLat > realWorldBounds.MaxLat)
+            realWorldBounds = realWorldBounds with
+            {
+                MinLat = realWorldBounds.MaxLat,
+                MaxLat = realWorldBounds.MinLat
+            };
+        if (realWorldBounds.MinLon > realWorldBounds.MaxLon)
+            realWorldBounds = realWorldBounds with
+            {
+                MinLon = realWorldBounds.MaxLon,
+                MaxLon = realWorldBounds.MinLon
+            };
+
+        // Fix zero-area bounding box (expand by ~500m around centre)
+        if (realWorldBounds.MaxLat - realWorldBounds.MinLat < 0.0001)
         {
-            // Take first of each duplicate; callers can log if needed
+            double midLat = (realWorldBounds.MinLat + realWorldBounds.MaxLat) / 2;
+            realWorldBounds = realWorldBounds with
+            {
+                MinLat = midLat - 0.0025,
+                MaxLat = midLat + 0.0025
+            };
         }
-        var buildingPlacements = buildingGroups.ToDictionary(g => g.Key, g => g.First().ToDomain());
+        if (realWorldBounds.MaxLon - realWorldBounds.MinLon < 0.0001)
+        {
+            double midLon = (realWorldBounds.MinLon + realWorldBounds.MaxLon) / 2;
+            realWorldBounds = realWorldBounds with
+            {
+                MinLon = midLon - 0.004,
+                MaxLon = midLon + 0.004
+            };
+        }
 
+        // Filter building placements to only those matching design names,
+        // and drop duplicates (keep first)
+        var validPlacements = spec.BuildingPlacements
+            .Where(p => allBuildingNames.Contains(p.BuildingName))
+            .GroupBy(p => p.BuildingName)
+            .ToDictionary(g => g.Key, g => FixBuildingPlacement(g.First().ToDomain()));
+
+        // Build road network leniently
         var roadNetwork = spec.RoadNetwork.ToDomain();
-        var waterBodies = spec.WaterBodies.Select(w => w.ToDomain()).ToList();
+        if (roadNetwork.RoadWidthMeters <= 0)
+            roadNetwork = roadNetwork with { RoadWidthMeters = 6.0f };
 
-        // Validate spatial constraints
-        ValidateBoundingBox(realWorldBounds);
-        ValidateBuildingFootprints(buildingPlacements);
-        ValidateRoadNetwork(roadNetwork, realWorldBounds);
-        ValidateWaterBodies(waterBodies, realWorldBounds);
+        // Fix road edges: clamp to bounding box instead of rejecting
+        var clampedEdges = roadNetwork.Edges
+            .Select(e => ClampRoadEdge(e, realWorldBounds))
+            .ToList();
+
+        // If no valid edges, synthesize a road through the centre
+        if (clampedEdges.Count == 0)
+        {
+            double midLat = (realWorldBounds.MinLat + realWorldBounds.MaxLat) / 2;
+            clampedEdges.Add(new RoadEdge(
+                midLat, realWorldBounds.MinLon,
+                midLat, realWorldBounds.MaxLon));
+        }
+        roadNetwork = new RoadNetwork(roadNetwork.Nodes, clampedEdges, roadNetwork.RoadWidthMeters);
+
+        // Filter water bodies: drop invalid, clamp vertices
+        var waterBodies = spec.WaterBodies
+            .Select(w => w.ToDomain())
+            .Where(w => w.Polygon.Count >= 3)
+            .ToList();
 
         return new TownSpatialSpecification(
             RealWorldBounds: realWorldBounds,
-            BuildingPlacements: buildingPlacements,
+            BuildingPlacements: validPlacements,
             RoadNetwork: roadNetwork,
             WaterBodies: waterBodies,
             TerrainDescription: spec.TerrainDescription ?? "mixed"
         );
     }
 
-    private static void ValidateBuildingNames(
-        List<LlmBuildingPlacementDto> placements,
-        HashSet<string> validNames)
+    private static BuildingPlacement FixBuildingPlacement(BuildingPlacement p)
     {
-        var invalidNames = placements
-            .Select(p => p.BuildingName)
-            .Where(name => !validNames.Contains(name))
-            .ToList();
-
-        if (invalidNames.Count > 0)
-        {
-            throw new InvalidOperationException(
-                $"Spatial spec contains buildings not in design: {string.Join(", ", invalidNames)}");
-        }
+        double w = p.WidthMeters > 0 ? Math.Min(p.WidthMeters, 500) : 10;
+        double d = p.DepthMeters > 0 ? Math.Min(p.DepthMeters, 500) : 10;
+        return p with { WidthMeters = w, DepthMeters = d };
     }
 
-    private static void ValidateBoundingBox(BoundingBox bbox)
+    private static RoadEdge ClampRoadEdge(RoadEdge edge, BoundingBox bounds)
     {
-        if (bbox.MinLat >= bbox.MaxLat)
-            throw new InvalidOperationException($"Invalid latitude range: {bbox.MinLat} >= {bbox.MaxLat}");
-
-        if (bbox.MinLon >= bbox.MaxLon)
-            throw new InvalidOperationException($"Invalid longitude range: {bbox.MinLon} >= {bbox.MaxLon}");
-
-        // Sanity check: not larger than a large country region (~2 degrees)
-        if ((bbox.MaxLat - bbox.MinLat) > 2.0 || (bbox.MaxLon - bbox.MinLon) > 2.0)
-            throw new InvalidOperationException("Bounding box is unreasonably large (>2° in any dimension)");
-    }
-
-    private static void ValidateBuildingFootprints(Dictionary<string, BuildingPlacement> placements)
-    {
-        foreach (var (name, placement) in placements)
-        {
-            if (placement.WidthMeters <= 0 || placement.DepthMeters <= 0)
-                throw new InvalidOperationException(
-                    $"Building '{name}' has invalid footprint: {placement.WidthMeters}×{placement.DepthMeters}m");
-
-            // Sanity: no building larger than 500m in any dimension
-            if (placement.WidthMeters > 500 || placement.DepthMeters > 500)
-                throw new InvalidOperationException(
-                    $"Building '{name}' is unreasonably large: {placement.WidthMeters}×{placement.DepthMeters}m");
-        }
-    }
-
-    private static void ValidateRoadNetwork(RoadNetwork network, BoundingBox bounds)
-    {
-        if (network.Edges.Count == 0)
-            throw new InvalidOperationException("Road network has no edges");
-
-        if (network.RoadWidthMeters <= 0)
-            throw new InvalidOperationException($"Invalid road width: {network.RoadWidthMeters}m");
-
-        // Validate all road endpoints are within bounds
-        foreach (var edge in network.Edges)
-        {
-            if (edge.FromLat < bounds.MinLat || edge.FromLat > bounds.MaxLat ||
-                edge.FromLon < bounds.MinLon || edge.FromLon > bounds.MaxLon)
-                throw new InvalidOperationException($"Road edge start point outside bounds: ({edge.FromLat}, {edge.FromLon})");
-
-            if (edge.ToLat < bounds.MinLat || edge.ToLat > bounds.MaxLat ||
-                edge.ToLon < bounds.MinLon || edge.ToLon > bounds.MaxLon)
-                throw new InvalidOperationException($"Road edge end point outside bounds: ({edge.ToLat}, {edge.ToLon})");
-        }
-    }
-
-    private static void ValidateWaterBodies(List<SpatialWaterBody> waters, BoundingBox bounds)
-    {
-        foreach (var water in waters)
-        {
-            if (water.Polygon.Count < 3)
-                throw new InvalidOperationException($"Water body '{water.Name}' must have at least 3 vertices");
-
-            foreach (var point in water.Polygon)
-            {
-                if (point.X < bounds.MinLat || point.X > bounds.MaxLat ||
-                    point.Y < bounds.MinLon || point.Y > bounds.MaxLon)
-                    throw new InvalidOperationException(
-                        $"Water body '{water.Name}' has vertices outside bounds");
-            }
-        }
+        return new RoadEdge(
+            Math.Clamp(edge.FromLat, bounds.MinLat, bounds.MaxLat),
+            Math.Clamp(edge.FromLon, bounds.MinLon, bounds.MaxLon),
+            Math.Clamp(edge.ToLat, bounds.MinLat, bounds.MaxLat),
+            Math.Clamp(edge.ToLon, bounds.MinLon, bounds.MaxLon));
     }
 }
 

@@ -175,18 +175,17 @@ public sealed class TownDesigner
 
         var design = new TownDesign(townName, landmarks, keyLocations, layoutStyle, hazards);
 
-        // Build and validate spatial specification if provided
-        if (entry.SpatialSpec is not null)
+        // Build spatial specification if the LLM actually provided data
+        if (entry.SpatialSpec is not null && !IsEmptySpatialSpec(entry.SpatialSpec))
         {
             try
             {
                 var spatialSpec = BuildSpatialSpecification.Build(entry.SpatialSpec, design);
                 design = design with { SpatialSpec = spatialSpec };
             }
-            catch (InvalidOperationException ex)
+            catch (Exception ex)
             {
-                // Log validation error but don't fail — spatial spec is optional in this phase
-                System.Diagnostics.Debug.WriteLine($"Spatial spec validation failed: {ex.Message}");
+                System.Diagnostics.Trace.TraceWarning($"Spatial spec build failed for '{townName}': {ex.Message}");
             }
         }
 
@@ -223,5 +222,16 @@ public sealed class TownDesigner
     {
         var lower = style?.ToLowerInvariant() ?? "organic";
         return ValidLayoutStyles.Contains(lower) ? lower : "organic";
+    }
+
+    /// <summary>
+    /// Returns true when the LLM left the spatial spec at its default values
+    /// (all-zero bounding box and no building placements).
+    /// </summary>
+    private static bool IsEmptySpatialSpec(LlmTownSpatialSpec spec)
+    {
+        var b = spec.RealWorldBounds;
+        bool zeroBounds = b.MinLat == 0 && b.MaxLat == 0 && b.MinLon == 0 && b.MaxLon == 0;
+        return zeroBounds && spec.BuildingPlacements.Count == 0;
     }
 }

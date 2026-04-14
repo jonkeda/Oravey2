@@ -87,46 +87,45 @@ public class BuildSpatialSpecificationTests
     }
 
     [Fact]
-    public void Build_InvalidBuildingName_ThrowsException()
+    public void Build_InvalidBuildingName_FiltersOut()
     {
         var llmSpec = CreateTestLlmSpec();
         llmSpec.BuildingPlacements[0].BuildingName = "Unknown Building";
         var design = CreateTestDesign();
         
-        var ex = Assert.Throws<InvalidOperationException>(
-            () => BuildSpatialSpecification.Build(llmSpec, design)
-        );
+        var spec = BuildSpatialSpecification.Build(llmSpec, design);
         
-        Assert.Contains("not in design", ex.Message);
+        // Invalid name filtered out, only "Market" remains
+        Assert.Single(spec.BuildingPlacements);
+        Assert.Contains("Market", spec.BuildingPlacements.Keys);
     }
 
     [Fact]
-    public void Build_InvalidBoundingBox_ThrowsException()
+    public void Build_SwappedBoundingBox_AutoRepairs()
     {
         var llmSpec = CreateTestLlmSpec();
-        llmSpec.RealWorldBounds.MinLat = 53.0;  // Min > Max
+        llmSpec.RealWorldBounds.MinLat = 53.0;  // Swapped
         llmSpec.RealWorldBounds.MaxLat = 52.0;
         var design = CreateTestDesign();
         
-        var ex = Assert.Throws<InvalidOperationException>(
-            () => BuildSpatialSpecification.Build(llmSpec, design)
-        );
+        var spec = BuildSpatialSpecification.Build(llmSpec, design);
         
-        Assert.Contains("latitude range", ex.Message);
+        Assert.True(spec.RealWorldBounds.MinLat < spec.RealWorldBounds.MaxLat);
+        Assert.Equal(52.0, spec.RealWorldBounds.MinLat);
+        Assert.Equal(53.0, spec.RealWorldBounds.MaxLat);
     }
 
     [Fact]
-    public void Build_InvalidBuildingFootprint_ThrowsException()
+    public void Build_ZeroBuildingFootprint_DefaultsTo10m()
     {
         var llmSpec = CreateTestLlmSpec();
-        llmSpec.BuildingPlacements[0].WidthMeters = 0;  // Invalid
+        llmSpec.BuildingPlacements[0].WidthMeters = 0;  // Invalid → defaults to 10
         var design = CreateTestDesign();
         
-        var ex = Assert.Throws<InvalidOperationException>(
-            () => BuildSpatialSpecification.Build(llmSpec, design)
-        );
+        var spec = BuildSpatialSpecification.Build(llmSpec, design);
+        var cathedral = spec.BuildingPlacements["Cathedral"];
         
-        Assert.Contains("invalid footprint", ex.Message);
+        Assert.Equal(10.0, cathedral.WidthMeters, 0.1);
     }
 
     [Fact]
@@ -143,17 +142,20 @@ public class BuildSpatialSpecificationTests
     }
 
     [Fact]
-    public void Build_NoRoadEdges_ThrowsException()
+    public void Build_NoRoadEdges_SynthesizesCenterRoad()
     {
         var llmSpec = CreateTestLlmSpec();
-        llmSpec.RoadNetwork.Edges.Clear();  // Remove all edges
+        llmSpec.RoadNetwork.Edges.Clear();
         var design = CreateTestDesign();
         
-        var ex = Assert.Throws<InvalidOperationException>(
-            () => BuildSpatialSpecification.Build(llmSpec, design)
-        );
+        var spec = BuildSpatialSpecification.Build(llmSpec, design);
         
-        Assert.Contains("no edges", ex.Message);
+        // A synthetic road through the bounding box centre is created
+        Assert.Single(spec.RoadNetwork.Edges);
+        var edge = spec.RoadNetwork.Edges[0];
+        double midLat = (52.0 + 53.0) / 2;
+        Assert.Equal(midLat, edge.FromLat, 0.01);
+        Assert.Equal(midLat, edge.ToLat, 0.01);
     }
 
     private LlmTownSpatialSpec CreateTestLlmSpec()
