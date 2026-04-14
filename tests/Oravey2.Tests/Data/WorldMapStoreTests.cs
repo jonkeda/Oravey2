@@ -114,11 +114,11 @@ public class WorldMapStoreTests : IDisposable
 
         var nodes = new List<LinearFeatureNode>
         {
-            new(new Vector2(0, 0), 5.0f),
-            new(new Vector2(10, 0), null),
-            new(new Vector2(10, 10), 3.5f),
+            new() { Position = new Vector2(0, 0), OverrideHeight = 5.0f },
+            new() { Position = new Vector2(10, 0) },
+            new() { Position = new Vector2(10, 10), OverrideHeight = 3.5f },
         };
-        var feature = new LinearFeature(LinearFeatureType.Secondary, "asphalt_2lane", 4.0f, nodes);
+        var feature = new LinearFeature { Type = LinearFeatureType.Secondary, Style = "asphalt_2lane", Width = 4.0f, Nodes = nodes };
         _store.InsertLinearFeature(rid, feature);
 
         var results = _store.GetLinearFeatures(rid);

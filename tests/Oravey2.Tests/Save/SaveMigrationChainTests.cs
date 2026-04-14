@@ -8,7 +8,7 @@ public class SaveMigrationChainTests
     {
         return new SaveData
         {
-            Header = new SaveHeader(formatVersion, "1.0.0", DateTime.UtcNow, "P", 1, TimeSpan.Zero)
+            Header = new SaveHeader { FormatVersion = formatVersion, GameVersion = "1.0.0", Timestamp = DateTime.UtcNow, PlayerName = "P", PlayerLevel = 1, PlayTime = TimeSpan.Zero }
         };
     }
 
@@ -28,7 +28,15 @@ public class SaveMigrationChainTests
         public SaveData Migrate(SaveData data)
         {
             _action?.Invoke(data);
-            data.Header = data.Header with { FormatVersion = ToVersion };
+            data.Header = new SaveHeader
+            {
+                FormatVersion = ToVersion,
+                GameVersion = data.Header.GameVersion,
+                Timestamp = data.Header.Timestamp,
+                PlayerName = data.Header.PlayerName,
+                PlayerLevel = data.Header.PlayerLevel,
+                PlayTime = data.Header.PlayTime,
+            };
             return data;
         }
     }

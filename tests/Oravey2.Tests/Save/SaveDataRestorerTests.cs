@@ -21,7 +21,7 @@ public class SaveDataRestorerTests
     {
         return new SaveData
         {
-            Header = new SaveHeader(1, "1.0.0", DateTime.UtcNow, "TestPlayer", 5, TimeSpan.FromHours(1)),
+            Header = new SaveHeader { FormatVersion = 1, GameVersion = "1.0.0", Timestamp = DateTime.UtcNow, PlayerName = "TestPlayer", PlayerLevel = 5, PlayTime = TimeSpan.FromHours(1) },
             Stats = new Dictionary<Stat, int>
             {
                 { Stat.Strength, 8 }, { Stat.Perception, 6 },
@@ -40,7 +40,7 @@ public class SaveDataRestorerTests
             Level = 5,
             XP = 120,
             UnlockedPerks = ["perk_a", "perk_b"],
-            Inventory = [new SerializedItem("item_1", 3, 40)],
+            Inventory = [new SerializedItem { ItemId = "item_1", StackCount = 3, CurrentDurability = 40 }],
             Equipment = new Dictionary<EquipmentSlot, string?>
             {
                 { EquipmentSlot.Head, "helm_1" }

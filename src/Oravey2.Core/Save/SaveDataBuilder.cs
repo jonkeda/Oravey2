@@ -23,9 +23,15 @@ public sealed class SaveDataBuilder
 
     public SaveDataBuilder WithHeader(string playerName, int playerLevel, TimeSpan playTime, string gameVersion)
     {
-        _data.Header = new SaveHeader(
-            SaveHeader.CurrentFormatVersion, gameVersion,
-            DateTime.UtcNow, playerName, playerLevel, playTime);
+        _data.Header = new SaveHeader
+        {
+            FormatVersion = SaveHeader.CurrentFormatVersion,
+            GameVersion = gameVersion,
+            Timestamp = DateTime.UtcNow,
+            PlayerName = playerName,
+            PlayerLevel = playerLevel,
+            PlayTime = playTime,
+        };
         return this;
     }
 
@@ -67,8 +73,12 @@ public sealed class SaveDataBuilder
         _data.Inventory.Clear();
         foreach (var item in inventory.Items)
         {
-            _data.Inventory.Add(new SerializedItem(
-                item.Definition.Id, item.StackCount, item.CurrentDurability));
+            _data.Inventory.Add(new SerializedItem
+            {
+                ItemId = item.Definition.Id,
+                StackCount = item.StackCount,
+                CurrentDurability = item.CurrentDurability,
+            });
         }
 
         _data.Equipment.Clear();

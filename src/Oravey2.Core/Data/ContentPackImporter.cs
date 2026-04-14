@@ -141,12 +141,13 @@ public sealed class ContentPackImporter
             {
                 // Encode mesh shape and size into PrefabId: building:id:shape:size
                 var shape = ExtractMeshShape(b.MeshAsset);
-                var spawn = new EntitySpawnInfo(
-                    PrefabId: $"building:{b.Id}:{shape}:{b.Size}",
-                    LocalX: b.Placement?.LocalTileX ?? 0,
-                    LocalZ: b.Placement?.LocalTileY ?? 0,
-                    RotationY: 0f,
-                    Persistent: true);
+                var spawn = new EntitySpawnInfo
+                {
+                    PrefabId = $"building:{b.Id}:{shape}:{b.Size}",
+                    LocalX = b.Placement?.LocalTileX ?? 0,
+                    LocalZ = b.Placement?.LocalTileY ?? 0,
+                    Persistent = true
+                };
 
                 var key = (b.Placement?.ChunkX ?? 0, b.Placement?.ChunkY ?? 0);
                 if (chunkIdMap.TryGetValue(key, out var cid))
@@ -168,12 +169,13 @@ public sealed class ContentPackImporter
             var props = ReadJsonListOrDefault<PropDto>(propsPath);
             foreach (var p in props)
             {
-                var spawn = new EntitySpawnInfo(
-                    PrefabId: $"prop:{p.Id}",
-                    LocalX: p.Placement?.LocalTileX ?? 0,
-                    LocalZ: p.Placement?.LocalTileY ?? 0,
-                    RotationY: p.Rotation,
-                    Persistent: false);
+                var spawn = new EntitySpawnInfo
+                {
+                    PrefabId = $"prop:{p.Id}",
+                    LocalX = p.Placement?.LocalTileX ?? 0,
+                    LocalZ = p.Placement?.LocalTileY ?? 0,
+                    RotationY = p.Rotation
+                };
 
                 var key = (p.Placement?.ChunkX ?? 0, p.Placement?.ChunkY ?? 0);
                 if (chunkIdMap.TryGetValue(key, out var cid))
@@ -223,12 +225,12 @@ public sealed class ContentPackImporter
 
             var nodes = (r.Nodes ?? [])
                 .Where(n => n.Length >= 2)
-                .Select(n => new LinearFeatureNode(new Vector2(n[0], n[1])))
+                .Select(n => new LinearFeatureNode { Position = new Vector2(n[0], n[1]) })
                 .ToList();
 
             if (nodes.Count < 2) continue;
 
-            var feature = new LinearFeature(featureType, r.RoadClass ?? "residential", 1f, nodes);
+            var feature = new LinearFeature { Type = featureType, Style = r.RoadClass ?? "residential", Width = 1f, Nodes = nodes };
             _store.InsertLinearFeature(regionId, feature);
             result.LinearFeaturesInserted++;
         }
@@ -249,12 +251,12 @@ public sealed class ContentPackImporter
 
             var nodes = (w.Geometry ?? [])
                 .Where(n => n.Length >= 2)
-                .Select(n => new LinearFeatureNode(new Vector2(n[0], n[1])))
+                .Select(n => new LinearFeatureNode { Position = new Vector2(n[0], n[1]) })
                 .ToList();
 
             if (nodes.Count < 2) continue;
 
-            var feature = new LinearFeature(featureType, w.WaterType ?? "stream", 2f, nodes);
+            var feature = new LinearFeature { Type = featureType, Style = w.WaterType ?? "stream", Width = 2f, Nodes = nodes };
             _store.InsertLinearFeature(regionId, feature);
             result.LinearFeaturesInserted++;
         }

@@ -49,7 +49,7 @@ public static class SplineClipper
                     var prev = feature.Nodes[i - 1];
                     var entry = ClipEdge(prev.Position, node.Position, minX, minY, maxX, maxY);
                     if (entry.HasValue)
-                        clippedNodes.Add(new LinearFeatureNode(entry.Value, InterpolateOverride(prev, node, entry.Value)));
+                        clippedNodes.Add(new LinearFeatureNode { Position = entry.Value, OverrideHeight = InterpolateOverride(prev, node, entry.Value) });
                 }
 
                 clippedNodes.Add(node);
@@ -61,7 +61,7 @@ public static class SplineClipper
                 var prev = feature.Nodes[i - 1];
                 var exit = ClipEdge(prev.Position, node.Position, minX, minY, maxX, maxY);
                 if (exit.HasValue)
-                    clippedNodes.Add(new LinearFeatureNode(exit.Value, InterpolateOverride(prev, node, exit.Value)));
+                    clippedNodes.Add(new LinearFeatureNode { Position = exit.Value, OverrideHeight = InterpolateOverride(prev, node, exit.Value) });
 
                 // Feature may re-enter the chunk later, so keep checking
                 anyInside = false;
@@ -73,8 +73,8 @@ public static class SplineClipper
                 var crossings = FindCrossings(prev.Position, node.Position, minX, minY, maxX, maxY);
                 if (crossings.Count >= 2)
                 {
-                    clippedNodes.Add(new LinearFeatureNode(crossings[0], InterpolateOverride(prev, node, crossings[0])));
-                    clippedNodes.Add(new LinearFeatureNode(crossings[1], InterpolateOverride(prev, node, crossings[1])));
+                    clippedNodes.Add(new LinearFeatureNode { Position = crossings[0], OverrideHeight = InterpolateOverride(prev, node, crossings[0]) });
+                    clippedNodes.Add(new LinearFeatureNode { Position = crossings[1], OverrideHeight = InterpolateOverride(prev, node, crossings[1]) });
                 }
             }
         }
@@ -82,7 +82,7 @@ public static class SplineClipper
         if (clippedNodes.Count < 2)
             return null;
 
-        return new LinearFeature(feature.Type, feature.Style, feature.Width, clippedNodes);
+        return new LinearFeature { Type = feature.Type, Style = feature.Style, Width = feature.Width, Nodes = clippedNodes };
     }
 
     private static bool IsInside(Vector2 pos, float minX, float minY, float maxX, float maxY)

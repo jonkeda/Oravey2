@@ -137,18 +137,19 @@ public sealed class WorldMapStore : IDisposable
         var results = new List<(long, int, int, EntitySpawnInfo)>();
         while (r.Read())
         {
-            var spawn = new EntitySpawnInfo(
-                PrefabId: r.GetString(3),
-                LocalX: r.GetFloat(4),
-                LocalZ: r.GetFloat(5),
-                RotationY: r.GetFloat(6),
-                Faction: r.IsDBNull(7) ? null : r.GetString(7),
-                Level: r.IsDBNull(8) ? null : r.GetInt32(8),
-                DialogueId: r.IsDBNull(9) ? null : r.GetString(9),
-                LootTable: r.IsDBNull(10) ? null : r.GetString(10),
-                Persistent: r.GetInt32(11) != 0,
-                ConditionFlag: r.IsDBNull(12) ? null : r.GetString(12)
-            );
+            var spawn = new EntitySpawnInfo
+            {
+                PrefabId = r.GetString(3),
+                LocalX = r.GetFloat(4),
+                LocalZ = r.GetFloat(5),
+                RotationY = r.GetFloat(6),
+                Faction = r.IsDBNull(7) ? null : r.GetString(7),
+                Level = r.IsDBNull(8) ? null : r.GetInt32(8),
+                DialogueId = r.IsDBNull(9) ? null : r.GetString(9),
+                LootTable = r.IsDBNull(10) ? null : r.GetString(10),
+                Persistent = r.GetInt32(11) != 0,
+                ConditionFlag = r.IsDBNull(12) ? null : r.GetString(12)
+            };
             results.Add((r.GetInt64(0), r.GetInt32(1), r.GetInt32(2), spawn));
         }
         return results;
@@ -266,18 +267,19 @@ public sealed class WorldMapStore : IDisposable
         var results = new List<EntitySpawnInfo>();
         while (r.Read())
         {
-            results.Add(new EntitySpawnInfo(
-                PrefabId: r.GetString(0),
-                LocalX: r.GetFloat(1),
-                LocalZ: r.GetFloat(2),
-                RotationY: r.GetFloat(3),
-                Faction: r.IsDBNull(4) ? null : r.GetString(4),
-                Level: r.IsDBNull(5) ? null : r.GetInt32(5),
-                DialogueId: r.IsDBNull(6) ? null : r.GetString(6),
-                LootTable: r.IsDBNull(7) ? null : r.GetString(7),
-                Persistent: r.GetInt32(8) != 0,
-                ConditionFlag: r.IsDBNull(9) ? null : r.GetString(9)
-            ));
+            results.Add(new EntitySpawnInfo
+            {
+                PrefabId = r.GetString(0),
+                LocalX = r.GetFloat(1),
+                LocalZ = r.GetFloat(2),
+                RotationY = r.GetFloat(3),
+                Faction = r.IsDBNull(4) ? null : r.GetString(4),
+                Level = r.IsDBNull(5) ? null : r.GetInt32(5),
+                DialogueId = r.IsDBNull(6) ? null : r.GetString(6),
+                LootTable = r.IsDBNull(7) ? null : r.GetString(7),
+                Persistent = r.GetInt32(8) != 0,
+                ConditionFlag = r.IsDBNull(9) ? null : r.GetString(9)
+            });
         }
         return results;
     }
@@ -317,11 +319,12 @@ public sealed class WorldMapStore : IDisposable
             var width = (float)r.GetDouble(2);
             var nodesJson = r.GetString(3);
             var rawNodes = JsonSerializer.Deserialize<JsonElement[]>(nodesJson) ?? [];
-            var nodes = rawNodes.Select(n => new LinearFeatureNode(
-                new Vector2(n.GetProperty("x").GetSingle(), n.GetProperty("y").GetSingle()),
-                n.TryGetProperty("h", out var h) && h.ValueKind != JsonValueKind.Null ? h.GetSingle() : null
-            )).ToList();
-            results.Add(new LinearFeature(type, style, width, nodes));
+            var nodes = rawNodes.Select(n => new LinearFeatureNode
+            {
+                Position = new Vector2(n.GetProperty("x").GetSingle(), n.GetProperty("y").GetSingle()),
+                OverrideHeight = n.TryGetProperty("h", out var h) && h.ValueKind != JsonValueKind.Null ? h.GetSingle() : null,
+            }).ToList();
+            results.Add(new LinearFeature { Type = type, Style = style, Width = width, Nodes = nodes });
         }
         return results;
     }
@@ -473,15 +476,17 @@ public sealed class WorldMapStore : IDisposable
         if (!r.Read()) return null;
 
         var locType = Enum.TryParse<Descriptions.LocationType>(r.GetString(1), true, out var lt) ? lt : Descriptions.LocationType.Poi;
-        return new Descriptions.LocationDescription(
-            r.GetInt32(0),
-            locType,
-            r.GetString(2),
-            r.IsDBNull(3) ? null : r.GetString(3),
-            r.IsDBNull(4) ? null : r.GetString(4),
-            r.IsDBNull(5) ? null : DateTime.Parse(r.GetString(5)),
-            r.IsDBNull(6) ? null : DateTime.Parse(r.GetString(6)),
-            r.IsDBNull(7) ? null : r.GetString(7));
+        return new Descriptions.LocationDescription
+        {
+            LocationId = r.GetInt32(0),
+            Type = locType,
+            Tagline = r.GetString(2),
+            Summary = r.IsDBNull(3) ? null : r.GetString(3),
+            Dossier = r.IsDBNull(4) ? null : r.GetString(4),
+            SummaryUtc = r.IsDBNull(5) ? null : DateTime.Parse(r.GetString(5)),
+            DossierUtc = r.IsDBNull(6) ? null : DateTime.Parse(r.GetString(6)),
+            LlmModel = r.IsDBNull(7) ? null : r.GetString(7),
+        };
     }
 
     public void UpdateDescriptionSummary(int locationId, string summary, string? llmModel = null)

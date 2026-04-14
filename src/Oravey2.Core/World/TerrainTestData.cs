@@ -338,26 +338,32 @@ public static class TerrainTestData
         if (cy == 1)
         {
             float roadY = 12f * tileSize; // local Y in chunk (tile row 12)
-            features.Add(new LinearFeature(
-                LinearFeatureType.Secondary, "asphalt", 5f,
+            features.Add(new LinearFeature
+            {
+                Type = LinearFeatureType.Secondary, Style = "asphalt", Width = 5f,
+                Nodes =
                 [
-                    new LinearFeatureNode(new Vector2(0f, roadY)),
-                    new LinearFeatureNode(new Vector2(8f * tileSize, roadY - 2f)),
-                    new LinearFeatureNode(new Vector2(16f * tileSize, roadY)),
-                ]));
+                    new LinearFeatureNode { Position = new Vector2(0f, roadY) },
+                    new LinearFeatureNode { Position = new Vector2(8f * tileSize, roadY - 2f) },
+                    new LinearFeatureNode { Position = new Vector2(16f * tileSize, roadY) },
+                ],
+            });
         }
 
         // River through the middle column (chunk column 1), runs top to bottom
         if (cx == 1)
         {
             float riverX = 8f * tileSize; // local X in chunk (tile col 8)
-            features.Add(new LinearFeature(
-                LinearFeatureType.River, "water", 5f,
+            features.Add(new LinearFeature
+            {
+                Type = LinearFeatureType.River, Style = "water", Width = 5f,
+                Nodes =
                 [
-                    new LinearFeatureNode(new Vector2(riverX, 0f)),
-                    new LinearFeatureNode(new Vector2(riverX + 4f, 10f * tileSize)),
-                    new LinearFeatureNode(new Vector2(riverX - 3f, 16f * tileSize)),
-                ]));
+                    new LinearFeatureNode { Position = new Vector2(riverX, 0f) },
+                    new LinearFeatureNode { Position = new Vector2(riverX + 4f, 10f * tileSize) },
+                    new LinearFeatureNode { Position = new Vector2(riverX - 3f, 16f * tileSize) },
+                ],
+            });
         }
 
         // Bridge segment in the centre chunk where road crosses river
@@ -365,12 +371,15 @@ public static class TerrainTestData
         {
             float bridgeY = 12f * tileSize;
             float bridgeX = 8f * tileSize;
-            features.Add(new LinearFeature(
-                LinearFeatureType.Secondary, "concrete", 6f,
+            features.Add(new LinearFeature
+            {
+                Type = LinearFeatureType.Secondary, Style = "concrete", Width = 6f,
+                Nodes =
                 [
-                    new LinearFeatureNode(new Vector2(bridgeX - 5f, bridgeY), 2.5f),
-                    new LinearFeatureNode(new Vector2(bridgeX + 5f, bridgeY), 2.5f),
-                ]));
+                    new LinearFeatureNode { Position = new Vector2(bridgeX - 5f, bridgeY), OverrideHeight = 2.5f },
+                    new LinearFeatureNode { Position = new Vector2(bridgeX + 5f, bridgeY), OverrideHeight = 2.5f },
+                ],
+            });
         }
 
         return features;

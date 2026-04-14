@@ -159,10 +159,10 @@ public class TileDataTests
     {
         var nodes = new[]
         {
-            new LinearFeatureNode(new System.Numerics.Vector2(0, 0)),
-            new LinearFeatureNode(new System.Numerics.Vector2(10, 5), OverrideHeight: 2.5f)
+            new LinearFeatureNode { Position = new System.Numerics.Vector2(0, 0) },
+            new LinearFeatureNode { Position = new System.Numerics.Vector2(10, 5), OverrideHeight = 2.5f }
         };
-        var feature = new LinearFeature(LinearFeatureType.Secondary, "paved", 3.0f, nodes);
+        var feature = new LinearFeature { Type = LinearFeatureType.Secondary, Style = "paved", Width = 3.0f, Nodes = nodes };
 
         Assert.Equal(LinearFeatureType.Secondary, feature.Type);
         Assert.Equal("paved", feature.Style);

@@ -72,14 +72,14 @@ public sealed class WorldGenerator
 
             foreach (var road in selectedRoads)
             {
-                var nodes = road.Nodes.Select(n => new LinearFeatureNode(n)).ToList();
-                store.InsertLinearFeature(regionId, new LinearFeature(road.Type, road.Style, road.Width, nodes));
+                var nodes = road.Nodes.Select(n => new LinearFeatureNode { Position = n }).ToList();
+                store.InsertLinearFeature(regionId, new LinearFeature { Type = road.Type, Style = road.Style, Width = road.Width, Nodes = nodes });
             }
 
             foreach (var river in rivers)
             {
-                var nodes = river.Nodes.Select(n => new LinearFeatureNode(n)).ToList();
-                store.InsertLinearFeature(regionId, new LinearFeature(river.Type, river.Style, river.Width, nodes));
+                var nodes = river.Nodes.Select(n => new LinearFeatureNode { Position = n }).ToList();
+                store.InsertLinearFeature(regionId, new LinearFeature { Type = river.Type, Style = river.Style, Width = river.Width, Nodes = nodes });
             }
 
             // POIs for curated towns
