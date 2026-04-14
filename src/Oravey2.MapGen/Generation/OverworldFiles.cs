@@ -62,25 +62,34 @@ public static class OverworldFiles
         var waterJson = File.ReadAllText(Path.Combine(overworldDir, "water.json"));
         var waterDtos = JsonSerializer.Deserialize<List<WaterDto>>(waterJson, ContentPackSerializer.ReadOptions) ?? [];
 
-        var townRefs = (wf?.Towns ?? []).Select(t =>
-            new OverworldTownRef(t.GameName, t.RealName, t.GameX, t.GameY, t.Description, t.Size, t.Inhabitants, t.Destruction)).ToList();
+        var townRefs = (wf?.Towns ?? []).Select(t => new OverworldTownRef
+        {
+            GameName = t.GameName, RealName = t.RealName, GameX = t.GameX, GameY = t.GameY,
+            Description = t.Description, Size = t.Size, Inhabitants = t.Inhabitants, Destruction = t.Destruction,
+        }).ToList();
 
-        var world = new OverworldInfo(
-            wf?.Name ?? "", wf?.Description ?? "", wf?.Source ?? "",
-            wf?.ChunksWide ?? 0, wf?.ChunksHigh ?? 0, wf?.TileSize ?? 0,
-            PlacementTo(wf?.PlayerStart),
-            townRefs);
+        var world = new OverworldInfo
+        {
+            Name = wf?.Name ?? "", Description = wf?.Description ?? "", Source = wf?.Source ?? "",
+            ChunksWide = wf?.ChunksWide ?? 0, ChunksHigh = wf?.ChunksHigh ?? 0, TileSize = wf?.TileSize ?? 0,
+            PlayerStart = PlacementTo(wf?.PlayerStart),
+            Towns = townRefs,
+        };
 
-        var roads = roadDtos.Select(r => new OverworldRoad(
-            r.Id, r.RoadClass,
-            r.Nodes.Select(n => new Vector2(n[0], n[1])).ToArray(),
-            r.FromTown, r.ToTown)).ToList();
+        var roads = roadDtos.Select(r => new OverworldRoad
+        {
+            Id = r.Id, RoadClass = r.RoadClass,
+            Nodes = r.Nodes.Select(n => new Vector2(n[0], n[1])).ToArray(),
+            FromTown = r.FromTown, ToTown = r.ToTown,
+        }).ToList();
 
-        var water = waterDtos.Select(w => new OverworldWater(
-            w.Id, w.WaterType,
-            w.Geometry.Select(v => new Vector2(v[0], v[1])).ToArray())).ToList();
+        var water = waterDtos.Select(w => new OverworldWater
+        {
+            Id = w.Id, WaterType = w.WaterType,
+            Geometry = w.Geometry.Select(v => new Vector2(v[0], v[1])).ToArray(),
+        }).ToList();
 
-        return new OverworldResult(world, roads, water);
+        return new OverworldResult { World = world, Roads = roads, Water = water };
     }
 
     private static PlacementDto PlacementFrom(TilePlacement p) =>

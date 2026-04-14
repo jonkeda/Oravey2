@@ -90,8 +90,8 @@ public sealed class TownMapCondenser
         // Step 9: Build liquid overlay from hazard zones
         var liquid = BuildLiquidLayer(width, height, design.Hazards, zones);
 
-        var layout = new TownLayout(width, height, surface, liquid);
-        return new TownMapResult(layout, buildings, props, zones);
+        var layout = new TownLayout { Width = width, Height = height, Surface = surface, Liquid = liquid };
+        return new TownMapResult { Layout = layout, Buildings = buildings, Props = props, Zones = zones };
     }
 
     internal static (int Width, int Height) ComputeGridSize(TownDesign design, MapGenerationParams? parms = null)
@@ -222,16 +222,18 @@ public sealed class TownMapCondenser
         var footprint = BuildFootprintArray(tileX, tileY, w, h);
         MarkOccupied(occupied, tileX, tileY, w, h);
 
-        return new PlacedBuilding(
-            $"building_{index}",
-            landmark.Name,
-            $"meshes/{landmark.Name.ToLowerInvariant().Replace(' ', '_')}.glb",
-            landmark.SizeCategory,
-            footprint,
-            floors,
-            0.6f,
-            new TilePlacement(tileX / TilesPerChunk, tileY / TilesPerChunk,
-                              tileX % TilesPerChunk, tileY % TilesPerChunk));
+        return new PlacedBuilding
+        {
+            Id = $"building_{index}",
+            Name = landmark.Name,
+            MeshAsset = $"meshes/{landmark.Name.ToLowerInvariant().Replace(' ', '_')}.glb",
+            SizeCategory = landmark.SizeCategory,
+            Footprint = footprint,
+            Floors = floors,
+            Condition = 0.6f,
+            Placement = new TilePlacement(tileX / TilesPerChunk, tileY / TilesPerChunk,
+                                          tileX % TilesPerChunk, tileY % TilesPerChunk),
+        };
     }
 
     internal static void PlaceKeyLocations(
@@ -267,16 +269,18 @@ public sealed class TownMapCondenser
                 var footprint = BuildFootprintArray(cx, cy, w, h);
                 MarkOccupied(occupied, cx, cy, w, h);
 
-                buildings.Add(new PlacedBuilding(
-                    $"building_{buildings.Count}",
-                    loc.Name,
-                    $"meshes/{loc.Name.ToLowerInvariant().Replace(' ', '_')}.glb",
-                    loc.SizeCategory,
-                    footprint,
-                    floors,
-                    rng.NextSingle() * 0.4f + 0.4f,
-                    new TilePlacement(cx / TilesPerChunk, cy / TilesPerChunk,
-                                      cx % TilesPerChunk, cy % TilesPerChunk)));
+                buildings.Add(new PlacedBuilding
+                {
+                    Id = $"building_{buildings.Count}",
+                    Name = loc.Name,
+                    MeshAsset = $"meshes/{loc.Name.ToLowerInvariant().Replace(' ', '_')}.glb",
+                    SizeCategory = loc.SizeCategory,
+                    Footprint = footprint,
+                    Floors = floors,
+                    Condition = rng.NextSingle() * 0.4f + 0.4f,
+                    Placement = new TilePlacement(cx / TilesPerChunk, cy / TilesPerChunk,
+                                                  cx % TilesPerChunk, cy % TilesPerChunk),
+                });
 
                 candidates.RemoveAt(idx);
                 placed = true;
@@ -295,16 +299,18 @@ public sealed class TownMapCondenser
                         var footprint = BuildFootprintArray(x, y, w, h);
                         MarkOccupied(occupied, x, y, w, h);
 
-                        buildings.Add(new PlacedBuilding(
-                            $"building_{buildings.Count}",
-                            loc.Name,
-                            $"meshes/{loc.Name.ToLowerInvariant().Replace(' ', '_')}.glb",
-                            loc.SizeCategory,
-                            footprint,
-                            floors,
-                            rng.NextSingle() * 0.4f + 0.4f,
-                            new TilePlacement(x / TilesPerChunk, y / TilesPerChunk,
-                                              x % TilesPerChunk, y % TilesPerChunk)));
+                        buildings.Add(new PlacedBuilding
+                        {
+                            Id = $"building_{buildings.Count}",
+                            Name = loc.Name,
+                            MeshAsset = $"meshes/{loc.Name.ToLowerInvariant().Replace(' ', '_')}.glb",
+                            SizeCategory = loc.SizeCategory,
+                            Footprint = footprint,
+                            Floors = floors,
+                            Condition = rng.NextSingle() * 0.4f + 0.4f,
+                            Placement = new TilePlacement(x / TilesPerChunk, y / TilesPerChunk,
+                                                          x % TilesPerChunk, y % TilesPerChunk),
+                        });
                         placed = true;
                         break;
                     }
@@ -336,16 +342,18 @@ public sealed class TownMapCondenser
                 var footprint = BuildFootprintArray(x, y, w, h);
                 MarkOccupied(occupied, x, y, w, h);
 
-                buildings.Add(new PlacedBuilding(
-                    $"building_{buildings.Count}",
-                    $"Ruin {buildings.Count}",
-                    "meshes/generic_ruin.glb",
-                    "small",
-                    footprint,
-                    1,
-                    rng.NextSingle() * 0.3f + 0.2f,
-                    new TilePlacement(x / TilesPerChunk, y / TilesPerChunk,
-                                      x % TilesPerChunk, y % TilesPerChunk)));
+                buildings.Add(new PlacedBuilding
+                {
+                    Id = $"building_{buildings.Count}",
+                    Name = $"Ruin {buildings.Count}",
+                    MeshAsset = "meshes/generic_ruin.glb",
+                    SizeCategory = "small",
+                    Footprint = footprint,
+                    Floors = 1,
+                    Condition = rng.NextSingle() * 0.3f + 0.2f,
+                    Placement = new TilePlacement(x / TilesPerChunk, y / TilesPerChunk,
+                                                  x % TilesPerChunk, y % TilesPerChunk),
+                });
                 break;
             }
         }
@@ -369,14 +377,16 @@ public sealed class TownMapCondenser
                 if (occupied.Contains((x, y))) continue;
 
                 occupied.Add((x, y));
-                props.Add(new PlacedProp(
-                    $"prop_{i}",
-                    PropAssets[rng.Next(PropAssets.Length)],
-                    new TilePlacement(x / TilesPerChunk, y / TilesPerChunk,
-                                      x % TilesPerChunk, y % TilesPerChunk),
-                    rng.NextSingle() * 360f,
-                    0.8f + rng.NextSingle() * 0.4f,
-                    rng.Next(3) == 0));
+                props.Add(new PlacedProp
+                {
+                    Id = $"prop_{i}",
+                    MeshAsset = PropAssets[rng.Next(PropAssets.Length)],
+                    Placement = new TilePlacement(x / TilesPerChunk, y / TilesPerChunk,
+                                                  x % TilesPerChunk, y % TilesPerChunk),
+                    Rotation = rng.NextSingle() * 360f,
+                    Scale = 0.8f + rng.NextSingle() * 0.4f,
+                    BlocksWalkability = rng.Next(3) == 0,
+                });
                 break;
             }
         }
@@ -392,14 +402,16 @@ public sealed class TownMapCondenser
         var chunksWide = width / TilesPerChunk;
         var chunksHigh = height / TilesPerChunk;
 
-        zones.Add(new TownZone(
-            "zone_main",
-            design.TownName,
-            0, // default biome
-            threatLevel > 5 ? 0.2f : 0f,
-            Math.Clamp(threatLevel / 3, 1, 5),
-            true,
-            0, 0, chunksWide - 1, chunksHigh - 1));
+        zones.Add(new TownZone
+        {
+            Id = "zone_main",
+            Name = design.TownName,
+            Biome = 0,
+            RadiationLevel = threatLevel > 5 ? 0.2f : 0f,
+            EnemyDifficultyTier = Math.Clamp(threatLevel / 3, 1, 5),
+            IsFastTravelTarget = true,
+            ChunkStartX = 0, ChunkStartY = 0, ChunkEndX = chunksWide - 1, ChunkEndY = chunksHigh - 1,
+        });
 
         // Add hazard zones
         for (var i = 0; i < design.Hazards.Count; i++)
@@ -407,14 +419,16 @@ public sealed class TownMapCondenser
             var hazard = design.Hazards[i];
             // Place hazard zones at edges based on location hint
             var (sx, sy, ex, ey) = HazardBounds(hazard.LocationHint, chunksWide, chunksHigh);
-            zones.Add(new TownZone(
-                $"zone_hazard_{i}",
-                $"{hazard.Type} zone",
-                1,
-                hazard.Type.Contains("radiation", StringComparison.OrdinalIgnoreCase) ? 0.5f : 0.1f,
-                Math.Clamp(threatLevel / 2, 1, 5),
-                false,
-                sx, sy, ex, ey));
+            zones.Add(new TownZone
+            {
+                Id = $"zone_hazard_{i}",
+                Name = $"{hazard.Type} zone",
+                Biome = 1,
+                RadiationLevel = hazard.Type.Contains("radiation", StringComparison.OrdinalIgnoreCase) ? 0.5f : 0.1f,
+                EnemyDifficultyTier = Math.Clamp(threatLevel / 2, 1, 5),
+                IsFastTravelTarget = false,
+                ChunkStartX = sx, ChunkStartY = sy, ChunkEndX = ex, ChunkEndY = ey,
+            });
         }
 
         return zones;
@@ -588,8 +602,8 @@ public sealed class TownMapCondenser
             _townDesign?.Hazards ?? new List<EnvironmentalHazard>(), zones);
 
         // For now, store spatial spec in result (Phase 3 will add persistence)
-        var layout = new TownLayout(gridWidth, gridHeight, surface, liquid);
-        return new TownMapResult(layout, new List<PlacedBuilding>(), new List<PlacedProp>(), zones);
+        var layout = new TownLayout { Width = gridWidth, Height = gridHeight, Surface = surface, Liquid = liquid };
+        return new TownMapResult { Layout = layout, Buildings = new List<PlacedBuilding>(), Props = new List<PlacedProp>(), Zones = zones };
     }
 
     /// <summary>Tile a single chunk's data into the surface grid.</summary>
@@ -636,18 +650,19 @@ public sealed class TownMapCondenser
         var zones = DefineZones(width, height, design, 0);
         var liquid = BuildLiquidLayer(width, height, design.Hazards, zones);
 
-        var layout = new TownLayout(width, height, surface, liquid);
-        return new TownMapResult(layout, buildings, props, zones);
+        var layout = new TownLayout { Width = width, Height = height, Surface = surface, Liquid = liquid };
+        return new TownMapResult { Layout = layout, Buildings = buildings, Props = props, Zones = zones };
     }
 
     /// <summary>Create a minimal default design for fallback scenarios.</summary>
-    private static TownDesign CreateDefaultDesign() => new(
-        "DefaultTown",
-        new List<LandmarkBuilding>(),
-        new List<KeyLocation>(),
-        "grid",
-        new List<EnvironmentalHazard>(),
-        null);
+    private static TownDesign CreateDefaultDesign() => new()
+    {
+        TownName = "DefaultTown",
+        Landmarks = new List<LandmarkBuilding>(),
+        KeyLocations = new List<KeyLocation>(),
+        LayoutStyle = "grid",
+        Hazards = new List<EnvironmentalHazard>(),
+    };
 }
 
 /// <summary>Represents a chunk of town tile data.</summary>

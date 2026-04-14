@@ -2,21 +2,40 @@ using Oravey2.Contracts.Spatial;
 
 namespace Oravey2.MapGen.Generation;
 
-public sealed record TownDesign(
-    string TownName,
-    List<LandmarkBuilding> Landmarks,
-    List<KeyLocation> KeyLocations,
-    string LayoutStyle,
-    List<EnvironmentalHazard> Hazards,
-    TownSpatialSpecification? SpatialSpec = null);
+public sealed class TownDesign
+{
+    public string TownName { get; set; } = "";
+    public List<LandmarkBuilding> Landmarks { get; set; } = [];
+    public List<KeyLocation> KeyLocations { get; set; } = [];
+    public string LayoutStyle { get; set; } = "";
+    public List<EnvironmentalHazard> Hazards { get; set; } = [];
+    public TownSpatialSpecification? SpatialSpec { get; set; }
+}
 
-public sealed record LandmarkBuilding(
-    string Name, string VisualDescription, string SizeCategory,
-    string OriginalDescription, string MeshyPrompt, string PositionHint);
+public sealed class LandmarkBuilding
+{
+    public string Name { get; set; } = "";
+    public string VisualDescription { get; set; } = "";
+    public string SizeCategory { get; set; } = "";
+    public string OriginalDescription { get; set; } = "";
+    public string MeshyPrompt { get; set; } = "";
+    public string PositionHint { get; set; } = "";
+}
 
-public sealed record KeyLocation(
-    string Name, string Purpose, string VisualDescription, string SizeCategory,
-    string OriginalDescription, string MeshyPrompt, string PositionHint);
+public sealed class KeyLocation
+{
+    public string Name { get; set; } = "";
+    public string Purpose { get; set; } = "";
+    public string VisualDescription { get; set; } = "";
+    public string SizeCategory { get; set; } = "";
+    public string OriginalDescription { get; set; } = "";
+    public string MeshyPrompt { get; set; } = "";
+    public string PositionHint { get; set; } = "";
+}
 
-public sealed record EnvironmentalHazard(
-    string Type, string Description, string LocationHint);
+public sealed class EnvironmentalHazard
+{
+    public string Type { get; set; } = "";
+    public string Description { get; set; } = "";
+    public string LocationHint { get; set; } = "";
+}

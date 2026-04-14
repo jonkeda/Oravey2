@@ -30,14 +30,15 @@ public sealed class TownSpatialTransform
             var (widthTiles, depthTiles) = _geoTransform.FootprintToTiles(
                 placement.WidthMeters, placement.DepthMeters);
 
-            placements[name] = new WorldTilePlacement(
-                CenterX: (int)Math.Round(tileCenter.X),
-                CenterZ: (int)Math.Round(tileCenter.Y),
-                WidthTiles: widthTiles,
-                DepthTiles: depthTiles,
-                RotationDegrees: placement.RotationDegrees,
-                AlignmentHint: placement.AlignmentHint
-            );
+            placements[name] = new WorldTilePlacement
+            {
+                CenterX = (int)Math.Round(tileCenter.X),
+                CenterZ = (int)Math.Round(tileCenter.Y),
+                WidthTiles = widthTiles,
+                DepthTiles = depthTiles,
+                RotationDegrees = placement.RotationDegrees,
+                AlignmentHint = placement.AlignmentHint,
+            };
         }
 
         return placements;
@@ -56,11 +57,12 @@ public sealed class TownSpatialTransform
             int roadWidthTiles = Math.Max(1, 
                 (int)Math.Round(_spatialSpec.RoadNetwork.RoadWidthMeters / _geoTransform.TileSizeMeters));
 
-            tileRoads.Add(new TileRoadSegment(
-                From: from,
-                To: to,
-                WidthTiles: roadWidthTiles
-            ));
+            tileRoads.Add(new TileRoadSegment
+            {
+                From = from,
+                To = to,
+                WidthTiles = roadWidthTiles,
+            });
         }
 
         return tileRoads;
@@ -77,11 +79,12 @@ public sealed class TownSpatialTransform
                 .Select(coord => _geoTransform.ToTileCoord(coord.X, coord.Y))
                 .ToList();
 
-            tileWaters.Add(new TileWaterBody(
-                Name: water.Name,
-                Polygon: tilePolygon,
-                Type: water.Type
-            ));
+            tileWaters.Add(new TileWaterBody
+            {
+                Name = water.Name,
+                Polygon = tilePolygon,
+                Type = water.Type,
+            });
         }
 
         return tileWaters;
@@ -96,25 +99,28 @@ public sealed class TownSpatialTransform
 }
 
 /// A building placement in world tile coordinates
-public sealed record WorldTilePlacement(
-    int CenterX,
-    int CenterZ,
-    int WidthTiles,
-    int DepthTiles,
-    double RotationDegrees,
-    string AlignmentHint
-);
+public sealed class WorldTilePlacement
+{
+    public int CenterX { get; set; }
+    public int CenterZ { get; set; }
+    public int WidthTiles { get; set; }
+    public int DepthTiles { get; set; }
+    public double RotationDegrees { get; set; }
+    public string AlignmentHint { get; set; } = "";
+}
 
 /// A road segment in tile coordinates
-public sealed record TileRoadSegment(
-    Vector2 From,
-    Vector2 To,
-    int WidthTiles
-);
+public sealed class TileRoadSegment
+{
+    public Vector2 From { get; set; }
+    public Vector2 To { get; set; }
+    public int WidthTiles { get; set; }
+}
 
 /// A water body in tile coordinates
-public sealed record TileWaterBody(
-    string Name,
-    List<Vector2> Polygon,
-    SpatialWaterType Type
-);
+public sealed class TileWaterBody
+{
+    public string Name { get; set; } = "";
+    public List<Vector2> Polygon { get; set; } = [];
+    public SpatialWaterType Type { get; set; }
+}

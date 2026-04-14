@@ -1,17 +1,17 @@
 namespace Oravey2.MapGen.Models;
 
-public sealed record MapGenerationRequest
+public sealed class MapGenerationRequest
 {
-    public required string LocationName { get; init; }
-    public required string GeographyDescription { get; init; }
-    public required string PostApocContext { get; init; }
-    public required int ChunksWide { get; init; }
-    public required int ChunksHigh { get; init; }
-    public required int MinLevel { get; init; }
-    public required int MaxLevel { get; init; }
-    public required string DifficultyDescription { get; init; }
-    public required string[] Factions { get; init; }
-    public string? Model { get; init; }
-    public string TimeOfDay { get; init; } = "Dawn";
-    public string WeatherDefault { get; init; } = "overcast";
+    public required string LocationName { get; set; }
+    public required string GeographyDescription { get; set; }
+    public required string PostApocContext { get; set; }
+    public required int ChunksWide { get; set; }
+    public required int ChunksHigh { get; set; }
+    public required int MinLevel { get; set; }
+    public required int MaxLevel { get; set; }
+    public required string DifficultyDescription { get; set; }
+    public required string[] Factions { get; set; }
+    public string? Model { get; set; }
+    public string TimeOfDay { get; set; } = "Dawn";
+    public string WeatherDefault { get; set; } = "overcast";
 }

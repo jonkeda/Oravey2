@@ -15,32 +15,38 @@ public enum MeshStatus
 /// <summary>
 /// Merged view of a town's design + placed buildings for the assets step.
 /// </summary>
-public sealed record TownAssetSummary(
-    string TownName,
-    string GameName,
-    string LayoutStyle,
-    List<BuildingAssetEntry> Buildings,
-    List<PropAssetEntry> Props);
+public sealed class TownAssetSummary
+{
+    public string TownName { get; set; } = "";
+    public string GameName { get; set; } = "";
+    public string LayoutStyle { get; set; } = "";
+    public List<BuildingAssetEntry> Buildings { get; set; } = [];
+    public List<PropAssetEntry> Props { get; set; } = [];
+}
 
 /// <summary>
 /// A single building in the town asset view, combining design metadata with
 /// placement data and current mesh status.
 /// </summary>
-public sealed record BuildingAssetEntry(
-    string BuildingId,
-    string Name,
-    string Role,
-    string SizeCategory,
-    string VisualDescription,
-    string CurrentMeshPath,
-    MeshStatus MeshStatus,
-    int Floors,
-    float Condition);
+public sealed class BuildingAssetEntry
+{
+    public string BuildingId { get; set; } = "";
+    public string Name { get; set; } = "";
+    public string Role { get; set; } = "";
+    public string SizeCategory { get; set; } = "";
+    public string VisualDescription { get; set; } = "";
+    public string CurrentMeshPath { get; set; } = "";
+    public MeshStatus MeshStatus { get; set; }
+    public int Floors { get; set; }
+    public float Condition { get; set; }
+}
 
 /// <summary>
 /// A single prop in the town asset view.
 /// </summary>
-public sealed record PropAssetEntry(
-    string PropId,
-    string CurrentMeshPath,
-    MeshStatus MeshStatus);
+public sealed class PropAssetEntry
+{
+    public string PropId { get; set; } = "";
+    public string CurrentMeshPath { get; set; } = "";
+    public MeshStatus MeshStatus { get; set; }
+}

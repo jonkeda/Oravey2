@@ -52,17 +52,26 @@ public sealed class TownDesignFile
         SpatialSpec = design.SpatialSpec,
     };
 
-    public TownDesign ToTownDesign() => new(
-        TownName,
-        Landmarks.Select(l => new LandmarkBuilding(
-            l.Name, l.VisualDescription, l.SizeCategory,
-            l.OriginalDescription, l.MeshyPrompt, l.PositionHint)).ToList(),
-        KeyLocations.Select(k => new KeyLocation(
-            k.Name, k.Purpose, k.VisualDescription, k.SizeCategory,
-            k.OriginalDescription, k.MeshyPrompt, k.PositionHint)).ToList(),
-        LayoutStyle,
-        Hazards.Select(h => new EnvironmentalHazard(h.Type, h.Description, h.LocationHint)).ToList(),
-        SpatialSpec);
+    public TownDesign ToTownDesign() => new()
+    {
+        TownName = TownName,
+        Landmarks = Landmarks.Select(l => new LandmarkBuilding
+        {
+            Name = l.Name, VisualDescription = l.VisualDescription, SizeCategory = l.SizeCategory,
+            OriginalDescription = l.OriginalDescription, MeshyPrompt = l.MeshyPrompt, PositionHint = l.PositionHint,
+        }).ToList(),
+        KeyLocations = KeyLocations.Select(k => new KeyLocation
+        {
+            Name = k.Name, Purpose = k.Purpose, VisualDescription = k.VisualDescription, SizeCategory = k.SizeCategory,
+            OriginalDescription = k.OriginalDescription, MeshyPrompt = k.MeshyPrompt, PositionHint = k.PositionHint,
+        }).ToList(),
+        LayoutStyle = LayoutStyle,
+        Hazards = Hazards.Select(h => new EnvironmentalHazard
+        {
+            Type = h.Type, Description = h.Description, LocationHint = h.LocationHint,
+        }).ToList(),
+        SpatialSpec = SpatialSpec,
+    };
 
     public void Save(string path)
     {

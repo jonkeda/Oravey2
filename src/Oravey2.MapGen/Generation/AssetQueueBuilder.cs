@@ -67,8 +67,11 @@ public sealed class AssetQueueBuilder
         var glbPath = Path.Combine(contentPackPath, "assets", "meshes", $"{assetId}.glb");
         var status = File.Exists(glbPath) ? AssetStatus.Ready : AssetStatus.Pending;
 
-        var request = new AssetRequest(assetId, townName, locationName,
-            visualDescription, sizeCategory, status);
+        var request = new AssetRequest
+        {
+            AssetId = assetId, TownName = townName, LocationName = locationName,
+            VisualDescription = visualDescription, SizeCategory = sizeCategory, Status = status,
+        };
         seen[visualDescription] = request;
         queue.Add(request);
     }

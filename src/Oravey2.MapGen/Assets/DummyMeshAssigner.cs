@@ -44,7 +44,12 @@ public sealed class DummyMeshAssigner
 
             var classification = ClassifyBuilding(b.Name, design);
             var meshPath = PrimitiveMeshFor(classification);
-            updatedBuildings.Add(b with { MeshAsset = meshPath });
+            var updated = new PlacedBuilding
+            {
+                Id = b.Id, Name = b.Name, MeshAsset = meshPath, SizeCategory = b.SizeCategory,
+                Footprint = b.Footprint, Floors = b.Floors, Condition = b.Condition, Placement = b.Placement,
+            };
+            updatedBuildings.Add(updated);
         }
 
         var updatedProps = new List<PlacedProp>(props.Count);
@@ -56,7 +61,12 @@ public sealed class DummyMeshAssigner
                 continue;
             }
 
-            updatedProps.Add(p with { MeshAsset = PrimitiveMeshWriter.SpherePath });
+            var updatedProp = new PlacedProp
+            {
+                Id = p.Id, MeshAsset = PrimitiveMeshWriter.SpherePath,
+                Placement = p.Placement, Rotation = p.Rotation, Scale = p.Scale, BlocksWalkability = p.BlocksWalkability,
+            };
+            updatedProps.Add(updatedProp);
         }
 
         return (updatedBuildings, updatedProps);

@@ -65,27 +65,35 @@ public static class TownMapFiles
         var zonesJson = File.ReadAllText(Path.Combine(townDir, "zones.json"));
         var zoneDtos = JsonSerializer.Deserialize<List<ZoneDto>>(zonesJson, ContentPackSerializer.ReadOptions) ?? [];
 
-        var layout = new TownLayout(
-            layoutDto?.Width ?? 0, layoutDto?.Height ?? 0,
-            layoutDto?.Surface ?? [], layoutDto?.Liquid);
+        var layout = new TownLayout
+        {
+            Width = layoutDto?.Width ?? 0, Height = layoutDto?.Height ?? 0,
+            Surface = layoutDto?.Surface ?? [], Liquid = layoutDto?.Liquid,
+        };
 
-        var buildings = buildingDtos.Select(b => new PlacedBuilding(
-            b.Id, b.Name, b.MeshAsset, b.Size,
-            b.Footprint ?? [],
-            b.Floors, b.Condition,
-            PlacementTo(b.Placement))).ToList();
+        var buildings = buildingDtos.Select(b => new PlacedBuilding
+        {
+            Id = b.Id, Name = b.Name, MeshAsset = b.MeshAsset, SizeCategory = b.Size,
+            Footprint = b.Footprint ?? [],
+            Floors = b.Floors, Condition = b.Condition,
+            Placement = PlacementTo(b.Placement),
+        }).ToList();
 
-        var props = propDtos.Select(p => new PlacedProp(
-            p.Id, p.MeshAsset, PlacementTo(p.Placement),
-            p.Rotation, p.Scale, p.BlocksWalkability)).ToList();
+        var props = propDtos.Select(p => new PlacedProp
+        {
+            Id = p.Id, MeshAsset = p.MeshAsset, Placement = PlacementTo(p.Placement),
+            Rotation = p.Rotation, Scale = p.Scale, BlocksWalkability = p.BlocksWalkability,
+        }).ToList();
 
-        var zones = zoneDtos.Select(z => new TownZone(
-            z.Id, z.Name, z.Biome, z.RadiationLevel,
-            z.EnemyDifficultyTier, z.IsFastTravelTarget,
-            z.ChunkStartX, z.ChunkStartY,
-            z.ChunkEndX, z.ChunkEndY)).ToList();
+        var zones = zoneDtos.Select(z => new TownZone
+        {
+            Id = z.Id, Name = z.Name, Biome = z.Biome, RadiationLevel = z.RadiationLevel,
+            EnemyDifficultyTier = z.EnemyDifficultyTier, IsFastTravelTarget = z.IsFastTravelTarget,
+            ChunkStartX = z.ChunkStartX, ChunkStartY = z.ChunkStartY,
+            ChunkEndX = z.ChunkEndX, ChunkEndY = z.ChunkEndY,
+        }).ToList();
 
-        return new TownMapResult(layout, buildings, props, zones);
+        return new TownMapResult { Layout = layout, Buildings = buildings, Props = props, Zones = zones };
     }
 
     private static PlacementDto PlacementFrom(TilePlacement p) =>

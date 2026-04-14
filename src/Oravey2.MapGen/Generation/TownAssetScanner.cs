@@ -43,8 +43,11 @@ public sealed class TownAssetScanner
             var buildings = MergeBuildings(design, placedBuildings, contentPackPath);
             var props = MergeProps(placedProps, contentPackPath);
 
-            results.Add(new TownAssetSummary(
-                design.TownName, gameName, design.LayoutStyle, buildings, props));
+            results.Add(new TownAssetSummary
+            {
+                TownName = design.TownName, GameName = gameName, LayoutStyle = design.LayoutStyle,
+                Buildings = buildings, Props = props,
+            });
         }
 
         return results;
@@ -85,9 +88,11 @@ public sealed class TownAssetScanner
                 continue;
 
             var meshStatus = ClassifyMeshStatus(b.MeshAsset, contentPackPath);
-            entries.Add(new BuildingAssetEntry(
-                b.Id, b.Name, "generic", b.SizeCategory, "", b.MeshAsset,
-                meshStatus, b.Floors, b.Condition));
+            entries.Add(new BuildingAssetEntry
+            {
+                BuildingId = b.Id, Name = b.Name, Role = "generic", SizeCategory = b.SizeCategory,
+                CurrentMeshPath = b.MeshAsset, MeshStatus = meshStatus, Floors = b.Floors, Condition = b.Condition,
+            });
         }
 
         return entries;
@@ -101,25 +106,32 @@ public sealed class TownAssetScanner
         if (placedByName.TryGetValue(name, out var placed))
         {
             var meshStatus = ClassifyMeshStatus(placed.MeshAsset, contentPackPath);
-            entries.Add(new BuildingAssetEntry(
-                placed.Id, name, role, sizeCategory, visualDescription,
-                placed.MeshAsset, meshStatus, placed.Floors, placed.Condition));
+            entries.Add(new BuildingAssetEntry
+            {
+                BuildingId = placed.Id, Name = name, Role = role, SizeCategory = sizeCategory,
+                VisualDescription = visualDescription, CurrentMeshPath = placed.MeshAsset,
+                MeshStatus = meshStatus, Floors = placed.Floors, Condition = placed.Condition,
+            });
         }
         else
         {
             // Design entry without placement data yet
-            entries.Add(new BuildingAssetEntry(
-                "", name, role, sizeCategory, visualDescription,
-                "", MeshStatus.None, 0, 0));
+            entries.Add(new BuildingAssetEntry
+            {
+                Name = name, Role = role, SizeCategory = sizeCategory,
+                VisualDescription = visualDescription,
+            });
         }
     }
 
     internal static List<PropAssetEntry> MergeProps(
         List<PlacedProp> placed, string contentPackPath)
     {
-        return placed.Select(p =>
-            new PropAssetEntry(p.Id, p.MeshAsset,
-                ClassifyMeshStatus(p.MeshAsset, contentPackPath))).ToList();
+        return placed.Select(p => new PropAssetEntry
+        {
+            PropId = p.Id, CurrentMeshPath = p.MeshAsset,
+            MeshStatus = ClassifyMeshStatus(p.MeshAsset, contentPackPath),
+        }).ToList();
     }
 
     /// <summary>

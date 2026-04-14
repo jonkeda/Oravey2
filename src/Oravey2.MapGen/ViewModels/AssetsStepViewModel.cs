@@ -421,8 +421,10 @@ public class AssetsStepViewModel : BaseViewModel
             var (updatedBuildings, updatedProps) = assigner.AssignPrimitiveMeshes(
                 design, mapResult.Buildings, mapResult.Props);
 
-            var updatedResult = new TownMapResult(
-                mapResult.Layout, updatedBuildings, updatedProps, mapResult.Zones);
+            var updatedResult = new TownMapResult
+            {
+                Layout = mapResult.Layout, Buildings = updatedBuildings, Props = updatedProps, Zones = mapResult.Zones,
+            };
             TownMapFiles.Save(updatedResult, townDir);
             assignedCount++;
         }

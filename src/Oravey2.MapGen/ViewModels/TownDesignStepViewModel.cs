@@ -450,11 +450,13 @@ public class TownDesignItem : BaseViewModel
     public string? LayoutStyle => Design?.LayoutStyle;
     public int HazardCount => Design?.Hazards.Count ?? 0;
 
-    public CuratedTown ToCuratedTown() => new(
-        GameName, RealName, Latitude, Longitude,
-        new System.Numerics.Vector2((float)(Longitude * 1000), (float)(Latitude * 1000)),
-        Description,
-        Enum.TryParse<TownCategory>(Size, true, out var sz) ? sz : TownCategory.Village,
-        Inhabitants,
-        Enum.TryParse<DestructionLevel>(Destruction, true, out var dl) ? dl : DestructionLevel.Moderate);
+    public CuratedTown ToCuratedTown() => new()
+    {
+        GameName = GameName, RealName = RealName, Latitude = Latitude, Longitude = Longitude,
+        GamePosition = new System.Numerics.Vector2((float)(Longitude * 1000), (float)(Latitude * 1000)),
+        Description = Description,
+        Size = Enum.TryParse<TownCategory>(Size, true, out var sz) ? sz : TownCategory.Village,
+        Inhabitants = Inhabitants,
+        Destruction = Enum.TryParse<DestructionLevel>(Destruction, true, out var dl) ? dl : DestructionLevel.Moderate,
+    };
 }

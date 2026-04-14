@@ -22,10 +22,12 @@ public sealed class OverworldGenerator
         IReadOnlyList<CuratedTown> towns,
         string regionName)
     {
-        var townRefs = towns.Select(t => new OverworldTownRef(
-            t.GameName, t.RealName,
-            t.GamePosition.X, t.GamePosition.Y,
-            t.Description, t.Size.ToString(), t.Inhabitants, t.Destruction.ToString())).ToList();
+        var townRefs = towns.Select(t => new OverworldTownRef
+        {
+            GameName = t.GameName, RealName = t.RealName,
+            GameX = t.GamePosition.X, GameY = t.GamePosition.Y,
+            Description = t.Description, Size = t.Size.ToString(), Inhabitants = t.Inhabitants, Destruction = t.Destruction.ToString(),
+        }).ToList();
 
         // Compute world bounds from town positions
         var (chunksWide, chunksHigh) = ComputeWorldBounds(towns);
@@ -34,19 +36,21 @@ public sealed class OverworldGenerator
         var startTown = towns.MaxBy(t => t.Inhabitants) ?? towns[0];
         var playerStart = GamePosToPlacement(startTown.GamePosition, chunksWide, chunksHigh);
 
-        var world = new OverworldInfo(
-            regionName,
-            $"Overworld map for {regionName}",
-            region.Name,
-            chunksWide, chunksHigh,
-            TileSize: 1,
-            playerStart,
-            townRefs);
+        var world = new OverworldInfo
+        {
+            Name = regionName,
+            Description = $"Overworld map for {regionName}",
+            Source = region.Name,
+            ChunksWide = chunksWide, ChunksHigh = chunksHigh,
+            TileSize = 1,
+            PlayerStart = playerStart,
+            Towns = townRefs,
+        };
 
         var roads = FilterRoads(region.Roads, towns);
         var water = FilterWater(region.WaterBodies, towns);
 
-        return new OverworldResult(world, roads, water);
+        return new OverworldResult { World = world, Roads = roads, Water = water };
     }
 
     internal static (int ChunksWide, int ChunksHigh) ComputeWorldBounds(
@@ -103,12 +107,14 @@ public sealed class OverworldGenerator
 
             if (nearestFrom is not null)
             {
-                roads.Add(new OverworldRoad(
-                    $"road_{id++}",
-                    seg.RoadClass.ToString(),
-                    seg.Nodes,
-                    nearestFrom,
-                    nearestTo));
+                roads.Add(new OverworldRoad
+                {
+                    Id = $"road_{id++}",
+                    RoadClass = seg.RoadClass.ToString(),
+                    Nodes = seg.Nodes,
+                    FromTown = nearestFrom,
+                    ToTown = nearestTo,
+                });
             }
         }
 
@@ -128,8 +134,10 @@ public sealed class OverworldGenerator
         {
             if (body.Type == WaterType.Sea)
             {
-                water.Add(new OverworldWater(
-                    $"water_{id++}", body.Type.ToString(), body.Geometry));
+                water.Add(new OverworldWater
+                {
+                    Id = $"water_{id++}", WaterType = body.Type.ToString(), Geometry = body.Geometry,
+                });
                 continue;
             }
 
@@ -138,8 +146,10 @@ public sealed class OverworldGenerator
                 towns.Any(t => Vector2.Distance(v, t.GamePosition) < RoadProximityThreshold * 3));
             if (near)
             {
-                water.Add(new OverworldWater(
-                    $"water_{id++}", body.Type.ToString(), body.Geometry));
+                water.Add(new OverworldWater
+                {
+                    Id = $"water_{id++}", WaterType = body.Type.ToString(), Geometry = body.Geometry,
+                });
             }
         }
 

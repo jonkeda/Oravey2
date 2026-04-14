@@ -56,7 +56,7 @@ public sealed class TownCurator
         var boundsMin = new Vector2(allPositions.Min(p => p.X) - 1000, allPositions.Min(p => p.Y) - 1000);
         var boundsMax = new Vector2(allPositions.Max(p => p.X) + 1000, allPositions.Max(p => p.Y) + 1000);
 
-        return new CuratedRegion(region.Name, boundsMin, boundsMax, towns);
+        return new CuratedRegion { Name = region.Name, BoundsMin = boundsMin, BoundsMax = boundsMax, Towns = towns };
     }
 
     /// <summary>
@@ -249,17 +249,19 @@ public sealed class TownCurator
             var size = match?.Category ?? (Enum.TryParse<TownCategory>(e.Size, true, out var sz) ? sz : TownCategory.Village);
             var inhabitants = match?.Population ?? e.Inhabitants;
 
-            result.Add(new CuratedTown(
-                GameName: e.GameName,
-                RealName: e.RealName,
-                Latitude: e.Latitude,
-                Longitude: e.Longitude,
-                GamePosition: gamePos,
-                Description: e.Description,
-                Size: size,
-                Inhabitants: inhabitants,
-                Destruction: Enum.TryParse<DestructionLevel>(e.Destruction, true, out var dl) ? dl : DestructionLevel.Moderate,
-                BoundaryPolygon: boundary));
+            result.Add(new CuratedTown
+            {
+                GameName = e.GameName,
+                RealName = e.RealName,
+                Latitude = e.Latitude,
+                Longitude = e.Longitude,
+                GamePosition = gamePos,
+                Description = e.Description,
+                Size = size,
+                Inhabitants = inhabitants,
+                Destruction = Enum.TryParse<DestructionLevel>(e.Destruction, true, out var dl) ? dl : DestructionLevel.Moderate,
+                BoundaryPolygon = boundary,
+            });
         }
 
         return result;
@@ -351,13 +353,15 @@ public sealed class TownCurator
             if (!townLookup.TryGetValue(e.RealName, out var match))
                 continue;
 
-            result.Add(new CuratedTown(
-                e.GameName, e.RealName, match.Latitude, match.Longitude,
-                match.GamePosition, e.Description,
-                match.Category,
-                match.Population,
-                Enum.TryParse<DestructionLevel>(e.Destruction, true, out var dl) ? dl : DestructionLevel.Moderate,
-                match.BoundaryPolygon));
+            result.Add(new CuratedTown
+            {
+                GameName = e.GameName, RealName = e.RealName, Latitude = match.Latitude, Longitude = match.Longitude,
+                GamePosition = match.GamePosition, Description = e.Description,
+                Size = match.Category,
+                Inhabitants = match.Population,
+                Destruction = Enum.TryParse<DestructionLevel>(e.Destruction, true, out var dl) ? dl : DestructionLevel.Moderate,
+                BoundaryPolygon = match.BoundaryPolygon,
+            });
         }
 
         return result;
@@ -368,21 +372,25 @@ public sealed class TownCurator
     {
         if (townLookup.TryGetValue(entry.RealName, out var match))
         {
-            return new CuratedTown(
-                entry.GameName, entry.RealName, match.Latitude, match.Longitude,
-                match.GamePosition, entry.Description,
-                match.Category,
-                match.Population,
-                Enum.TryParse<DestructionLevel>(entry.Destruction, true, out var dl) ? dl : DestructionLevel.Moderate,
-                match.BoundaryPolygon);
+            return new CuratedTown
+            {
+                GameName = entry.GameName, RealName = entry.RealName, Latitude = match.Latitude, Longitude = match.Longitude,
+                GamePosition = match.GamePosition, Description = entry.Description,
+                Size = match.Category,
+                Inhabitants = match.Population,
+                Destruction = Enum.TryParse<DestructionLevel>(entry.Destruction, true, out var dl) ? dl : DestructionLevel.Moderate,
+                BoundaryPolygon = match.BoundaryPolygon,
+            };
         }
 
-        return new CuratedTown(
-            entry.GameName, entry.RealName, 0, 0,
-            Vector2.Zero, entry.Description,
-            Enum.TryParse<TownCategory>(entry.Size, true, out var sz) ? sz : TownCategory.Village,
-            entry.Inhabitants,
-            Enum.TryParse<DestructionLevel>(entry.Destruction, true, out var dl2) ? dl2 : DestructionLevel.Moderate);
+        return new CuratedTown
+        {
+            GameName = entry.GameName, RealName = entry.RealName,
+            Description = entry.Description,
+            Size = Enum.TryParse<TownCategory>(entry.Size, true, out var sz) ? sz : TownCategory.Village,
+            Inhabitants = entry.Inhabitants,
+            Destruction = Enum.TryParse<DestructionLevel>(entry.Destruction, true, out var dl2) ? dl2 : DestructionLevel.Moderate,
+        };
     }
 }
 

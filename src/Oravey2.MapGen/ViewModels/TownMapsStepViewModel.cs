@@ -476,13 +476,14 @@ public class TownMapsStepViewModel : BaseViewModel
         _state.TownMaps.Remaining = Towns.Count(t => !t.IsGenerated);
     }
 
-    internal static CuratedTown BuildCuratedTown(TownMapItem item) => new(
-        item.GameName, item.RealName, 0, 0,
-        System.Numerics.Vector2.Zero,
-        item.Description,
-        Enum.TryParse<TownCategory>(item.Size, true, out var sz) ? sz : TownCategory.Village,
-        item.Inhabitants,
-        Enum.TryParse<DestructionLevel>(item.Destruction, true, out var dl) ? dl : DestructionLevel.Moderate);
+    internal static CuratedTown BuildCuratedTown(TownMapItem item) => new()
+    {
+        GameName = item.GameName, RealName = item.RealName,
+        Description = item.Description,
+        Size = Enum.TryParse<TownCategory>(item.Size, true, out var sz) ? sz : TownCategory.Village,
+        Inhabitants = item.Inhabitants,
+        Destruction = Enum.TryParse<DestructionLevel>(item.Destruction, true, out var dl) ? dl : DestructionLevel.Moderate,
+    };
 
     internal TownMapResult GenerateSpatialMap(TownMapItem item, CuratedTown town, RegionTemplate region, int seed)
     {

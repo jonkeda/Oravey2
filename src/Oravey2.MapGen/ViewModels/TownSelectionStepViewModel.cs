@@ -227,14 +227,15 @@ public class TownSelectionStepViewModel : BaseViewModel
             IsModeA = loaded.Mode == "A";
             var refLat = (state.Region.SouthLat + state.Region.NorthLat) / 2.0;
             var refLon = (state.Region.WestLon + state.Region.EastLon) / 2.0;
-            PopulateTowns(loaded.Towns.Select(e => new CuratedTown(
-                e.GameName, e.RealName, e.Latitude, e.Longitude,
-                TownCurator.LatLonToMetres(e.Latitude, e.Longitude, refLat, refLon),
-                e.Description,
-                Enum.TryParse<TownCategory>(e.Size, true, out var sz) ? sz : TownCategory.Village,
-                e.Inhabitants,
-                Enum.TryParse<DestructionLevel>(e.Destruction, true, out var dl) ? dl : DestructionLevel.Moderate
-                )).ToList());
+            PopulateTowns(loaded.Towns.Select(e => new CuratedTown
+            {
+                GameName = e.GameName, RealName = e.RealName, Latitude = e.Latitude, Longitude = e.Longitude,
+                GamePosition = TownCurator.LatLonToMetres(e.Latitude, e.Longitude, refLat, refLon),
+                Description = e.Description,
+                Size = Enum.TryParse<TownCategory>(e.Size, true, out var sz) ? sz : TownCategory.Village,
+                Inhabitants = e.Inhabitants,
+                Destruction = Enum.TryParse<DestructionLevel>(e.Destruction, true, out var dl) ? dl : DestructionLevel.Moderate,
+            }).ToList());
             HasResults = true;
             _state.TownSelection.Completed = true;
             StatusText = "Loaded from saved file.";
@@ -614,8 +615,10 @@ public class TownSelectionItem : BaseViewModel
 
     public bool IsNotEditing => !IsEditing;
 
-    public CuratedTown ToCuratedTown() => new(
-        GameName, RealName, Latitude, Longitude,
-        new Vector2((float)(Longitude * 1000), (float)(Latitude * 1000)),
-        Description, Size, Inhabitants, Destruction);
+    public CuratedTown ToCuratedTown() => new()
+    {
+        GameName = GameName, RealName = RealName, Latitude = Latitude, Longitude = Longitude,
+        GamePosition = new Vector2((float)(Longitude * 1000), (float)(Latitude * 1000)),
+        Description = Description, Size = Size, Inhabitants = Inhabitants, Destruction = Destruction,
+    };
 }

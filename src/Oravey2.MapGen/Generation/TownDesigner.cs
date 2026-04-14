@@ -151,29 +151,42 @@ public sealed class TownDesigner
         var (_, _, _, maxHazards) = CountsForSize(size);
 
         var landmarks = entry.Landmarks
-            .Select(l => new LandmarkBuilding(
-                l.Name, l.VisualDescription, NormalizeSizeCategory(l.SizeCategory),
-                l.OriginalDescription, l.MeshyPrompt, l.PositionHint))
+            .Select(l => new LandmarkBuilding
+            {
+                Name = l.Name,
+                VisualDescription = l.VisualDescription,
+                SizeCategory = NormalizeSizeCategory(l.SizeCategory),
+                OriginalDescription = l.OriginalDescription,
+                MeshyPrompt = l.MeshyPrompt,
+                PositionHint = l.PositionHint,
+            })
             .ToList();
 
         // Ensure at least one landmark
         if (landmarks.Count == 0)
-            landmarks.Add(new LandmarkBuilding("Unknown Landmark", "", "medium", "", "", "centre"));
+            landmarks.Add(new LandmarkBuilding { Name = "Unknown Landmark", SizeCategory = "medium", PositionHint = "centre" });
 
         var keyLocations = entry.KeyLocations
-            .Select(k => new KeyLocation(
-                k.Name, k.Purpose, k.VisualDescription, NormalizeSizeCategory(k.SizeCategory),
-                k.OriginalDescription, k.MeshyPrompt, k.PositionHint))
+            .Select(k => new KeyLocation
+            {
+                Name = k.Name,
+                Purpose = k.Purpose,
+                VisualDescription = k.VisualDescription,
+                SizeCategory = NormalizeSizeCategory(k.SizeCategory),
+                OriginalDescription = k.OriginalDescription,
+                MeshyPrompt = k.MeshyPrompt,
+                PositionHint = k.PositionHint,
+            })
             .ToList();
 
         var layoutStyle = NormalizeLayoutStyle(entry.LayoutStyle);
 
         var hazards = entry.Hazards
             .Take(maxHazards)
-            .Select(h => new EnvironmentalHazard(h.Type, h.Description, h.LocationHint))
+            .Select(h => new EnvironmentalHazard { Type = h.Type, Description = h.Description, LocationHint = h.LocationHint })
             .ToList();
 
-        var design = new TownDesign(townName, landmarks, keyLocations, layoutStyle, hazards);
+        var design = new TownDesign { TownName = townName, Landmarks = landmarks, KeyLocations = keyLocations, LayoutStyle = layoutStyle, Hazards = hazards };
 
         // Build spatial specification if the LLM actually provided data
         if (entry.SpatialSpec is not null && !IsEmptySpatialSpec(entry.SpatialSpec))
@@ -181,7 +194,7 @@ public sealed class TownDesigner
             try
             {
                 var spatialSpec = BuildSpatialSpecification.Build(entry.SpatialSpec, design);
-                design = design with { SpatialSpec = spatialSpec };
+                design.SpatialSpec = spatialSpec;
             }
             catch (Exception ex)
             {
