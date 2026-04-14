@@ -3,7 +3,9 @@
   "name": "noord-holland Wastes",
   "description": "Survive the ruins of noord-holland...",
   "towns": [
-    "Island Haven"
+    "Island Haven",
+    "Purgatory",
+    "The Dam (Ruins)"
   ],
   "playerStart": {
     "town": "Island Haven",

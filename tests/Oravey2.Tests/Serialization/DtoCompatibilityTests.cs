@@ -52,29 +52,61 @@ public sealed class DtoCompatibilityTests
     [Fact]
     public void ManifestDto_RoundTrips_AllFields()
     {
-        var original = new ManifestDto(
-            "oravey2.test", "Test Pack", "1.0.0",
-            "A test pack", "TestAuthor", "oravey2.base");
+        var original = new ManifestDto
+        {
+            Id = "oravey2.test",
+            Name = "Test Pack",
+            Version = "1.0.0",
+            Description = "A test pack",
+            Author = "TestAuthor",
+            Parent = "oravey2.base",
+        };
 
         var json = JsonSerializer.Serialize(original, ContentPackSerializer.WriteOptions);
-        var restored = JsonSerializer.Deserialize<ManifestDto>(json, ContentPackSerializer.ReadOptions);
+        var restored = JsonSerializer.Deserialize<ManifestDto>(json, ContentPackSerializer.ReadOptions)!;
 
-        Assert.Equal(original, restored);
+        Assert.Equal(original.Id, restored.Id);
+        Assert.Equal(original.Name, restored.Name);
+        Assert.Equal(original.Version, restored.Version);
+        Assert.Equal(original.Description, restored.Description);
+        Assert.Equal(original.Author, restored.Author);
+        Assert.Equal(original.Parent, restored.Parent);
     }
 
     [Fact]
     public void ManifestDto_EngineVersion_RoundTrips()
     {
-        var original = new ManifestDto(
-            "oravey2.test", "Test Pack", "1.0.0",
-            "A test pack", "TestAuthor", "oravey2.base",
-            EngineVersion: ">=2.0.0");
+        var original = new ManifestDto
+        {
+            Id = "oravey2.test",
+            Name = "Test Pack",
+            Version = "1.0.0",
+            Description = "A test pack",
+            Author = "TestAuthor",
+            Parent = "oravey2.base",
+            EngineVersion = ">=2.0.0",
+        };
 
         var json = JsonSerializer.Serialize(original, ContentPackSerializer.WriteOptions);
-        var restored = JsonSerializer.Deserialize<ManifestDto>(json, ContentPackSerializer.ReadOptions);
+        var restored = JsonSerializer.Deserialize<ManifestDto>(json, ContentPackSerializer.ReadOptions)!;
 
-        Assert.Equal(original, restored);
-        Assert.Equal(">=2.0.0", restored!.EngineVersion);
+        Assert.Equal(original.Id, restored.Id);
+        Assert.Equal(">=2.0.0", restored.EngineVersion);
+    }
+
+    [Fact]
+    public void ManifestDto_ExtensionData_PreservesUnknownFields()
+    {
+        var json = """{"id":"test","name":"Test","palette":{"primary":"#FF0000"}}""";
+        var manifest = JsonSerializer.Deserialize<ManifestDto>(json, ContentPackSerializer.ReadOptions)!;
+
+        Assert.Equal("test", manifest.Id);
+        Assert.NotNull(manifest.ExtensionData);
+        Assert.True(manifest.ExtensionData.ContainsKey("palette"));
+
+        // Round-trip preserves the unknown field
+        var reJson = JsonSerializer.Serialize(manifest, ContentPackSerializer.WriteOptions);
+        Assert.Contains("palette", reJson);
     }
 
     [Fact]

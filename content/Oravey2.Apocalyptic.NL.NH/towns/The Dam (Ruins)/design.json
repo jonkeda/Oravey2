@@ -2,129 +2,323 @@
   "townName": "The Dam (Ruins)",
   "landmarks": [
     {
-      "name": "The Broken Centraal",
-      "visualDescription": "Colossal Victorian-era red brick station with grand arched entrances. Central tower partially collapsed, exposing corroded iron scaffolding. Water-stained fa\u00E7ade, broken clock faces, twisted metal canopies over flooded platforms. Survivors have welded scrap steel across some windows. Massive arched glass vault interior is open to sky.",
+      "name": "The Citadel",
+      "visualDescription": "A massive stone facade with grand columns and arched windows, now pockmarked by artillery and decay. Water stains and mold streak the pale sandstone. Three tiers of ornate balconies collapse inward; rubble chokes the grand entrance. A single wing remains partially intact, its dome half-caved. Wooden scaffolding and salvage nets cover exposed sections. Floodwater laps at the base, reflecting broken glass and twisted metal railings.",
       "sizeCategory": "large",
-      "originalDescription": "Amsterdam Centraal Station, a massive red-brick Renaissance Revival railway terminus built in 1889, originally the primary transport hub.",
-      "meshyPrompt": "Monumental red-brick railway station, partially collapsed with exposed iron trusses, weathered copper accents, broken arched glass vault. Water damage stains cover fa\u00E7ade. Twisted metal railings, crumbled masonry. Dystopian industrial architecture, heavy decay. Low-poly game asset",
-      "positionHint": "north, on the flooded harbour waterfront"
+      "originalDescription": "Royal Palace on Dam Square, a 17th-century Baroque civic building serving as Amsterdam\u0027s seat of government and cultural icon.",
+      "meshyPrompt": "Devastated 17th-century Baroque palace facade with pale sandstone, broken columns, collapsed balconies, water stains, mold, rubble heap entrance, partial dome damage, exposed metal framework, wooden salvage scaffolding, half-submerged stone base. Low-poly game asset.",
+      "positionHint": "centre, on the main square"
     },
     {
-      "name": "The Sunken Palace",
-      "visualDescription": "Baroque sandstone palace, sinking into waterlogged foundation. Grand symmetrical fa\u00E7ade with boarded-up arched windows. Cracked columns support listing pediment. Water pools around base, algae-covered stone. Ornate doorway frames hang askew. Scaffolding and makeshift platforms added by survivors. Weeping moisture trails across weathered stone.",
-      "sizeCategory": "large",
-      "originalDescription": "Royal Palace (Dam Palace), a classical sandstone mansion built in 1655 as Amsterdam\u0027s Town Hall, later used as royal residence.",
-      "meshyPrompt": "Classical baroque sandstone palace sinking into water-logged earth, cracked columns, boarded arched windows. Algae-covered stone, water damage stains. Ornate details weathered away. Makeshift survivor scaffolding welded to fa\u00E7ade. Dark atmosphere. Low-poly game asset",
-      "positionHint": "centre, at the old Dam Square"
-    },
-    {
-      "name": "The Silent Steeple",
-      "visualDescription": "Tall wooden-slat church tower with weathered grey timber cladding, partially burnt. Spire leans at 15-degree angle. Blackened brick base shows scorch marks. Stained glass windows are shattered, frames rusted. Thick vines creep up wooden sections. Bell chamber is open to sky, bell mechanism exposed and seized.",
+      "name": "Windmill Tower",
+      "visualDescription": "A cylindrical brick tower, originally octagonal, now partially collapsed on one side. The wooden sails are splintered and missing. Moss and algae coat the red-brown brick from years of spray and flooding. The internal grinding machinery is rusted and exposed through large cracks. Water level marks show repeated flood cycles. A metal band halfway up is the only intact original fixture. Corroded bolts and chains dangle from the damaged roof.",
       "sizeCategory": "medium",
-      "originalDescription": "Westerkerk, an iconic Protestant church with wooden tower built in 1631, features a distinctive tall wooden spire visible across Amsterdam.",
-      "meshyPrompt": "Timber-clad church steeple, weathered grey wood, partially fire-damaged. Leaning wooden spire with seized bell mechanism exposed. Burnt masonry base, broken stained-glass frames. Vines overtake lower sections. Gothic-industrial fusion, decay. Low-poly game asset",
-      "positionHint": "west, overlooking the canal district"
+      "originalDescription": "De Adriaan Windmill, an 18th-century grain mill iconic to Dutch heritage, historically used for pumping and milling in Amsterdam\u0027s water management system.",
+      "meshyPrompt": "Ruined 18th-century octagonal brick windmill tower, red-brown deteriorated brick, missing sails, collapsed wall section, exposed corroded metal gears, algae coating, water flood marks, rusty chains, half-submerged foundation, wooden structural beams visible. Low-poly game asset.",
+      "positionHint": "north-east, near the harbour"
+    },
+    {
+      "name": "Market Hall Ruins",
+      "visualDescription": "A sprawling iron-frame market hall with a corrugated metal roof, now punctured with dozens of holes. Rust blooms in orange and red streaks across the iron beams. Market stalls are toppled and crushed beneath fallen roof panels. Vines and mold cover every surface. The ground is a maze of twisted metal shelving, rotted wood crates, and abandoned goods encrusted with algae. Water pools in deep ruts between stall foundations. A few intact support pillars still bear faded painted signs. Skeletal remains of canvas awnings flutter from broken frames.",
+      "sizeCategory": "large",
+      "originalDescription": "Albert Cuyp Market, a 19th-century covered market arcade built for street traders, a bustling commercial heart of Amsterdam\u0027s daily commerce.",
+      "meshyPrompt": "Devastated 19th-century market hall, corrugated metal roof with holes, rust-streaked iron beams, collapsed stalls, twisted metal shelving, rotted wooden crates, algae-covered surfaces, water pooling, faded signs, skeletal canvas awnings, debris scattered, post-industrial decay. Low-poly game asset.",
+      "positionHint": "south-west of centre, commercial district"
     }
   ],
   "keyLocations": [
     {
-      "name": "The Dredged Market",
+      "name": "Canal Trade Post",
       "purpose": "shop",
-      "visualDescription": "Long covered market hall with collapsed corrugated metal roof, skeletal iron beams exposed. Stalls are repurposed shipping containers and wood scaffolding. Cracked concrete floor, drain channels rusted. Survivors have hung salvaged goods on wire mesh walls. Water drips from overhead, pooling in channels.",
+      "visualDescription": "A narrow brick warehouse with a gabled roof and large loading doors on the canal-facing wall. The facade is badly water-damaged, with faded merchant guild insignias barely visible beneath moss. The loading hoist above the door is rusted but still mounted. Crates are stacked haphazardly on the stone dock. The waterline is visibly higher than the original floor level. Rope and chains hang from pulleys. The interior glows with warm lantern light despite boarded windows.",
       "sizeCategory": "medium",
-      "originalDescription": "Albert Cuyp Market, Amsterdam\u0027s largest outdoor street market established in 1904, once bustling with vendors.",
-      "meshyPrompt": "Post-industrial market hall, corrugated metal roof partially collapsed, exposed iron beam skeleton. Repurposed shipping containers as stalls, wire mesh walls. Rusted drains, cracked concrete. Survivor modifications with scrap metal. Weathered industrial aesthetic. Low-poly game asset",
-      "positionHint": "south, along what was the Albert Cuyp street"
+      "originalDescription": "Historic warehouse converted into a floating trade dock, typical of Amsterdam\u0027s 17th-century merchant infrastructure along the canals.",
+      "meshyPrompt": "Weathered 17th-century brick warehouse with gabled roof, faded guild markings, moss-covered facade, large loading doors, rusted hoist mechanism, water-stained brick, stacked cargo crates, rope and pulley system, boarded windows with warm interior glow. Low-poly game asset.",
+      "positionHint": "east, along the canal waterfront"
     },
     {
-      "name": "The Chronicler\u0027s Archive",
-      "purpose": "quest_giver",
-      "visualDescription": "Connected row of classical buff-coloured buildings with mansard roofs, several stories sagging. Ornate doorway frames are cracked. Interior library visible through broken windows\u2014bookshelves still line walls but volumes are water-damaged, stacks scattered. Upper floors partially collapsed into lower levels. Survivors have shored up main entrance with plywood.",
-      "sizeCategory": "medium",
-      "originalDescription": "Amsterdam Museum, a classical-style museum housed in connecting 17th-century buildings, preserving the city\u0027s cultural history.",
-      "meshyPrompt": "Interconnected classical buff-stone buildings sagging with water damage, mansard roofs collapsing inward. Visible interior bookshelves and scattered volumes through broken windows. Crumbled ornate doorframes. Water stains, partially collapsed floors. Historical-meets-decay aesthetic. Low-poly game asset",
-      "positionHint": "centre-west, at the edge of the old museum district"
-    },
-    {
-      "name": "The Salvage Collective",
-      "purpose": "crafting",
-      "visualDescription": "Sprawling warehouse district: corrugated iron sheds, concrete loading docks, rusted shipping containers stacked haphazardly. Crane mechanisms are frozen mid-motion, one arm bent at angle. Interior workbenches and tool racks visible through gaping holes in walls. Scrap metal piles organized by survivors. Overhead catwalks partially intact, sway when wind blows.",
-      "sizeCategory": "large",
-      "originalDescription": "Amsterdam Port Authority warehouse complex, a series of functional brick and iron industrial warehouses that served shipping operations.",
-      "meshyPrompt": "Industrial warehouse complex with corrugated iron sheds, concrete docks, frozen cranes with bent arms. Rusted shipping containers, scattered tool racks visible inside. Makeshift survivor workbenches. Metal catwalk framework. Functional decay aesthetic. Low-poly game asset",
-      "positionHint": "north-east, along the old eastern harbour docks"
-    },
-    {
-      "name": "The Healer\u0027s Haven",
-      "purpose": "medical",
-      "visualDescription": "Four-story brick hospital with rows of broken windows, green copper roof sections corroded and missing. Stone facing is water-stained and cracked. Entrances are reinforced with salvage-wood barriers. Interior visible through holes\u2014medical equipment still hangs on walls but non-functional. Radiation warning signs (yellow/black) posted on east wing. Supply rooms visible with looted shelving.",
-      "sizeCategory": "medium",
-      "originalDescription": "Sint Bavo Hospital, a classical medical building constructed in the 1800s for patient care and surgery.",
-      "meshyPrompt": "Classical brick hospital building, water-damaged stonework, broken windows, corroded green copper roof sections. Radiation warning markers on east wing. Medical equipment visible through gaps, looted supply racks. Reinforced wooden entrance barriers. Medical-industrial decay. Low-poly game asset",
-      "positionHint": "south-east, away from water hazard zone"
-    },
-    {
-      "name": "The Iron Garrison",
-      "purpose": "barracks",
-      "visualDescription": "Austere red-brick military compound with crenellated walls. Guard towers at corners have observation platforms, one partially collapsed. Interior parade ground cracked and webbed with roots breaking through concrete. Low ammunition/supply buildings around perimeter, doors reinforced with chain and padlock. Watchtower searchlight mechanism still visible, non-functional. Sandbag barriers erected around main gate.",
-      "sizeCategory": "large",
-      "originalDescription": "Fort Defensie, a military administrative complex constructed in late 1800s, served as military headquarters and barracks.",
-      "meshyPrompt": "Military brick fortress with crenellated walls, guard towers with collapsed platform. Red brick heavily weathered. Interior parade ground cracked with vegetation breaking through. Ammunition buildings with reinforced doors. Searchlight tower mechanism exposed. Military hardened-decay aesthetic. Low-poly game asset",
-      "positionHint": "west-north, fortified on higher ground"
-    },
-    {
-      "name": "The Flooded Galleries",
-      "purpose": "shop",
-      "visualDescription": "Grand neo-renaissance building with distinctive red and yellow brick patterns, towers at corners. Main portico is intact but grand arches lead to interior flooded 3-4 meters deep. Visible through entrance: statues and marble fragments underwater, ornate railings submerged. Upper gallery levels are dry and accessed by survivors via external ladders. Decorative tile work still visible on facade.",
-      "sizeCategory": "medium",
-      "originalDescription": "Rijksmuseum, an iconic Victorian-era museum with ornate Dutch Renaissance architecture built in 1885, known for art and history collections.",
-      "meshyPrompt": "Victorian neo-renaissance museum, red and yellow brick decorative patterns. Grand entrance portico leads to flooded interior (statues visible underwater). Upper dry galleries accessed by external ladders. Submerged marble details. Ornate tile work weathered. Tragic beauty aesthetic. Low-poly game asset",
-      "positionHint": "south, overlooking the flooded gallery district"
-    },
-    {
-      "name": "The Weary Refuge",
-      "purpose": "tavern",
-      "visualDescription": "Narrow four-story timber-framed building with dark wood exterior, window shutters hanging askew. Ground floor has reinforced wooden counter for serving; bottles and casks stored on salvaged shelving. Upper floors used as barracks, blankets visible in windows. Entrance is small arched doorway partially boarded. Smoking chimney indicates active occupation. Exterior timber weathered to grey, some rot visible.",
-      "sizeCategory": "small",
-      "originalDescription": "De Zwaan (The Swan) pub and inn, a historic Dutch golden-age tavern and lodging house from the 1600s in the Red Light District.",
-      "meshyPrompt": "Historic timber-framed narrow Dutch townhouse, dark weathered wood. Small arched doorway, shutters askew. Ground floor tavern with salvage shelving and cask storage. Residential upper floors, blankets in windows. Weathered grey timber, visible rot spots. Cozy decay aesthetic. Low-poly game asset",
-      "positionHint": "centre, tucked in narrow alley near the old market"
-    },
-    {
-      "name": "The Vault",
+      "name": "Salvage Guild",
       "purpose": "storage",
-      "visualDescription": "Imposing fortress-like bank building: heavy cut stone walls, minimal windows (reinforced with bars and plating). Massive bronze doors at entrance are heavily corroded but secured with chains and survivor-added padlocks. Exterior is austere and fortress-like. Blast marks visible on north side, cracked stone in places. Ventilation shafts are blocked with metal grates. Small survivors maintain guard posts at corners.",
+      "visualDescription": "A brutalist concrete structure with reinforced walls and small high windows. Exterior walls are cracked and patched with welded metal sheets. Industrial shelving is visible through open delivery doors. Rows of metal containers and crates are organized in neat rows inside. The roof bears faded company logos and warning signs. Chain-link fencing with razor wire surrounds the perimeter. Loading ramps are reinforced with wooden planks. The ground is stained with unknown substances.",
       "sizeCategory": "large",
-      "originalDescription": "Amsterdam\u0027s Central Bank building, a fortress-like structure built in 1923 with reinforced stone and bank vaults.",
-      "meshyPrompt": "Fortress bank building, heavy cut stone walls, minimal reinforced windows with bars. Massive corroded bronze doors chained and padlocked. Blast-marked stonework, weathered austere aesthetic. Ventilation grates sealed. Guard posts at corners. Fortified decay style. Low-poly game asset",
-      "positionHint": "centre, beneath higher ground in financial district"
+      "originalDescription": "Former industrial processing facility and storage complex from the early 20th century, now repurposed as a secure depot.",
+      "meshyPrompt": "Brutalist 20th-century industrial warehouse, concrete walls with cracks, reinforced metal patches, corrugated metal fencing, razor wire, metal containers and shelving, faded logos, loading ramps, chemical stains, heavy industrial aesthetic. Low-poly game asset.",
+      "positionHint": "south, storage district"
     },
     {
-      "name": "The Spinner\u0027s Skeleton",
-      "purpose": "other",
-      "visualDescription": "Towering wooden windmill frame tilted 10 degrees, one massive wooden blade fallen and splintered on ground. Remaining three blades are weathered grey wood, freeze-cracked. Brick base is crumbled on north side. Interior grinding mechanism is seized and rust-frosted. Survivors use structure as observation post, ladder access to highest point. Wood siding is mostly gone, skeletal frame exposed.",
+      "name": "Medic\u0027s Haven",
+      "purpose": "medical",
+      "visualDescription": "A stone-fronted building with tall arched windows and a distinctive ornate entrance portico. The facade bears carved emblems of medicine (caduceus symbols). Many windows are broken or patched with cloth. A handmade red-cross flag hangs above the entrance. Makeshift beds are visible through broken windows. Bottles and medical containers line external shelves. The courtyard entrance shows signs of hasty fortification. Dried herbs and plants are hung from the eaves for drying.",
       "sizeCategory": "medium",
-      "originalDescription": "Windmill de Otter (Zaanse Schans replica), a historic Dutch windmill mechanism used for grain milling.",
-      "meshyPrompt": "Historic Dutch windmill structure, weathered grey wood, tilted frame. One fallen blade on ground, others freeze-cracked. Brick base crumbled. Interior grinding mechanism exposed and seized. Wooden siding stripped, skeletal frame visible. Used as survivor observation post. Melancholic decay aesthetic. Low-poly game asset",
-      "positionHint": "east-north, overlooking the water channels"
+      "originalDescription": "Former 19th-century apothecary and civic medical clinic, historically the primary health facility for Amsterdam\u0027s working districts.",
+      "meshyPrompt": "19th-century stone-fronted clinic with arched windows, carved medical emblems, patched and broken windows, red cross flag, dried medicinal herbs hanging from eaves, broken glass, cloth patches, handmade fortifications, weathered stone facade. Low-poly game asset.",
+      "positionHint": "north-centre, accessible on main road"
+    },
+    {
+      "name": "The Compass",
+      "purpose": "quest_giver",
+      "visualDescription": "A narrow, multi-story townhouse with a red-brick facade and a distinctive round bay window on each level. The roof is steeply pitched with decorative gables. Large maps and charts are visible through intact ground-floor windows. Brass navigational instruments hang in the window displays. The front door is reinforced with crossbars. Weathered ropes and ship rigging is coiled on the front stoop. A faded sign reading \u0027Guild of the Compass\u0027 is barely readable above the entrance.",
+      "sizeCategory": "small",
+      "originalDescription": "A 17th-century cartography and navigation guild hall, historically a meeting place for sailors, merchants, and explorers planning expeditions.",
+      "meshyPrompt": "17th-century red-brick navigator\u0027s guild hall, narrow facade, round bay windows, steep pitched roof, decorative gables, brass instruments displayed, ship ropes and rigging, reinforced door, faded guild signage, weathered wood trim. Low-poly game asset.",
+      "positionHint": "centre-south, near main plaza"
+    },
+    {
+      "name": "Smith\u0027s Workshop",
+      "purpose": "crafting",
+      "visualDescription": "A large brick building with a high ceiling and continuous strip windows along one wall. Massive furnaces and anvils are visible through an open garage door. Stacks of metal scrap and half-finished tools litter the workshop floor. Chains and pulleys hang from a reinforced ceiling beam. The brick exterior is heavily scored with soot and heat marks. A large chimney extends upward, venting thin smoke. Piles of ore and coke are stacked outside. Welding torches and hand-forged tools hang from pegboards.",
+      "sizeCategory": "medium",
+      "originalDescription": "Industrial metalworking foundry from the 19th century, historically producing hardware, tools, and structural components for Amsterdam\u0027s infrastructure.",
+      "meshyPrompt": "19th-century brick metalworking foundry, high industrial ceiling, furnaces and anvils visible, soot-stained brick, massive chimney, metal scrap piles, chains and pulleys overhead, reinforced beam structure, welding equipment, coal storage, heavy industrial aesthetic. Low-poly game asset.",
+      "positionHint": "centre-east, crafting hub"
+    },
+    {
+      "name": "The Anchor",
+      "purpose": "tavern",
+      "visualDescription": "A three-story building with timber framing and plaster infill, typical of old Dutch maritime taverns. The ground floor has large windows and a heavy wooden door reinforced with iron bands. Signs of former prosperity are visible in the carved beam ends and decorative shutters (now hanging askew). The interior glows amber with firelight. Fishing nets and maritime memorabilia hang from the walls inside. The roof is patched with multiple repairs. Broken ship lanterns are repurposed as lighting. A homemade sign with an anchor carved in wood swings above the entrance.",
+      "sizeCategory": "medium",
+      "originalDescription": "Historic 18th-century harbour tavern and sailors\u0027 lodging house, a traditional gathering place for maritime workers and merchants.",
+      "meshyPrompt": "18th-century timber-frame Dutch tavern, plaster infill, reinforced wooden door with iron bands, broken shutters, carved beam details, fishing nets and ship memorabilia visible through windows, repurposed ship lanterns, patched roof, anchor sign overhead. Low-poly game asset.",
+      "positionHint": "north-east, near the harbour"
+    },
+    {
+      "name": "Guard Post",
+      "purpose": "barracks",
+      "visualDescription": "A rectangular stone military building with symmetrical fenestration and a central watchtower. Arrow slits have been widened into proper windows. The facade bears faded military insignias and patrol route markers. Sandbags and barricades line the entrance and roofline. Watchtowers have been reinforced with metal bracing. Interior walls visible through broken sections show bunk arrangements and storage for weapons. A raised flagpole (now bare) marks the roof. Defensive pikes and spears are arranged in racks near the entrance.",
+      "sizeCategory": "medium",
+      "originalDescription": "Former 19th-century civic barracks and garrison building, historically housing Amsterdam\u0027s municipal armed forces and security personnel.",
+      "meshyPrompt": "19th-century stone barracks with central watchtower, arrow slits converted to windows, faded military insignia, sandbag barricades, reinforced watchtower, symmetrical facade, metal bracing, weapons racks, bare flagpole, defensive fortifications. Low-poly game asset.",
+      "positionHint": "south-west, fortified sector"
+    },
+    {
+      "name": "Flower Exchange",
+      "purpose": "shop",
+      "visualDescription": "A narrow covered arcade with a glass roof (now mostly shattered). Market stalls with remnants of colorful signage line both sides. Dried flowers and plant specimens are preserved in jars on hastily organized shelves. Packets of seeds (both preserved and growing from cracks) still bear faded Dutch and Latin labels. The ground is carpeted with dried petals and seed husks. A few hardy plants have reclaimed sections of the stalls, vines climbing the internal supports. Lanterns provide gentle illumination. The smell of dried flowers and soil is strong.",
+      "sizeCategory": "small",
+      "originalDescription": "The historic Amsterdam Flower Market (Bloemenmarkt), a 19th-century covered market specializing in bulbs, seeds, and cut flowers.",
+      "meshyPrompt": "19th-century glass-roofed flower market arcade, shattered glass panels, market stalls with faded signage, seed packets and dried flower specimens in jars, reclaiming vines, dried petals carpeting, lantern lighting, botanical aesthetic, weathered timber and glass framework. Low-poly game asset.",
+      "positionHint": "centre, on secondary road"
+    },
+    {
+      "name": "Water Mill",
+      "purpose": "crafting",
+      "visualDescription": "A timber-frame structure built directly over a canal lock system. A large wooden waterwheel (now stationary) dominates the canal-facing side. The wheel is partially submerged in the flooded water. Internal gears and millstones are visible through open sections. The building sags from water damage but remains structurally sound. Wooden scaffolding props up the waterwheel. Channels and sluices direct water flow around the structure. Faded guild marks and maintenance dates are carved into the door frame. Tools and grain sacks are stored in the upper floors.",
+      "sizeCategory": "medium",
+      "originalDescription": "A 17th-century functional water mill converted to serve Amsterdam\u0027s grain milling and power generation needs via canal water.",
+      "meshyPrompt": "17th-century water mill timber structure over canal lock, large wooden waterwheel partially submerged, visible internal gears and millstones, timber-frame construction, wooden scaffolding support, sluice gates, faded guild markings, grain storage, water-damaged but stable. Low-poly game asset.",
+      "positionHint": "centre-north, canal-side"
+    },
+    {
+      "name": "Bridge Archive",
+      "purpose": "quest_giver",
+      "visualDescription": "A stately neoclassical structure with tall columns and pediment details. Large windows (some boarded) once provided reading light. Interior shelves are densely packed with books, documents, and maps in various states of preservation. Wooden card catalogs and reading desks are intact but weathered. Water damage has affected lower shelves; higher sections are protected. Lanterns and salvaged light sources illuminate the interior. A grand stone staircase leads to upper gallery floors. Maps and nautical charts are pinned to remaining walls. The roof shows signs of careful patching.",
+      "sizeCategory": "medium",
+      "originalDescription": "The historic Amsterdam Municipal Library and Archives, a 19th-century neoclassical building housing historical records and civic knowledge.",
+      "meshyPrompt": "19th-century neoclassical library with tall columns, pediment detail, dense bookshelves and archives, wooden card catalogs, reading desks, water-stained lower shelves, protected upper galleries, grand stone staircase, maps and charts, lantern lighting, careful repairs. Low-poly game asset.",
+      "positionHint": "centre, intellectual quarter"
     }
   ],
   "layoutStyle": "radial",
   "hazards": [
     {
       "type": "flooding",
-      "description": "Canal system catastrophically overflooded; water levels submerged lower stories of buildings, creating underwater ruins and impassable zones.",
-      "locationHint": "south and east waterfront areas, ground level throughout southern district"
+      "description": "Canals have overflowed catastrophically; standing water levels remain dangerously high even in low-lying streets and districts. Tidal surges and breaches in the dike system continue to flood areas unpredictably. Underwater debris and sudden drop-offs create drowning hazards.",
+      "locationHint": "south-west waterfront and canal ring"
     },
     {
       "type": "collapse",
-      "description": "Structural failures from water damage and age; buildings lean, floors give way, debris falls unpredictably. Several structures are propped up by survivors but unstable.",
-      "locationHint": "north-west central district, particularly around Centraal Station and old museum row"
+      "description": "Structural failures are widespread; weakened buildings show signs of partial collapse. The collapse of a major dike section has compromised load-bearing walls in adjacent districts. Rubble piles block some routes; unstable rooflines threaten sudden failure.",
+      "locationHint": "centre and north sectors, particularly near the Citadel and Market Hall"
     },
     {
-      "type": "radiation",
-      "description": "Industrial chemical spill zone in eastern harbour district; marked with warning signs, causes slow health drain in affected areas.",
-      "locationHint": "east-north harbour, near docks and warehouse complex"
+      "type": "toxic",
+      "description": "Industrial contamination has poisoned the canal water system; chemical stains and unidentified substances coat the water surface. Noxious fumes rise from certain canal sections. Drinking or prolonged exposure to the water causes illness. Protective gear is essential in affected zones.",
+      "locationHint": "east canal industrial sector and flooded warehouse district"
     }
-  ]
+  ],
+  "spatialSpec": {
+    "realWorldBounds": {
+      "minLat": 52.365,
+      "maxLat": 52.375,
+      "minLon": 4.885,
+      "maxLon": 4.895
+    },
+    "buildingPlacements": {
+      "The Citadel": {
+        "name": "The Citadel",
+        "centerLat": 52.3701,
+        "centerLon": 4.89,
+        "widthMeters": 55,
+        "depthMeters": 60,
+        "rotationDegrees": 0,
+        "alignmentHint": "square_corner"
+      },
+      "Windmill Tower": {
+        "name": "Windmill Tower",
+        "centerLat": 52.3715,
+        "centerLon": 4.8915,
+        "widthMeters": 25,
+        "depthMeters": 25,
+        "rotationDegrees": 45,
+        "alignmentHint": "harbour_adjacent"
+      },
+      "Market Hall Ruins": {
+        "name": "Market Hall Ruins",
+        "centerLat": 52.3688,
+        "centerLon": 4.8885,
+        "widthMeters": 45,
+        "depthMeters": 50,
+        "rotationDegrees": 0,
+        "alignmentHint": "residential_area"
+      },
+      "Canal Trade Post": {
+        "name": "Canal Trade Post",
+        "centerLat": 52.3706,
+        "centerLon": 4.891,
+        "widthMeters": 20,
+        "depthMeters": 18,
+        "rotationDegrees": 15,
+        "alignmentHint": "harbour_adjacent"
+      },
+      "Salvage Guild": {
+        "name": "Salvage Guild",
+        "centerLat": 52.3696,
+        "centerLon": 4.889,
+        "widthMeters": 30,
+        "depthMeters": 25,
+        "rotationDegrees": 30,
+        "alignmentHint": "residential_area"
+      },
+      "Medic\u0027s Haven": {
+        "name": "Medic\u0027s Haven",
+        "centerLat": 52.371,
+        "centerLon": 4.8885,
+        "widthMeters": 22,
+        "depthMeters": 20,
+        "rotationDegrees": 0,
+        "alignmentHint": "on_main_road"
+      },
+      "The Compass": {
+        "name": "The Compass",
+        "centerLat": 52.3695,
+        "centerLon": 4.8905,
+        "widthMeters": 18,
+        "depthMeters": 16,
+        "rotationDegrees": 45,
+        "alignmentHint": "square_corner"
+      },
+      "Smith\u0027s Workshop": {
+        "name": "Smith\u0027s Workshop",
+        "centerLat": 52.3707,
+        "centerLon": 4.8895,
+        "widthMeters": 25,
+        "depthMeters": 22,
+        "rotationDegrees": 60,
+        "alignmentHint": "on_main_road"
+      },
+      "The Anchor": {
+        "name": "The Anchor",
+        "centerLat": 52.371,
+        "centerLon": 4.892,
+        "widthMeters": 28,
+        "depthMeters": 24,
+        "rotationDegrees": 20,
+        "alignmentHint": "harbour_adjacent"
+      },
+      "Guard Post": {
+        "name": "Guard Post",
+        "centerLat": 52.3692,
+        "centerLon": 4.8875,
+        "widthMeters": 26,
+        "depthMeters": 24,
+        "rotationDegrees": 90,
+        "alignmentHint": "hillside"
+      }
+    },
+    "roadNetwork": {
+      "nodes": [
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {}
+      ],
+      "edges": [
+        {
+          "fromLat": 52.3701,
+          "fromLon": 4.89,
+          "toLat": 52.3715,
+          "toLon": 4.89
+        },
+        {
+          "fromLat": 52.3701,
+          "fromLon": 4.89,
+          "toLat": 52.3688,
+          "toLon": 4.89
+        },
+        {
+          "fromLat": 52.3701,
+          "fromLon": 4.89,
+          "toLat": 52.3701,
+          "toLon": 4.8915
+        },
+        {
+          "fromLat": 52.3701,
+          "fromLon": 4.89,
+          "toLat": 52.3701,
+          "toLon": 4.8885
+        },
+        {
+          "fromLat": 52.3715,
+          "fromLon": 4.89,
+          "toLat": 52.3715,
+          "toLon": 4.8915
+        },
+        {
+          "fromLat": 52.3688,
+          "fromLon": 4.89,
+          "toLat": 52.3688,
+          "toLon": 4.8885
+        },
+        {
+          "fromLat": 52.3701,
+          "fromLon": 4.8915,
+          "toLat": 52.3715,
+          "toLon": 4.8915
+        },
+        {
+          "fromLat": 52.3701,
+          "fromLon": 4.8885,
+          "toLat": 52.3688,
+          "toLon": 4.8885
+        }
+      ],
+      "roadWidthMeters": 8
+    },
+    "waterBodies": [
+      {
+        "name": "The Flooded Ring",
+        "polygon": [
+          {},
+          {},
+          {},
+          {}
+        ],
+        "type": "Canal"
+      },
+      {
+        "name": "IJ River Overflow",
+        "polygon": [
+          {},
+          {},
+          {},
+          {}
+        ],
+        "type": "River"
+      }
+    ],
+    "terrainDescription": "Flat delta terrain with extensive water management; predominantly water-logged after collapse of dike infrastructure. Saturated ground with standing water in low-lying districts."
+  }
 }

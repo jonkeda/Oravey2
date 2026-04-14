@@ -1,13 +1,21 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
 namespace Oravey2.Contracts.ContentPack;
 
-public sealed record ManifestDto(
-    string Id,
-    string Name,
-    string Version,
-    string Description,
-    string Author,
-    string Parent,
-    string? EngineVersion = null,
-    string? RegionCode = null,
-    string? DefaultScenario = null,
-    List<string>? Tags = null);
+public sealed class ManifestDto
+{
+    public string Id { get; set; } = "";
+    public string Name { get; set; } = "";
+    public string Version { get; set; } = "0.1.0";
+    public string Description { get; set; } = "";
+    public string Author { get; set; } = "";
+    public string Parent { get; set; } = "";
+    public string? EngineVersion { get; set; }
+    public string? RegionCode { get; set; }
+    public string? DefaultScenario { get; set; }
+    public List<string>? Tags { get; set; }
+
+    [JsonExtensionData]
+    public Dictionary<string, JsonElement>? ExtensionData { get; set; }
+}

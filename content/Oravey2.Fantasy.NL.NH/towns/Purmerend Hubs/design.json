@@ -1,0 +1,257 @@
+{
+  "townName": "Purmerend Hubs",
+  "landmarks": [
+    {
+      "name": "Slot Purmerstein Keep",
+      "visualDescription": "A crumbling four-square stone keep with partially collapsed eastern wall revealing rusty iron reinforcements. Watchtower stubs protrude from three corners; one is completely sheared off. Moss and vine growth covers weathered brick. Massive wooden door hangs from corroded hinges. Rubble and fallen stones litter the courtyard visible through cracks in the outer walls.",
+      "sizeCategory": "large",
+      "originalDescription": "Slot Purmersteijn \u2014 a fortified medieval castle built by banker Willem Eggert in 1413 for defense and regional control, later demolished in 1741.",
+      "meshyPrompt": "Medieval stone castle keep with four corners, heavily damaged moderate destruction. Collapsed eastern wall exposing metal framework, missing watchtower stub, vine-covered weathered masonry, rusted iron door hinges, scattered stone rubble, moss-stained surfaces. Low-poly game asset.",
+      "positionHint": "centre, on the main square"
+    },
+    {
+      "name": "Koe Market Hall Ruins",
+      "visualDescription": "Skeletal remains of a vast covered market pavilion with rotting timber roof trusses visible overhead. Corrugated metal sheets hang like torn sail fabric. Stone stall bases and merchant tables lie scattered and overturned. Weeds grow through cracks in the tiled floor. One section of the roof partially collapsed, creating a cave-like shadow beneath twisted steel beams.",
+      "sizeCategory": "large",
+      "originalDescription": "Koemarket \u2014 the historic weekly and annual market plaza (marktrechten granted 1484) where merchants traded produce and goods; central to Purmerend\u0027s commerce.",
+      "meshyPrompt": "Ruined market hall with corroded metal beams and collapsed sections. Weathered stone merchant stalls, crumbling tiled floor, hanging corrugated metal sheets, twisted roof framework, weeds sprouting through cracks, scattered wooden debris. Moderate damage. Low-poly game asset.",
+      "positionHint": "north-east, near old market square"
+    },
+    {
+      "name": "Purmerend Lock Station",
+      "visualDescription": "A concrete and iron lock structure straddling the Dead Weere Canal. The lock gates hang at odd angles, corroded and non-functional. A small two-story control house sits beside the lock with broken windows and a tilted roofline. Rusty pulleys and winch mechanisms project from the frame. Water seeps from cracks in the concrete lock chamber, creating rust stains. A catwalk spans the lock with missing safety railings.",
+      "sizeCategory": "large",
+      "originalDescription": "Schutsluis Purmerend \u2014 completed 1821, a major canal lock on the Noordhollandsch Kanaal that connected Purmerend to Amsterdam and Alkmaar, enabling wood trade and commerce.",
+      "meshyPrompt": "Industrial canal lock structure with corroded metal gates at odd angles, concrete lock chamber with rust stains. Two-story control building with broken windows, tilted roof. Rusted pulleys, winch systems, fractured catwalk with missing railings. Moderate damage and decay. Low-poly game asset.",
+      "positionHint": "south-west, along the canal waterfront"
+    }
+  ],
+  "keyLocations": [
+    {
+      "name": "Hydroponic Gardens",
+      "purpose": "crafting",
+      "visualDescription": "A sprawling complex of interconnected plastic-sheeted greenhouses, many with cloudy or patched panels. Metal framework shows rust blooms. PVC pipes run along the ground and walls, some kinked or cracked. Inside, tiered plant beds and grow lights hang from overhead beams. The entrance features a warped aluminum door and weathered supply shelving.",
+      "sizeCategory": "large",
+      "originalDescription": "Former agricultural greenhouse sector \u2014 testament to Purmerend\u0027s farming heritage and the hydroponic systems that now sustain the settlement.",
+      "meshyPrompt": "Large greenhouse complex with plastic sheeting and rusted metal frame. Weathered PVC piping, tilted grow light fixtures, tiered plant beds visible through cloudy panels. Patched plastic, rust blooms on metal, cracked door frame. Overgrown vines on exterior. Moderate damage. Low-poly game asset.",
+      "positionHint": "north, near the northern road"
+    },
+    {
+      "name": "Communal Harvest Store",
+      "purpose": "storage",
+      "visualDescription": "A sturdy rectangular concrete and steel structure with a pitched metal roof. Heavy wooden sliding doors are partially ajar, revealing shadowy shelving inside. Small high windows are barred with rusted iron grates. Water damage streaks the south wall. Stacked wooden crates sit outside the entrance. Faded painted text reads \u0027HARVEST\u0027 on one wall.",
+      "sizeCategory": "medium",
+      "originalDescription": "A repurposed agricultural warehouse where the community stores preserved crops, seeds, and grain in managed conditions.",
+      "meshyPrompt": "Concrete and steel storage warehouse, pitched corroded metal roof. Heavy wooden sliding doors partially open, interior shelving visible. Barred windows, rust-stained walls, water damage streaks on concrete. Stacked wooden crates outside. Faded painted text. Moderate wear. Low-poly game asset.",
+      "positionHint": "south, near the central road junction"
+    },
+    {
+      "name": "Trader\u0027s Rest Tavern",
+      "purpose": "tavern",
+      "visualDescription": "A two-story timber-framed building with a sagging shingled roof and crooked chimney. Ground-floor windows have wooden shutters, some hanging loose. A faded wooden sign hangs from iron brackets. The entrance is a heavy oak door with a brass knocker. Moss grows on the north-facing wooden planks. Interior visible through cracks glows with warm candlelight.",
+      "sizeCategory": "small",
+      "originalDescription": "A small inn and tavern serving traders and travelers moving goods through the canal and market network.",
+      "meshyPrompt": "Two-story timber tavern with sagging shingle roof, crooked chimney. Weathered wooden shutters, some loose-hanging. Faded wooden tavern sign on iron bracket. Heavy oak door with brass details. Moss-covered timber planks, worn edges. Candlelight visible inside. Moderate weathering. Low-poly game asset.",
+      "positionHint": "centre, on the main road intersection"
+    },
+    {
+      "name": "Healer\u0027s Garden Clinic",
+      "purpose": "medical",
+      "visualDescription": "A one-and-a-half story brick cottage with a red tile roof and a small addition on the east side. Green shutters frame windows with panes of salvaged glass. Planter boxes line the foundation, growing medicinal herbs. A painted wooden cross hangs above the entrance. The door is freshly oiled wood. Smoke drifts from the chimney.",
+      "sizeCategory": "small",
+      "originalDescription": "A converted residential building serving as the settlement\u0027s medical clinic, stocked with herbal remedies and supplies grown in the hydroponic gardens.",
+      "meshyPrompt": "Brick cottage with red tile roof, one-and-a-half story. Green shutters, mixed-salvage glass windows. Medicinal herb planter boxes, wooden cross above door. Oiled wooden entrance, active chimney smoke. Attached herb drying room. Well-maintained despite age. Low-poly game asset.",
+      "positionHint": "south-east, near main road"
+    },
+    {
+      "name": "Scavenger\u0027s Workshop",
+      "purpose": "crafting",
+      "visualDescription": "A corrugated metal shed with a patchwork roof of different panel types and colors. The exterior is covered in rust blooms and welding scars. Large sliding door hangs from warped tracks. Inside, visible through gaps, piles of scrap metal, workbenches, and sparking welding torches. Chains and pulleys hang from overhead beams. The ground is stained with oil and rust.",
+      "sizeCategory": "small",
+      "originalDescription": "A scrap metal and salvage workshop where residents repair tools, craft new equipment, and repurpose pre-collapse materials.",
+      "meshyPrompt": "Corrugated metal workshop shed, patchwork roof panels. Rust blooms and welding scars on walls. Warped metal sliding door on damaged tracks. Visible interior: scrap metal piles, workbenches, chains, pulleys. Oil-stained ground, weathered corrugation. Active wear and tool marks. Low-poly game asset.",
+      "positionHint": "south-west, near secondary road"
+    },
+    {
+      "name": "Settlement Council Hall",
+      "purpose": "quest_giver",
+      "visualDescription": "A two-story civic building with Art Deco influences: clean lines, stepped roof sections, and large arched windows on the ground floor. Stone facade is cracked and salt-stained but mostly intact. The arched windows are boarded with weathered plywood. A flagpole stands empty on the roof. The entrance features stone steps and a heavy wooden double-door painted community blue.",
+      "sizeCategory": "medium",
+      "originalDescription": "A former municipal building converted into the settlement\u0027s administrative and gathering center where community decisions are made and quests are issued.",
+      "meshyPrompt": "Two-story civic building, Art Deco style. Clean stone facade with cracks and weathering. Arched windows boarded with weathered plywood, stepped roof sections, empty flagpole. Community-blue painted double doors, worn stone steps. Moderate structural damage visible. Low-poly game asset.",
+      "positionHint": "north-east, on the main square"
+    }
+  ],
+  "layoutStyle": "grid",
+  "hazards": [
+    {
+      "type": "flooding",
+      "description": "Seasonal polder flooding from failed drainage systems. Water pools in low areas and seeps through cracked foundations.",
+      "locationHint": "south-west waterfront near Dead Weere Canal"
+    },
+    {
+      "type": "collapse",
+      "description": "Structural failures in older greenhouse frames and storage buildings. Partial roof collapses during heavy rain.",
+      "locationHint": "north, in hydroponic gardens complex"
+    },
+    {
+      "type": "toxic",
+      "description": "Contaminated runoff from pre-collapse industrial equipment pooling near the lock station. Discolored water and dead vegetation.",
+      "locationHint": "south-west at Purmerend Lock Station"
+    }
+  ],
+  "spatialSpec": {
+    "realWorldBounds": {
+      "minLat": 52.495,
+      "maxLat": 52.51,
+      "minLon": 4.95,
+      "maxLon": 4.973
+    },
+    "buildingPlacements": {
+      "Slot Purmerstein Keep": {
+        "name": "Slot Purmerstein Keep",
+        "centerLat": 52.5025,
+        "centerLon": 4.9615,
+        "widthMeters": 50,
+        "depthMeters": 50,
+        "rotationDegrees": 0,
+        "alignmentHint": "square_corner"
+      },
+      "Koe Market Hall Ruins": {
+        "name": "Koe Market Hall Ruins",
+        "centerLat": 52.504,
+        "centerLon": 4.963,
+        "widthMeters": 45,
+        "depthMeters": 40,
+        "rotationDegrees": 0,
+        "alignmentHint": "square_corner"
+      },
+      "Purmerend Lock Station": {
+        "name": "Purmerend Lock Station",
+        "centerLat": 52.501,
+        "centerLon": 4.959,
+        "widthMeters": 35,
+        "depthMeters": 30,
+        "rotationDegrees": 0,
+        "alignmentHint": "on_main_road"
+      },
+      "Hydroponic Gardens": {
+        "name": "Hydroponic Gardens",
+        "centerLat": 52.5055,
+        "centerLon": 4.956,
+        "widthMeters": 40,
+        "depthMeters": 60,
+        "rotationDegrees": 0,
+        "alignmentHint": "residential_area"
+      },
+      "Communal Harvest Store": {
+        "name": "Communal Harvest Store",
+        "centerLat": 52.499,
+        "centerLon": 4.962,
+        "widthMeters": 30,
+        "depthMeters": 35,
+        "rotationDegrees": 0,
+        "alignmentHint": "residential_area"
+      },
+      "Trader\u0027s Rest Tavern": {
+        "name": "Trader\u0027s Rest Tavern",
+        "centerLat": 52.5015,
+        "centerLon": 4.9645,
+        "widthMeters": 20,
+        "depthMeters": 25,
+        "rotationDegrees": 0,
+        "alignmentHint": "on_main_road"
+      },
+      "Healer\u0027s Garden Clinic": {
+        "name": "Healer\u0027s Garden Clinic",
+        "centerLat": 52.5035,
+        "centerLon": 4.959,
+        "widthMeters": 22,
+        "depthMeters": 28,
+        "rotationDegrees": 0,
+        "alignmentHint": "on_main_road"
+      },
+      "Scavenger\u0027s Workshop": {
+        "name": "Scavenger\u0027s Workshop",
+        "centerLat": 52.4965,
+        "centerLon": 4.958,
+        "widthMeters": 25,
+        "depthMeters": 30,
+        "rotationDegrees": 0,
+        "alignmentHint": "residential_area"
+      },
+      "Settlement Council Hall": {
+        "name": "Settlement Council Hall",
+        "centerLat": 52.5065,
+        "centerLon": 4.9645,
+        "widthMeters": 35,
+        "depthMeters": 32,
+        "rotationDegrees": 0,
+        "alignmentHint": "square_corner"
+      }
+    },
+    "roadNetwork": {
+      "nodes": [
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {}
+      ],
+      "edges": [
+        {
+          "fromLat": 52.5025,
+          "fromLon": 4.9615,
+          "toLat": 52.5075,
+          "toLon": 4.9615
+        },
+        {
+          "fromLat": 52.5025,
+          "fromLon": 4.9615,
+          "toLat": 52.4975,
+          "toLon": 4.9615
+        },
+        {
+          "fromLat": 52.5025,
+          "fromLon": 4.9615,
+          "toLat": 52.5025,
+          "toLon": 4.9665
+        },
+        {
+          "fromLat": 52.5025,
+          "fromLon": 4.9615,
+          "toLat": 52.5025,
+          "toLon": 4.9565
+        },
+        {
+          "fromLat": 52.5075,
+          "fromLon": 4.9615,
+          "toLat": 52.5075,
+          "toLon": 4.9665
+        },
+        {
+          "fromLat": 52.4975,
+          "fromLon": 4.9615,
+          "toLat": 52.4975,
+          "toLon": 4.9565
+        }
+      ],
+      "roadWidthMeters": 12
+    },
+    "waterBodies": [
+      {
+        "name": "Dead Weere Canal",
+        "polygon": [
+          {},
+          {},
+          {},
+          {}
+        ],
+        "type": "Canal"
+      }
+    ],
+    "terrainDescription": "Flat polder landscape with minimal elevation change; former water bodies now drained agricultural land"
+  }
+}

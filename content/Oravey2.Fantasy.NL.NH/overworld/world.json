@@ -1,0 +1,26 @@
+{
+  "name": "NoordHolland",
+  "description": "Overworld map for NoordHolland",
+  "source": "NoordHolland",
+  "chunksWide": 1,
+  "chunksHigh": 1,
+  "tileSize": 1,
+  "playerStart": {
+    "chunkX": 0,
+    "chunkY": 0,
+    "localTileX": 0,
+    "localTileY": 0
+  },
+  "towns": [
+    {
+      "gameName": "Purmerend Hubs",
+      "realName": "Purmerend",
+      "gameX": 0,
+      "gameY": 0,
+      "description": "An agricultural settlement that survived by farming preserved crops in hydroponic gardens. An oasis of green in the wasteland.",
+      "size": "City",
+      "inhabitants": 95912,
+      "destruction": "Moderate"
+    }
+  ]
+}

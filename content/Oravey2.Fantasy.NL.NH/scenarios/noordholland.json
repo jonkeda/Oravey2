@@ -1,0 +1,18 @@
+{
+  "id": "noordholland",
+  "name": "NoordHolland Wastes",
+  "description": "Survive the ruins of NoordHolland...",
+  "towns": [
+    "Purmerend Hubs"
+  ],
+  "playerStart": {
+    "town": "Purmerend Hubs",
+    "tileX": 5,
+    "tileY": 5
+  },
+  "difficulty": 3,
+  "tags": [
+    "exploration",
+    "apocalyptic"
+  ]
+}

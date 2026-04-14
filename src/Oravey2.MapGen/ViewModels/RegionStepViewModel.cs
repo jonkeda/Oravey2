@@ -196,16 +196,18 @@ public class RegionStepViewModel : BaseViewModel
                 ? region.Name
                 : genre;
 
-            var manifest = new ManifestDto(
-                Id: spec.Name.ToLowerInvariant(),
-                Name: displayName,
-                Version: "0.1.0",
-                Description: spec.RegionCode is not null
+            var manifest = new ManifestDto
+            {
+                Id = spec.Name.ToLowerInvariant(),
+                Name = displayName,
+                Version = "0.1.0",
+                Description = spec.RegionCode is not null
                     ? $"Content pack for {displayName}"
                     : $"{genre} world-shared content",
-                Author: "",
-                Parent: spec.Parent ?? "",
-                RegionCode: spec.RegionCode);
+                Author = "",
+                Parent = spec.Parent ?? "",
+                RegionCode = spec.RegionCode,
+            };
 
             File.WriteAllText(
                 Path.Combine(packDir, "manifest.json"),

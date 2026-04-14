@@ -1,7 +1,7 @@
 {
-  "name": "noord-holland",
-  "description": "Overworld map for noord-holland",
-  "source": "noord-holland",
+  "name": "NoordHolland",
+  "description": "Overworld map for NoordHolland",
+  "source": "NoordHolland",
   "chunksWide": 1,
   "chunksHigh": 1,
   "tileSize": 1,
@@ -13,12 +13,24 @@
   },
   "towns": [
     {
-      "gameName": "Island Haven",
-      "realName": "Marken",
+      "gameName": "The Dam (Ruins)",
+      "realName": "Amsterdam",
       "gameX": 0,
       "gameY": 0,
-      "role": "survivor_camp",
-      "threatLevel": 2
+      "description": "Once the thriving capital, now a flooded urban graveyard. Collapsed infrastructure dominates the skyline; survivors salvage technology from the drowned towers.",
+      "size": "City",
+      "inhabitants": 881933,
+      "destruction": "Devastated"
+    },
+    {
+      "gameName": "Purgatory",
+      "realName": "Purmerend",
+      "gameX": 0,
+      "gameY": 0,
+      "description": "A sprawling town reduced to concrete shells and rubble. Rival warlords control different districts; the central market is a war zone.",
+      "size": "City",
+      "inhabitants": 95912,
+      "destruction": "Heavy"
     }
   ]
 }

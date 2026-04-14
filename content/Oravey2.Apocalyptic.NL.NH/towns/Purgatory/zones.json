@@ -1,7 +1,7 @@
 [
   {
     "id": "zone_main",
-    "name": "The Dam (Ruins)",
+    "name": "Purgatory",
     "biome": 0,
     "radiationLevel": 0,
     "enemyDifficultyTier": 1,
@@ -13,7 +13,7 @@
   },
   {
     "id": "zone_hazard_0",
-    "name": "flooding zone",
+    "name": "collapse zone",
     "biome": 1,
     "radiationLevel": 0.1,
     "enemyDifficultyTier": 1,
@@ -25,7 +25,7 @@
   },
   {
     "id": "zone_hazard_1",
-    "name": "collapse zone",
+    "name": "fire zone",
     "biome": 1,
     "radiationLevel": 0.1,
     "enemyDifficultyTier": 1,
@@ -37,13 +37,13 @@
   },
   {
     "id": "zone_hazard_2",
-    "name": "toxic zone",
+    "name": "flooding zone",
     "biome": 1,
     "radiationLevel": 0.1,
     "enemyDifficultyTier": 1,
     "isFastTravelTarget": false,
-    "chunkStartX": 24,
-    "chunkStartY": 0,
+    "chunkStartX": 0,
+    "chunkStartY": 24,
     "chunkEndX": 24,
     "chunkEndY": 24
   }

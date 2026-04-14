@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Oravey2.Contracts.ContentPack;
 
 namespace Oravey2.MapGen.Pipeline;
 
@@ -77,16 +78,16 @@ public sealed class ContentPackAssembler
     public void UpdateManifest(string contentPackPath, ManifestUpdate update)
     {
         var manifestPath = Path.Combine(contentPackPath, "manifest.json");
-        ManifestFile manifest;
+        ManifestDto manifest;
 
         if (File.Exists(manifestPath))
         {
-            manifest = JsonSerializer.Deserialize<ManifestFile>(
+            manifest = JsonSerializer.Deserialize<ManifestDto>(
                 File.ReadAllText(manifestPath), JsonOptions) ?? new();
         }
         else
         {
-            manifest = new ManifestFile();
+            manifest = new ManifestDto();
         }
 
         if (!string.IsNullOrEmpty(update.Name))
@@ -399,19 +400,6 @@ public sealed class ManifestUpdate
     public string? Version { get; set; }
     public string? Description { get; set; }
     public string? Author { get; set; }
-}
-
-public sealed class ManifestFile
-{
-    public string Id { get; set; } = "";
-    public string Name { get; set; } = "";
-    public string Version { get; set; } = "0.1.0";
-    public string Description { get; set; } = "";
-    public string Author { get; set; } = "";
-    public string EngineVersion { get; set; } = ">=0.1.0";
-    public string Parent { get; set; } = "";
-    public List<string> Tags { get; set; } = [];
-    public string DefaultScenario { get; set; } = "";
 }
 
 public sealed class CatalogFile

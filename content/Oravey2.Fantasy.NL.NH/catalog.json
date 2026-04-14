@@ -1,0 +1,19 @@
+{
+  "building": [
+    {
+      "assetId": "cube",
+      "path": "assets/meshes/primitives/cube.glb"
+    },
+    {
+      "assetId": "pyramid",
+      "path": "assets/meshes/primitives/pyramid.glb"
+    },
+    {
+      "assetId": "sphere",
+      "path": "assets/meshes/primitives/sphere.glb"
+    }
+  ],
+  "prop": [],
+  "surface": [],
+  "terrain_mesh": []
+}
