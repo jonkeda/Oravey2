@@ -150,41 +150,22 @@ public sealed class TownDesigner
     {
         var (_, _, _, maxHazards) = CountsForSize(size);
 
-        var landmarks = entry.Landmarks
-            .Select(l => new LandmarkBuilding
-            {
-                Name = l.Name,
-                VisualDescription = l.VisualDescription,
-                SizeCategory = NormalizeSizeCategory(l.SizeCategory),
-                OriginalDescription = l.OriginalDescription,
-                MeshyPrompt = l.MeshyPrompt,
-                PositionHint = l.PositionHint,
-            })
-            .ToList();
+        // Normalize size categories in-place
+        foreach (var l in entry.Landmarks)
+            l.SizeCategory = NormalizeSizeCategory(l.SizeCategory);
+
+        var landmarks = entry.Landmarks.ToList();
 
         // Ensure at least one landmark
         if (landmarks.Count == 0)
             landmarks.Add(new LandmarkBuilding { Name = "Unknown Landmark", SizeCategory = "medium", PositionHint = "centre" });
 
-        var keyLocations = entry.KeyLocations
-            .Select(k => new KeyLocation
-            {
-                Name = k.Name,
-                Purpose = k.Purpose,
-                VisualDescription = k.VisualDescription,
-                SizeCategory = NormalizeSizeCategory(k.SizeCategory),
-                OriginalDescription = k.OriginalDescription,
-                MeshyPrompt = k.MeshyPrompt,
-                PositionHint = k.PositionHint,
-            })
-            .ToList();
+        foreach (var k in entry.KeyLocations)
+            k.SizeCategory = NormalizeSizeCategory(k.SizeCategory);
 
+        var keyLocations = entry.KeyLocations.ToList();
         var layoutStyle = NormalizeLayoutStyle(entry.LayoutStyle);
-
-        var hazards = entry.Hazards
-            .Take(maxHazards)
-            .Select(h => new EnvironmentalHazard { Type = h.Type, Description = h.Description, LocationHint = h.LocationHint })
-            .ToList();
+        var hazards = entry.Hazards.Take(maxHazards).ToList();
 
         var design = new TownDesign { TownName = townName, Landmarks = landmarks, KeyLocations = keyLocations, LayoutStyle = layoutStyle, Hazards = hazards };
 

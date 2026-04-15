@@ -132,8 +132,7 @@ public class TownDesignStepViewModelTests
 
         // Pre-save a design for Haven-0
         var designPath = Path.Combine(state.ContentPackPath, "towns", "Haven-0", "design.json");
-        var designFile = TownDesignFile.FromTownDesign(MakeDesign("Haven-0"));
-        designFile.Save(designPath);
+        MakeDesign("Haven-0").Save(designPath);
 
         vm.Initialize(state.ContentPackPath);
         vm.Load(state);
@@ -262,15 +261,14 @@ public class TownDesignStepViewModelTests
         vm.SaveDesign(item);
 
         // Reload
-        var loaded = TownDesignFile.Load(vm.GetDesignPath("Haven-0"));
-        var design = loaded.ToTownDesign();
+        var loaded = TownDesign.Load(vm.GetDesignPath("Haven-0"));
 
-        Assert.Equal("Haven-0", design.TownName);
-        Assert.Equal("Fort Kijkduin", design.Landmarks[0].Name);
-        Assert.Equal("large", design.Landmarks[0].SizeCategory);
-        Assert.Equal(3, design.KeyLocations.Count);
-        Assert.Equal("compound", design.LayoutStyle);
-        Assert.Single(design.Hazards);
+        Assert.Equal("Haven-0", loaded.TownName);
+        Assert.Equal("Fort Kijkduin", loaded.Landmarks[0].Name);
+        Assert.Equal("large", loaded.Landmarks[0].SizeCategory);
+        Assert.Equal(3, loaded.KeyLocations.Count);
+        Assert.Equal("compound", loaded.LayoutStyle);
+        Assert.Single(loaded.Hazards);
     }
 
     // --- RefreshDesignedCount ---

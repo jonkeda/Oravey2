@@ -44,34 +44,58 @@ public class TownDesignFileTests
     };
 
     [Fact]
-    public void FromTownDesign_MapsAllFields()
+    public void Save_MapsAllFields()
     {
         var design = MakeDesign();
-        var file = TownDesignFile.FromTownDesign(design);
+        var dir = Path.Combine(Path.GetTempPath(), "test-design-fields-" + Guid.NewGuid().ToString("N"));
+        var path = Path.Combine(dir, "design.json");
 
-        Assert.Equal("Havenburg", file.TownName);
-        Assert.Equal("Fort Kijkduin", file.Landmarks[0].Name);
-        Assert.Equal("large", file.Landmarks[0].SizeCategory);
-        Assert.Equal(3, file.KeyLocations.Count);
-        Assert.Equal("compound", file.LayoutStyle);
-        Assert.Single(file.Hazards);
+        try
+        {
+            design.Save(path);
+            var loaded = TownDesign.Load(path);
+
+            Assert.Equal("Havenburg", loaded.TownName);
+            Assert.Equal("Fort Kijkduin", loaded.Landmarks[0].Name);
+            Assert.Equal("large", loaded.Landmarks[0].SizeCategory);
+            Assert.Equal(3, loaded.KeyLocations.Count);
+            Assert.Equal("compound", loaded.LayoutStyle);
+            Assert.Single(loaded.Hazards);
+        }
+        finally
+        {
+            if (Directory.Exists(dir))
+                Directory.Delete(dir, true);
+        }
     }
 
     [Fact]
-    public void ToTownDesign_MapsAllFields()
+    public void Load_MapsAllFields()
     {
-        var file = TownDesignFile.FromTownDesign(MakeDesign());
-        var design = file.ToTownDesign();
+        var design = MakeDesign();
+        var dir = Path.Combine(Path.GetTempPath(), "test-design-load-" + Guid.NewGuid().ToString("N"));
+        var path = Path.Combine(dir, "design.json");
 
-        Assert.Equal("Havenburg", design.TownName);
-        Assert.Equal("Fort Kijkduin", design.Landmarks[0].Name);
-        Assert.Equal("A massive coastal fortress with crumbling stone walls", design.Landmarks[0].VisualDescription);
-        Assert.Equal(3, design.KeyLocations.Count);
-        Assert.Equal("The Drydock Market", design.KeyLocations[0].Name);
-        Assert.Equal("shop", design.KeyLocations[0].Purpose);
-        Assert.Equal("compound", design.LayoutStyle);
-        Assert.Single(design.Hazards);
-        Assert.Equal("flooding", design.Hazards[0].Type);
+        try
+        {
+            design.Save(path);
+            var loaded = TownDesign.Load(path);
+
+            Assert.Equal("Havenburg", loaded.TownName);
+            Assert.Equal("Fort Kijkduin", loaded.Landmarks[0].Name);
+            Assert.Equal("A massive coastal fortress with crumbling stone walls", loaded.Landmarks[0].VisualDescription);
+            Assert.Equal(3, loaded.KeyLocations.Count);
+            Assert.Equal("The Drydock Market", loaded.KeyLocations[0].Name);
+            Assert.Equal("shop", loaded.KeyLocations[0].Purpose);
+            Assert.Equal("compound", loaded.LayoutStyle);
+            Assert.Single(loaded.Hazards);
+            Assert.Equal("flooding", loaded.Hazards[0].Type);
+        }
+        finally
+        {
+            if (Directory.Exists(dir))
+                Directory.Delete(dir, true);
+        }
     }
 
     [Fact]
@@ -83,13 +107,11 @@ public class TownDesignFileTests
         try
         {
             var original = MakeDesign();
-            var file = TownDesignFile.FromTownDesign(original);
-            file.Save(path);
+            original.Save(path);
 
             Assert.True(File.Exists(path));
 
-            var loaded = TownDesignFile.Load(path);
-            var roundTripped = loaded.ToTownDesign();
+            var roundTripped = TownDesign.Load(path);
 
             Assert.Equal(original.TownName, roundTripped.TownName);
             Assert.Equal(original.Landmarks[0].Name, roundTripped.Landmarks[0].Name);
@@ -122,8 +144,7 @@ public class TownDesignFileTests
 
         try
         {
-            var file = TownDesignFile.FromTownDesign(MakeDesign());
-            file.Save(path);
+            MakeDesign().Save(path);
 
             Assert.True(Directory.Exists(dir));
             Assert.True(File.Exists(path));
@@ -144,7 +165,7 @@ public class TownDesignFileTests
 
         try
         {
-            var file = TownDesignFile.FromTownDesign(MakeDesign());
+            var file = MakeDesign();
             file.Save(path);
 
             var json = File.ReadAllText(path);
@@ -171,11 +192,9 @@ public class TownDesignFileTests
         try
         {
             var original = MakeDesignWithNewFields();
-            var file = TownDesignFile.FromTownDesign(original);
-            file.Save(path);
+            original.Save(path);
 
-            var loaded = TownDesignFile.Load(path);
-            var roundTripped = loaded.ToTownDesign();
+            var roundTripped = TownDesign.Load(path);
 
             // Landmark new fields
             Assert.Contains("Napoleonic", roundTripped.Landmarks[0].OriginalDescription);
@@ -205,11 +224,9 @@ public class TownDesignFileTests
             var original = MakeDesignWithNewFields();
             Assert.Equal(2, original.Landmarks.Count);
 
-            var file = TownDesignFile.FromTownDesign(original);
-            file.Save(path);
+            original.Save(path);
 
-            var loaded = TownDesignFile.Load(path);
-            var roundTripped = loaded.ToTownDesign();
+            var roundTripped = TownDesign.Load(path);
 
             Assert.Equal(2, roundTripped.Landmarks.Count);
             Assert.Equal("Fort Kijkduin", roundTripped.Landmarks[0].Name);

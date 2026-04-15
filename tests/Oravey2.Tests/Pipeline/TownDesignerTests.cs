@@ -96,7 +96,7 @@ public class TownDesignerTests
         {
             Landmarks =
             [
-                new LlmLandmarkEntry
+                new LandmarkBuilding
                 {
                     Name = "Fort Kijkduin",
                     VisualDescription = "A massive coastal fortress",
@@ -105,14 +105,14 @@ public class TownDesignerTests
             ],
             KeyLocations =
             [
-                new LlmKeyLocationEntry
+                new KeyLocation
                 {
                     Name = "Market",
                     Purpose = "shop",
                     VisualDescription = "An old drydock market",
                     SizeCategory = "medium",
                 },
-                new LlmKeyLocationEntry
+                new KeyLocation
                 {
                     Name = "Clinic",
                     Purpose = "medical",
@@ -123,7 +123,7 @@ public class TownDesignerTests
             LayoutStyle = "compound",
             Hazards =
             [
-                new LlmHazardEntry
+                new EnvironmentalHazard
                 {
                     Type = "flooding",
                     Description = "Harbour floods at high tide",
@@ -152,9 +152,9 @@ public class TownDesignerTests
         {
             Landmarks =
             [
-                new LlmLandmarkEntry { Name = "Fort Kijkduin", VisualDescription = "A fortress", SizeCategory = "large" },
-                new LlmLandmarkEntry { Name = "Lighthouse", VisualDescription = "A lighthouse", SizeCategory = "medium" },
-                new LlmLandmarkEntry { Name = "Naval Yard", VisualDescription = "Old naval yard", SizeCategory = "large" },
+                new LandmarkBuilding { Name = "Fort Kijkduin", VisualDescription = "A fortress", SizeCategory = "large" },
+                new LandmarkBuilding { Name = "Lighthouse", VisualDescription = "A lighthouse", SizeCategory = "medium" },
+                new LandmarkBuilding { Name = "Naval Yard", VisualDescription = "Old naval yard", SizeCategory = "large" },
             ],
             KeyLocations = [],
             LayoutStyle = "organic",
@@ -175,7 +175,7 @@ public class TownDesignerTests
         {
             Landmarks =
             [
-                new LlmLandmarkEntry
+                new LandmarkBuilding
                 {
                     Name = "Fort Kijkduin",
                     VisualDescription = "A fortress",
@@ -187,7 +187,7 @@ public class TownDesignerTests
             ],
             KeyLocations =
             [
-                new LlmKeyLocationEntry
+                new KeyLocation
                 {
                     Name = "Market",
                     Purpose = "shop",
@@ -238,7 +238,7 @@ public class TownDesignerTests
         {
             Landmarks =
             [
-                new LlmLandmarkEntry
+                new LandmarkBuilding
                 {
                     Name = "Tower",
                     VisualDescription = "A tall tower",
@@ -261,7 +261,7 @@ public class TownDesignerTests
         {
             Landmarks =
             [
-                new LlmLandmarkEntry
+                new LandmarkBuilding
                 {
                     Name = "Tower",
                     VisualDescription = "A tall tower",
@@ -284,7 +284,7 @@ public class TownDesignerTests
         {
             Landmarks =
             [
-                new LlmLandmarkEntry
+                new LandmarkBuilding
                 {
                     Name = "Tower",
                     VisualDescription = "A tall tower",
@@ -295,10 +295,10 @@ public class TownDesignerTests
             LayoutStyle = "grid",
             Hazards =
             [
-                new LlmHazardEntry { Type = "flooding", Description = "a", LocationHint = "a" },
-                new LlmHazardEntry { Type = "radiation", Description = "b", LocationHint = "b" },
-                new LlmHazardEntry { Type = "fire", Description = "c", LocationHint = "c" },
-                new LlmHazardEntry { Type = "collapse", Description = "d", LocationHint = "d" },
+                new EnvironmentalHazard { Type = "flooding", Description = "a", LocationHint = "a" },
+                new EnvironmentalHazard { Type = "radiation", Description = "b", LocationHint = "b" },
+                new EnvironmentalHazard { Type = "fire", Description = "c", LocationHint = "c" },
+                new EnvironmentalHazard { Type = "collapse", Description = "d", LocationHint = "d" },
             ],
         };
 

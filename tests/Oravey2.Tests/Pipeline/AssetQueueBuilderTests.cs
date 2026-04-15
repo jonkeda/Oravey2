@@ -11,7 +11,7 @@ public class AssetQueueBuilderTests
         {
             var townDir = Path.Combine(root, "towns", gameName);
             Directory.CreateDirectory(townDir);
-            TownDesignFile.FromTownDesign(design).Save(Path.Combine(townDir, "design.json"));
+            design.Save(Path.Combine(townDir, "design.json"));
         }
         return root;
     }

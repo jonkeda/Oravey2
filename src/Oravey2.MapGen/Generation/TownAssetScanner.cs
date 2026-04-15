@@ -24,7 +24,7 @@ public sealed class TownAssetScanner
             var designPath = Path.Combine(townDir, "design.json");
             if (!File.Exists(designPath)) continue;
 
-            var design = TownDesignFile.Load(designPath).ToTownDesign();
+            var design = TownDesign.Load(designPath);
             var gameName = Path.GetFileName(townDir);
 
             var buildingsPath = Path.Combine(townDir, "buildings.json");

@@ -72,10 +72,9 @@ public class TownMapsStepViewModelTests
 
         // Create design.json
         var design = CreateTestDesign(townName);
-        var designFile = TownDesignFile.FromTownDesign(design);
         var townDir = Path.Combine(tempDir, "towns", townName);
         Directory.CreateDirectory(townDir);
-        designFile.Save(Path.Combine(townDir, "design.json"));
+        design.Save(Path.Combine(townDir, "design.json"));
 
         return tempDir;
     }
@@ -208,7 +207,7 @@ public class TownMapsStepViewModelTests
                 var design = CreateTestDesign(name);
                 var townDir = Path.Combine(dir, "towns", name);
                 Directory.CreateDirectory(townDir);
-                TownDesignFile.FromTownDesign(design).Save(Path.Combine(townDir, "design.json"));
+                design.Save(Path.Combine(townDir, "design.json"));
             }
 
             var vm = new TownMapsStepViewModel();

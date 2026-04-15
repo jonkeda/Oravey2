@@ -15,7 +15,7 @@ public class AssetsStepViewModelTests
         {
             var townDir = Path.Combine(root, "towns", gameName);
             Directory.CreateDirectory(townDir);
-            TownDesignFile.FromTownDesign(design).Save(Path.Combine(townDir, "design.json"));
+            design.Save(Path.Combine(townDir, "design.json"));
 
             if (mapResult is not null)
                 TownMapFiles.Save(mapResult, townDir);

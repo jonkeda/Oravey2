@@ -25,7 +25,7 @@ public sealed class AssetQueueBuilder
             var designPath = Path.Combine(townDir, "design.json");
             if (!File.Exists(designPath)) continue;
 
-            var design = TownDesignFile.Load(designPath).ToTownDesign();
+            var design = TownDesign.Load(designPath);
             var townName = design.TownName;
 
             // Landmarks

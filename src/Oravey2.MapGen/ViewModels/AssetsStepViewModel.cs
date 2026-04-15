@@ -415,7 +415,7 @@ public class AssetsStepViewModel : BaseViewModel
 
             if (!File.Exists(designPath) || !File.Exists(buildingsPath)) continue;
 
-            var design = TownDesignFile.Load(designPath).ToTownDesign();
+            var design = TownDesign.Load(designPath);
             var mapResult = TownMapFiles.Load(townDir);
 
             var (updatedBuildings, updatedProps) = assigner.AssignPrimitiveMeshes(

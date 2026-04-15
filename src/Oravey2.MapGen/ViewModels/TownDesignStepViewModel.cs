@@ -162,8 +162,7 @@ public class TownDesignStepViewModel : BaseViewModel
             var designPath = GetDesignPath(t.GameName);
             if (File.Exists(designPath))
             {
-                var designFile = TownDesignFile.Load(designPath);
-                item.Design = designFile.ToTownDesign();
+                item.Design = TownDesign.Load(designPath);
                 item.IsDesigned = true;
             }
 
@@ -303,8 +302,7 @@ public class TownDesignStepViewModel : BaseViewModel
         if (item.Design is null) return;
 
         var path = GetDesignPath(item.GameName);
-        var file = TownDesignFile.FromTownDesign(item.Design);
-        file.Save(path);
+        item.Design.Save(path);
 
         item.IsDesigned = true;
         item.HasPendingDesign = false;

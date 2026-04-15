@@ -256,7 +256,7 @@ public class TownMapsStepViewModel : BaseViewModel
             var designPath = Path.Combine(_state.ContentPackPath, "towns", t.GameName, "design.json");
             if (!File.Exists(designPath)) continue; // skip towns without designs
 
-            var design = TownDesignFile.Load(designPath).ToTownDesign();
+            var design = TownDesign.Load(designPath);
             var item = new TownMapItem
             {
                 GameName = t.GameName,
