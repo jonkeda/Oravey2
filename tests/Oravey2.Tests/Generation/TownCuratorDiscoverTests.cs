@@ -1,6 +1,7 @@
 using System.Numerics;
 using System.Text.Json;
 using Microsoft.Extensions.AI;
+using Oravey2.Contracts.ContentPack;
 using Oravey2.MapGen.Generation;
 using Oravey2.MapGen.RegionTemplates;
 
@@ -92,7 +93,7 @@ public class TownCuratorDiscoverTests
     public void BuildCuratedTowns_LooksUpFromTemplate()
     {
         var region = CreateTestRegion();
-        var entries = Enumerable.Range(0, 10).Select(i => new LlmTownEntry
+        var entries = Enumerable.Range(0, 10).Select(i => new CuratedTownDto
         {
             GameName = $"Haven-{i}",
             RealName = $"Town{i}",
@@ -117,7 +118,7 @@ public class TownCuratorDiscoverTests
     public void BuildCuratedTowns_SkipsUnmatchedNames()
     {
         var region = CreateTestRegion();
-        var entries = new List<LlmTownEntry>
+        var entries = new List<CuratedTownDto>
         {
             new() { GameName = "A", RealName = "Town0", Description = "d", Size = "Town", Inhabitants = 5000, Destruction = "Moderate" },
             new() { GameName = "B", RealName = "NonExistent", Description = "d", Size = "Village", Inhabitants = 1000, Destruction = "Light" },
@@ -135,7 +136,7 @@ public class TownCuratorDiscoverTests
     public void BuildCuratedTowns_ParsesDestructionLevel()
     {
         var region = CreateTestRegion();
-        var entries = new List<LlmTownEntry>
+        var entries = new List<CuratedTownDto>
         {
             new() { GameName = "A", RealName = "Town0", Description = "d", Size = "Town", Inhabitants = 5000, Destruction = "Devastated" },
             new() { GameName = "B", RealName = "Town1", Description = "d", Size = "Village", Inhabitants = 1000, Destruction = "bogus" },
@@ -160,7 +161,7 @@ public class TownCuratorDiscoverTests
             Towns = [new TownEntry("TestTown", 52.5, 4.9, 50000, new Vector2(100, 200), TownCategory.Town, boundary)],
         };
 
-        var entries = new List<LlmTownEntry>
+        var entries = new List<CuratedTownDto>
         {
             new() { GameName = "Haven", RealName = "TestTown", Description = "d", Size = "Town", Inhabitants = 5000, Destruction = "Moderate" },
         };
@@ -192,7 +193,7 @@ public class TownCuratorDiscoverTests
     public async Task DiscoverAsync_CallsToolAndReturnsTowns()
     {
         var region = CreateTestRegion();
-        var entries = Enumerable.Range(0, 10).Select(i => new LlmTownEntry
+        var entries = Enumerable.Range(0, 10).Select(i => new CuratedTownDto
         {
             GameName = $"Haven-{i}",
             RealName = $"Town{i}",
@@ -234,7 +235,7 @@ public class TownCuratorDiscoverTests
     public async Task DiscoverAsync_UsesToolCallWhenAvailable()
     {
         var region = CreateTestRegion();
-        var entries = Enumerable.Range(0, 10).Select(i => new LlmTownEntry
+        var entries = Enumerable.Range(0, 10).Select(i => new CuratedTownDto
         {
             GameName = $"T{i}",
             RealName = $"Town{i}",
@@ -267,7 +268,7 @@ public class TownCuratorDiscoverTests
     public async Task DiscoverAsync_LogsSentAndReceived()
     {
         var region = CreateTestRegion();
-        var entries = Enumerable.Range(0, 10).Select(i => new LlmTownEntry
+        var entries = Enumerable.Range(0, 10).Select(i => new CuratedTownDto
         {
             GameName = $"H{i}",
             RealName = $"Town{i}",

@@ -1,6 +1,7 @@
 using System.Numerics;
 using System.Text.Json;
 using Microsoft.Extensions.AI;
+using Oravey2.Contracts.ContentPack;
 using Oravey2.MapGen.RegionTemplates;
 
 namespace Oravey2.MapGen.Generation;
@@ -75,7 +76,7 @@ public sealed class TownCurator
         List<CuratedTown>? captured = null;
 
         var submitTool = AIFunctionFactory.Create(
-            (List<LlmTownEntry> towns) =>
+            (List<CuratedTownDto> towns) =>
             {
                 _log?.Invoke("← Received", JsonSerializer.Serialize(towns, JsonOptions));
                 captured = BuildCuratedTowns(towns, region, _params);
@@ -131,7 +132,7 @@ public sealed class TownCurator
             CuratedTown? captured = null;
 
             var submitTool = AIFunctionFactory.Create(
-                (LlmTownEntry town) =>
+                (CuratedTownDto town) =>
                 {
                     _log?.Invoke("← Received", JsonSerializer.Serialize(town, JsonOptions));
                     captured = BuildCuratedTown(town, townLookup, p);
@@ -148,7 +149,7 @@ public sealed class TownCurator
         var response = await _llmCall(prompt, ct);
         _log?.Invoke("← Received", response);
         response = StripMarkdownFences(response);
-        var e = JsonSerializer.Deserialize<LlmTownEntry>(response, JsonOptions)
+        var e = JsonSerializer.Deserialize<CuratedTownDto>(response, JsonOptions)
             ?? throw new InvalidOperationException("LLM returned invalid JSON for town re-roll");
         return BuildCuratedTown(e, townLookup, p);
     }
@@ -185,7 +186,7 @@ public sealed class TownCurator
         _log?.Invoke("← Received", response);
         response = StripMarkdownFences(response);
 
-        var entry = JsonSerializer.Deserialize<LlmTownEntry>(response, JsonOptions)
+        var entry = JsonSerializer.Deserialize<CuratedTownDto>(response, JsonOptions)
             ?? throw new InvalidOperationException("LLM returned invalid JSON for town enrichment");
 
         return new TownEnrichment(
@@ -236,7 +237,7 @@ public sealed class TownCurator
     {
         json = StripMarkdownFences(json);
 
-        var entries = JsonSerializer.Deserialize<List<LlmTownEntry>>(json, JsonOptions)
+        var entries = JsonSerializer.Deserialize<List<CuratedTownDto>>(json, JsonOptions)
             ?? throw new InvalidOperationException("LLM returned invalid JSON for town curation");
 
         var townLookup = BuildTownLookup(region);
@@ -343,7 +344,7 @@ public sealed class TownCurator
     }
 
     internal static List<CuratedTown> BuildCuratedTowns(
-        List<LlmTownEntry> entries, RegionTemplate region, TownGenerationParams p)
+        List<CuratedTownDto> entries, RegionTemplate region, TownGenerationParams p)
     {
         var townLookup = BuildTownLookup(region);
         var result = new List<CuratedTown>();
@@ -368,7 +369,7 @@ public sealed class TownCurator
     }
 
     private static CuratedTown BuildCuratedTown(
-        LlmTownEntry entry, Dictionary<string, TownEntry> townLookup, TownGenerationParams p)
+        CuratedTownDto entry, Dictionary<string, TownEntry> townLookup, TownGenerationParams p)
     {
         if (townLookup.TryGetValue(entry.RealName, out var match))
         {
