@@ -1,3 +1,4 @@
+using Oravey2.Contracts.ContentPack;
 using Oravey2.Contracts.Spatial;
 using Oravey2.MapGen.Generation;
 using Oravey2.MapGen.RegionTemplates;
@@ -264,7 +265,7 @@ public class TownMapCondenserTests
         var building = TownMapCondenser.PlaceLandmark(landmark, 16, 16, 0, occupied);
 
         Assert.Equal("Fort Test", building.Name);
-        Assert.Equal("large", building.SizeCategory);
+        Assert.Equal("large", building.Size);
         Assert.Equal(3, building.Floors);
         Assert.NotEmpty(building.Footprint);
         Assert.NotEmpty(occupied);
@@ -281,7 +282,7 @@ public class TownMapCondenserTests
         var rng = new Random(42);
         var roadTiles = new List<(int X, int Y)>();
         for (var x = 0; x < 32; x++) roadTiles.Add((x, 16));
-        var buildings = new List<PlacedBuilding>();
+        var buildings = new List<BuildingDto>();
         var occupied = new HashSet<(int, int)>();
 
         TownMapCondenser.PlaceKeyLocations(locations, roadTiles, 32, 32, rng, buildings, occupied);
@@ -302,7 +303,7 @@ public class TownMapCondenserTests
         Assert.True(props.Count <= 30);
         Assert.All(props, p =>
         {
-            var globalX = p.Placement.ChunkX * 16 + p.Placement.LocalTileX;
+            var globalX = p.Placement!.ChunkX * 16 + p.Placement.LocalTileX;
             var globalY = p.Placement.ChunkY * 16 + p.Placement.LocalTileY;
             Assert.InRange(globalX, 0, 31);
             Assert.InRange(globalY, 0, 31);

@@ -1,3 +1,4 @@
+using Oravey2.Contracts.ContentPack;
 using Oravey2.MapGen.Generation;
 
 namespace Oravey2.MapGen.Assets;
@@ -28,12 +29,12 @@ public sealed class DummyMeshAssigner
     /// Returns new building and prop lists with primitive mesh paths assigned
     /// where the current mesh is a placeholder.
     /// </summary>
-    public (List<PlacedBuilding> Buildings, List<PlacedProp> Props) AssignPrimitiveMeshes(
+    public (List<BuildingDto> Buildings, List<PropDto> Props) AssignPrimitiveMeshes(
         TownDesign design,
-        List<PlacedBuilding> buildings,
-        List<PlacedProp> props)
+        List<BuildingDto> buildings,
+        List<PropDto> props)
     {
-        var updatedBuildings = new List<PlacedBuilding>(buildings.Count);
+        var updatedBuildings = new List<BuildingDto>(buildings.Count);
         foreach (var b in buildings)
         {
             if (IsAcceptedMesh(b.MeshAsset))
@@ -44,15 +45,15 @@ public sealed class DummyMeshAssigner
 
             var classification = ClassifyBuilding(b.Name, design);
             var meshPath = PrimitiveMeshFor(classification);
-            var updated = new PlacedBuilding
+            var updated = new BuildingDto
             {
-                Id = b.Id, Name = b.Name, MeshAsset = meshPath, SizeCategory = b.SizeCategory,
+                Id = b.Id, Name = b.Name, MeshAsset = meshPath, Size = b.Size,
                 Footprint = b.Footprint, Floors = b.Floors, Condition = b.Condition, Placement = b.Placement,
             };
             updatedBuildings.Add(updated);
         }
 
-        var updatedProps = new List<PlacedProp>(props.Count);
+        var updatedProps = new List<PropDto>(props.Count);
         foreach (var p in props)
         {
             if (IsAcceptedMesh(p.MeshAsset))
@@ -61,7 +62,7 @@ public sealed class DummyMeshAssigner
                 continue;
             }
 
-            var updatedProp = new PlacedProp
+            var updatedProp = new PropDto
             {
                 Id = p.Id, MeshAsset = PrimitiveMeshWriter.SpherePath,
                 Placement = p.Placement, Rotation = p.Rotation, Scale = p.Scale, BlocksWalkability = p.BlocksWalkability,

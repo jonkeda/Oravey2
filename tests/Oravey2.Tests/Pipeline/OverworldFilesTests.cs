@@ -1,4 +1,5 @@
 using System.Numerics;
+using Oravey2.Contracts.ContentPack;
 using Oravey2.MapGen.Generation;
 
 namespace Oravey2.Tests.Pipeline;
@@ -7,17 +8,17 @@ public class OverworldFilesTests
 {
     private static OverworldResult MakeTestResult()
     {
-        var townRefs = new List<OverworldTownRef>
+        var townRefs = new List<TownRefDto>
         {
-            new() { GameName = "haven", RealName = "Island Haven", GameX = 0.5f, GameY = 0.5f, Description = "A safe port town", Size = "Town", Inhabitants = 5000, Destruction = "Pristine" },
-            new() { GameName = "outpost", RealName = "Fort Outpost", GameX = 1.5f, GameY = 0.5f, Description = "A military outpost", Size = "Village", Inhabitants = 1000, Destruction = "Moderate" },
+            new TownRefDto { GameName = "haven", RealName = "Island Haven", GameX = 0.5f, GameY = 0.5f, Description = "A safe port town", Size = "Town", Inhabitants = 5000, Destruction = "Pristine" },
+            new TownRefDto { GameName = "outpost", RealName = "Fort Outpost", GameX = 1.5f, GameY = 0.5f, Description = "A military outpost", Size = "Village", Inhabitants = 1000, Destruction = "Moderate" },
         };
 
-        var world = new OverworldInfo
+        var world = new WorldDto
         {
             Name = "TestRegion", Description = "Test overworld", Source = "test-source",
             ChunksWide = 2, ChunksHigh = 1, TileSize = 1,
-            PlayerStart = new TilePlacement(0, 0, 8, 8),
+            PlayerStart = new PlacementDto(0, 0, 8, 8),
             Towns = townRefs,
         };
 
@@ -150,8 +151,8 @@ public class OverworldFilesTests
             OverworldFiles.Save(MakeTestResult(), dir);
             var loaded = OverworldFiles.Load(dir);
 
-            Assert.Equal(0, loaded.World.PlayerStart.ChunkX);
-            Assert.Equal(8, loaded.World.PlayerStart.LocalTileX);
+            Assert.Equal(0, loaded.World.PlayerStart!.ChunkX);
+            Assert.Equal(8, loaded.World.PlayerStart!.LocalTileX);
         }
         finally
         {

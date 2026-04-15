@@ -1,3 +1,4 @@
+using Oravey2.Contracts.ContentPack;
 using Oravey2.MapGen.Generation;
 
 namespace Oravey2.Tests.Pipeline;
@@ -6,26 +7,26 @@ public class TownMapFilesTests
 {
     private static TownMapResult CreateTestResult()
     {
-        var layout = new TownLayout
+        var layout = new LayoutDto
         {
             Width = 16, Height = 16, Surface = [
                 [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
                 [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
             ],
         };
-        var buildings = new List<PlacedBuilding>
+        var buildings = new List<BuildingDto>
         {
-            new() { Id = "b_0", Name = "Fort Test", MeshAsset = "meshes/fort_test.glb", SizeCategory = "large",
+            new() { Id = "b_0", Name = "Fort Test", MeshAsset = "meshes/fort_test.glb", Size = "large",
                 Footprint = [[7, 7], [7, 8], [8, 7], [8, 8]],
-                Floors = 3, Condition = 0.6f, Placement = new TilePlacement(0, 0, 7, 7) },
-            new() { Id = "b_1", Name = "Shop", MeshAsset = "meshes/shop.glb", SizeCategory = "small",
-                Footprint = [[3, 5]], Floors = 1, Condition = 0.8f, Placement = new TilePlacement(0, 0, 3, 5) },
+                Floors = 3, Condition = 0.6f, Placement = new PlacementDto(0, 0, 7, 7) },
+            new() { Id = "b_1", Name = "Shop", MeshAsset = "meshes/shop.glb", Size = "small",
+                Footprint = [[3, 5]], Floors = 1, Condition = 0.8f, Placement = new PlacementDto(0, 0, 3, 5) },
         };
-        var props = new List<PlacedProp>
+        var props = new List<PropDto>
         {
-            new() { Id = "p_0", MeshAsset = "meshes/barrel.glb", Placement = new TilePlacement(0, 0, 1, 1), Rotation = 45f, Scale = 1.0f, BlocksWalkability = false },
+            new() { Id = "p_0", MeshAsset = "meshes/barrel.glb", Placement = new PlacementDto(0, 0, 1, 1), Rotation = 45f, Scale = 1.0f, BlocksWalkability = false },
         };
-        var zones = new List<TownZone>
+        var zones = new List<ZoneDto>
         {
             new() { Id = "zone_main", Name = "TestTown", Biome = 0, RadiationLevel = 0f, EnemyDifficultyTier = 2, IsFastTravelTarget = true, ChunkStartX = 0, ChunkStartY = 0, ChunkEndX = 0, ChunkEndY = 0 },
         };
@@ -95,10 +96,10 @@ public class TownMapFilesTests
             Assert.Equal(original.Id, loaded0.Id);
             Assert.Equal(original.Name, loaded0.Name);
             Assert.Equal(original.MeshAsset, loaded0.MeshAsset);
-            Assert.Equal(original.SizeCategory, loaded0.SizeCategory);
+            Assert.Equal(original.Size, loaded0.Size);
             Assert.Equal(original.Floors, loaded0.Floors);
-            Assert.Equal(original.Placement.ChunkX, loaded0.Placement.ChunkX);
-            Assert.Equal(original.Placement.LocalTileX, loaded0.Placement.LocalTileX);
+            Assert.Equal(original.Placement!.ChunkX, loaded0.Placement!.ChunkX);
+            Assert.Equal(original.Placement!.LocalTileX, loaded0.Placement!.LocalTileX);
         }
         finally
         {

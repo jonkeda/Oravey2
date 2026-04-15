@@ -1,3 +1,4 @@
+using Oravey2.Contracts.ContentPack;
 using Oravey2.MapGen.Assets;
 using Oravey2.MapGen.Generation;
 
@@ -18,23 +19,23 @@ public class DummyMeshAssignerTests
         Hazards = [],
     };
 
-    private static PlacedBuilding MakeBuilding(string name, string mesh) => new()
+    private static BuildingDto MakeBuilding(string name, string mesh) => new()
     {
         Id = $"building_{name.GetHashCode():X}",
         Name = name,
         MeshAsset = mesh,
-        SizeCategory = "medium",
+        Size = "medium",
         Footprint = [[0, 0]],
         Floors = 2,
         Condition = 0.5f,
-        Placement = new TilePlacement(0, 0, 0, 0),
+        Placement = new PlacementDto(0, 0, 0, 0),
     };
 
-    private static PlacedProp MakeProp(string mesh) => new()
+    private static PropDto MakeProp(string mesh) => new()
     {
         Id = "prop_0",
         MeshAsset = mesh,
-        Placement = new TilePlacement(0, 0, 1, 1),
+        Placement = new PlacementDto(0, 0, 1, 1),
         Rotation = 45f,
         Scale = 1f,
         BlocksWalkability = false,
@@ -92,7 +93,7 @@ public class DummyMeshAssignerTests
     public void AssignPrimitiveMeshes_LandmarkGetsPyramid()
     {
         var design = CreateTestDesign();
-        var buildings = new List<PlacedBuilding>
+        var buildings = new List<BuildingDto>
         {
             MakeBuilding("The Beacon", "meshes/the_beacon.glb"),
         };
@@ -108,7 +109,7 @@ public class DummyMeshAssignerTests
     public void AssignPrimitiveMeshes_KeyLocationGetsCube()
     {
         var design = CreateTestDesign();
-        var buildings = new List<PlacedBuilding>
+        var buildings = new List<BuildingDto>
         {
             MakeBuilding("Harbor Dock", "meshes/harbor_dock.glb"),
         };
@@ -124,7 +125,7 @@ public class DummyMeshAssignerTests
     public void AssignPrimitiveMeshes_GenericBuildingGetsCube()
     {
         var design = CreateTestDesign();
-        var buildings = new List<PlacedBuilding>
+        var buildings = new List<BuildingDto>
         {
             MakeBuilding("Ruin 3", "meshes/generic_ruin.glb"),
         };
@@ -140,7 +141,7 @@ public class DummyMeshAssignerTests
     public void AssignPrimitiveMeshes_PropsGetSphere()
     {
         var design = CreateTestDesign();
-        var props = new List<PlacedProp>
+        var props = new List<PropDto>
         {
             MakeProp("meshes/barrel.glb"),
             MakeProp("meshes/crate.glb"),
@@ -158,11 +159,11 @@ public class DummyMeshAssignerTests
     {
         var design = CreateTestDesign();
         var realMesh = "meshes/meshy_the_beacon.glb";
-        var buildings = new List<PlacedBuilding>
+        var buildings = new List<BuildingDto>
         {
             MakeBuilding("The Beacon", realMesh),
         };
-        var props = new List<PlacedProp>
+        var props = new List<PropDto>
         {
             MakeProp("meshes/meshy_barrel.glb"),
         };
@@ -179,7 +180,7 @@ public class DummyMeshAssignerTests
     {
         var design = CreateTestDesign();
         var realMesh = "meshes/meshy_harbor_dock.glb";
-        var buildings = new List<PlacedBuilding>
+        var buildings = new List<BuildingDto>
         {
             MakeBuilding("The Beacon", "meshes/the_beacon.glb"),      // placeholder → pyramid
             MakeBuilding("Harbor Dock", realMesh),                     // accepted → keep
@@ -209,11 +210,11 @@ public class DummyMeshAssignerTests
     public void AssignPrimitiveMeshes_PreservesNonMeshFields()
     {
         var design = CreateTestDesign();
-        var original = new PlacedBuilding
+        var original = new BuildingDto
         {
-            Id = "building_0", Name = "The Beacon", MeshAsset = "meshes/the_beacon.glb", SizeCategory = "large",
+            Id = "building_0", Name = "The Beacon", MeshAsset = "meshes/the_beacon.glb", Size = "large",
             Footprint = [[5, 5], [5, 6], [6, 5], [6, 6]], Floors = 3, Condition = 0.6f,
-            Placement = new TilePlacement(0, 0, 5, 5),
+            Placement = new PlacementDto(0, 0, 5, 5),
         };
 
         var assigner = new DummyMeshAssigner();
@@ -222,7 +223,7 @@ public class DummyMeshAssignerTests
         var b = updated[0];
         Assert.Equal("building_0", b.Id);
         Assert.Equal("The Beacon", b.Name);
-        Assert.Equal("large", b.SizeCategory);
+        Assert.Equal("large", b.Size);
         Assert.Equal(3, b.Floors);
         Assert.Equal(0.6f, b.Condition);
         Assert.Equal(PrimitiveMeshWriter.PyramidPath, b.MeshAsset);

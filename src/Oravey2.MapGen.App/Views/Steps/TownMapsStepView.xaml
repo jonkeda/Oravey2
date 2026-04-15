@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Oravey2.MapGen.ViewModels;assembly=Oravey2.MapGen"
              xmlns:gen="clr-namespace:Oravey2.MapGen.Generation;assembly=Oravey2.MapGen"
+             xmlns:dto="clr-namespace:Oravey2.Contracts.ContentPack;assembly=Oravey2.Contracts"
              xmlns:local="clr-namespace:Oravey2.MapGen.App.Views"
              x:Class="Oravey2.MapGen.App.Views.TownMapsStepView"
              x:DataType="vm:TownMapsStepViewModel">
@@ -262,7 +263,7 @@
                                         <LinearItemsLayout Orientation="Vertical" ItemSpacing="4" />
                                     </CollectionView.ItemsLayout>
                                     <CollectionView.ItemTemplate>
-                                        <DataTemplate x:DataType="gen:PlacedBuilding">
+                                        <DataTemplate x:DataType="dto:BuildingDto">
                                             <Grid BackgroundColor="Transparent" Padding="0,2">
                                                 <HorizontalStackLayout Spacing="8">
                                                     <Label Text="{Binding Name}" FontSize="12"
@@ -270,7 +271,7 @@
                                                     <Border Padding="4,1" BackgroundColor="{StaticResource SurfaceVariant}"
                                                             Stroke="Transparent">
                                                         <Border.StrokeShape><RoundRectangle CornerRadius="3" /></Border.StrokeShape>
-                                                        <Label Text="{Binding SizeCategory}" FontSize="10"
+                                                        <Label Text="{Binding Size}" FontSize="10"
                                                                TextColor="{StaticResource OnSurfaceVariant}" />
                                                     </Border>
                                                     <Label Text="{Binding Floors, StringFormat='{0}F'}"
@@ -306,7 +307,7 @@
                                         <LinearItemsLayout Orientation="Vertical" ItemSpacing="4" />
                                     </CollectionView.ItemsLayout>
                                     <CollectionView.ItemTemplate>
-                                        <DataTemplate x:DataType="gen:TownZone">
+                                        <DataTemplate x:DataType="dto:ZoneDto">
                                             <Grid BackgroundColor="Transparent" Padding="0,2">
                                                 <HorizontalStackLayout Spacing="8">
                                                     <Label Text="{Binding Name}" FontSize="12"

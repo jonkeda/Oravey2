@@ -2,6 +2,7 @@ using System.Numerics;
 using Oravey2.Contracts.Spatial;
 using Xunit;
 using Oravey2.MapGen.Generation;
+using Oravey2.Contracts.ContentPack;
 
 namespace Oravey2.Tests.Generation;
 
@@ -11,10 +12,10 @@ public class TownMapResultSerializationTests
     {
         return new TownMapResult
         {
-            Layout = new TownLayout { Width = 16, Height = 16, Surface = new int[][] { new int[16] } },
-            Buildings = new List<PlacedBuilding>(),
-            Props = new List<PlacedProp>(),
-            Zones = new List<TownZone>()
+            Layout = new LayoutDto { Width = 16, Height = 16, Surface = new int[][] { new int[16] } },
+            Buildings = new List<BuildingDto>(),
+            Props = new List<PropDto>(),
+            Zones = new List<ZoneDto>()
         };
     }
 
@@ -44,10 +45,10 @@ public class TownMapResultSerializationTests
         // Act
         var result = new TownMapResult
         {
-            Layout = new TownLayout { Width = 16, Height = 16, Surface = new int[][] { new int[16] } },
-            Buildings = new List<PlacedBuilding>(),
-            Props = new List<PlacedProp>(),
-            Zones = new List<TownZone>(),
+            Layout = new LayoutDto { Width = 16, Height = 16, Surface = new int[][] { new int[16] } },
+            Buildings = new List<BuildingDto>(),
+            Props = new List<PropDto>(),
+            Zones = new List<ZoneDto>(),
             SpatialSpec = spec,
             SpatialSpecJson = json
         };
@@ -78,10 +79,10 @@ public class TownMapResultSerializationTests
 
         // Act
         var result = TownMapResult.CreateWithSerializedSpec(
-            new TownLayout { Width = 16, Height = 16, Surface = new int[][] { new int[16] } },
-            new List<PlacedBuilding>(),
-            new List<PlacedProp>(),
-            new List<TownZone>(),
+            new LayoutDto { Width = 16, Height = 16, Surface = new int[][] { new int[16] } },
+            new List<BuildingDto>(),
+            new List<PropDto>(),
+            new List<ZoneDto>(),
             spec
         );
 
@@ -97,10 +98,10 @@ public class TownMapResultSerializationTests
     {
         // Act
         var result = TownMapResult.CreateWithSerializedSpec(
-            new TownLayout { Width = 16, Height = 16, Surface = new int[][] { new int[16] } },
-            new List<PlacedBuilding>(),
-            new List<PlacedProp>(),
-            new List<TownZone>(),
+            new LayoutDto { Width = 16, Height = 16, Surface = new int[][] { new int[16] } },
+            new List<BuildingDto>(),
+            new List<PropDto>(),
+            new List<ZoneDto>(),
             null
         );
 
@@ -122,10 +123,10 @@ public class TownMapResultSerializationTests
 
         // Act
         var result = TownMapResult.CreateWithSerializedSpec(
-            new TownLayout { Width = 16, Height = 16, Surface = new int[][] { new int[16] } },
-            new List<PlacedBuilding>(),
-            new List<PlacedProp>(),
-            new List<TownZone>(),
+            new LayoutDto { Width = 16, Height = 16, Surface = new int[][] { new int[16] } },
+            new List<BuildingDto>(),
+            new List<PropDto>(),
+            new List<ZoneDto>(),
             spec
         );
 
@@ -140,18 +141,18 @@ public class TownMapResultSerializationTests
     public void CreateWithSerializedSpec_PreservesAllMapData()
     {
         // Arrange
-        var layout = new TownLayout { Width = 16, Height = 16, Surface = new int[][] { new int[16] }, Liquid = new int[][] { new int[16] } };
-        var buildings = new List<PlacedBuilding>
+        var layout = new LayoutDto { Width = 16, Height = 16, Surface = new int[][] { new int[16] }, Liquid = new int[][] { new int[16] } };
+        var buildings = new List<BuildingDto>
         {
-            new PlacedBuilding { Id = "b1", Name = "Building1", MeshAsset = "mesh1", SizeCategory = "large", Footprint = new int[][] { new int[4] }, Floors = 2, Condition = 0.9f, Placement = new TilePlacement(0, 0, 5, 5) }
+            new BuildingDto { Id = "b1", Name = "Building1", MeshAsset = "mesh1", Size = "large", Footprint = new int[][] { new int[4] }, Floors = 2, Condition = 0.9f, Placement = new PlacementDto(0, 0, 5, 5) }
         };
-        var props = new List<PlacedProp>
+        var props = new List<PropDto>
         {
-            new PlacedProp { Id = "p1", MeshAsset = "mesh1", Placement = new TilePlacement(0, 0, 6, 6), Rotation = 45.0f, Scale = 1.0f, BlocksWalkability = false }
+            new PropDto { Id = "p1", MeshAsset = "mesh1", Placement = new PlacementDto(0, 0, 6, 6), Rotation = 45.0f, Scale = 1.0f, BlocksWalkability = false }
         };
-        var zones = new List<TownZone>
+        var zones = new List<ZoneDto>
         {
-            new TownZone { Id = "z1", Name = "Zone1", Biome = 1, RadiationLevel = 0.5f, EnemyDifficultyTier = 2, IsFastTravelTarget = true, ChunkStartX = 0, ChunkStartY = 0, ChunkEndX = 7, ChunkEndY = 7 }
+            new ZoneDto { Id = "z1", Name = "Zone1", Biome = 1, RadiationLevel = 0.5f, EnemyDifficultyTier = 2, IsFastTravelTarget = true, ChunkStartX = 0, ChunkStartY = 0, ChunkEndX = 7, ChunkEndY = 7 }
         };
         var spec = new TownSpatialSpecification
         {

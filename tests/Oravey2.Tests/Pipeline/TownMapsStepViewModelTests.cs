@@ -249,10 +249,10 @@ public class TownMapsStepViewModelTests
             GameName = "Test",
             MapResult = new TownMapResult
             {
-                Layout = new TownLayout { Width = 16, Height = 16, Surface = [] },
-                Buildings = [new PlacedBuilding { Id = "b_0", Name = "Fort", MeshAsset = "m.glb", SizeCategory = "large", Footprint = [], Floors = 2, Condition = 0.5f, Placement = new TilePlacement(0, 0, 0, 0) }],
-                Props = [new PlacedProp { Id = "p_0", MeshAsset = "m.glb", Placement = new TilePlacement(0, 0, 1, 1), Rotation = 0, Scale = 1, BlocksWalkability = false }],
-                Zones = [new TownZone { Id = "z_0", Name = "Main", Biome = 0, RadiationLevel = 0, EnemyDifficultyTier = 1, IsFastTravelTarget = true, ChunkStartX = 0, ChunkStartY = 0, ChunkEndX = 0, ChunkEndY = 0 }],
+                Layout = new LayoutDto { Width = 16, Height = 16, Surface = [] },
+                Buildings = [new BuildingDto { Id = "b_0", Name = "Fort", MeshAsset = "m.glb", Size = "large", Footprint = [], Floors = 2, Condition = 0.5f, Placement = new PlacementDto(0, 0, 0, 0) }],
+                Props = [new PropDto { Id = "p_0", MeshAsset = "m.glb", Placement = new PlacementDto(0, 0, 1, 1), Rotation = 0, Scale = 1, BlocksWalkability = false }],
+                Zones = [new ZoneDto { Id = "z_0", Name = "Main", Biome = 0, RadiationLevel = 0, EnemyDifficultyTier = 1, IsFastTravelTarget = true, ChunkStartX = 0, ChunkStartY = 0, ChunkEndX = 0, ChunkEndY = 0 }],
             },
         };
 
@@ -301,7 +301,7 @@ public class TownMapsStepViewModelTests
             var item = vm.Towns[0];
             item.MapResult = new TownMapResult
             {
-                Layout = new TownLayout { Width = 16, Height = 16, Surface = [[0, 0]] },
+                Layout = new LayoutDto { Width = 16, Height = 16, Surface = [[0, 0]] },
                 Buildings = [], Props = [], Zones = [],
             };
             vm.SaveMap(item);

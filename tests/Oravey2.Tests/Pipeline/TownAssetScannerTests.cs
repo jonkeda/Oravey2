@@ -1,3 +1,4 @@
+using Oravey2.Contracts.ContentPack;
 using Oravey2.MapGen.Generation;
 
 namespace Oravey2.Tests.Pipeline;
@@ -35,21 +36,21 @@ public class TownAssetScannerTests
 
     private static TownMapResult MakeMapResult(string landmarkMesh = "", string marketMesh = "", string clinicMesh = "")
     {
-        var buildings = new List<PlacedBuilding>
+        var buildings = new List<BuildingDto>
         {
-            new() { Id = "b_0", Name = "The Beacon", MeshAsset = landmarkMesh, SizeCategory = "large", Footprint = [[0, 0]], Floors = 3, Condition = 0.85f, Placement = new TilePlacement(0, 0, 0, 0) },
-            new() { Id = "b_1", Name = "Market Hall", MeshAsset = marketMesh, SizeCategory = "medium", Footprint = [[1, 1]], Floors = 1, Condition = 0.9f, Placement = new TilePlacement(0, 0, 1, 1) },
-            new() { Id = "b_2", Name = "Clinic", MeshAsset = clinicMesh, SizeCategory = "small", Footprint = [[2, 2]], Floors = 1, Condition = 0.7f, Placement = new TilePlacement(0, 0, 2, 2) },
+            new() { Id = "b_0", Name = "The Beacon", MeshAsset = landmarkMesh, Size = "large", Footprint = [[0, 0]], Floors = 3, Condition = 0.85f, Placement = new PlacementDto(0, 0, 0, 0) },
+            new() { Id = "b_1", Name = "Market Hall", MeshAsset = marketMesh, Size = "medium", Footprint = [[1, 1]], Floors = 1, Condition = 0.9f, Placement = new PlacementDto(0, 0, 1, 1) },
+            new() { Id = "b_2", Name = "Clinic", MeshAsset = clinicMesh, Size = "small", Footprint = [[2, 2]], Floors = 1, Condition = 0.7f, Placement = new PlacementDto(0, 0, 2, 2) },
         };
-        var props = new List<PlacedProp>
+        var props = new List<PropDto>
         {
-            new() { Id = "p_0", MeshAsset = "meshes/primitives/sphere.glb", Placement = new TilePlacement(0, 0, 3, 3), Rotation = 0, Scale = 1, BlocksWalkability = false },
+            new() { Id = "p_0", MeshAsset = "meshes/primitives/sphere.glb", Placement = new PlacementDto(0, 0, 3, 3), Rotation = 0, Scale = 1, BlocksWalkability = false },
         };
         return new TownMapResult
         {
-            Layout = new TownLayout { Width = 16, Height = 16, Surface = [[0]] },
+            Layout = new LayoutDto { Width = 16, Height = 16, Surface = [[0]] },
             Buildings = buildings, Props = props,
-            Zones = [new TownZone { Id = "z_0", Name = "Main", Biome = 0, RadiationLevel = 0, EnemyDifficultyTier = 1, IsFastTravelTarget = true, ChunkStartX = 0, ChunkStartY = 0, ChunkEndX = 0, ChunkEndY = 0 }],
+            Zones = [new ZoneDto { Id = "z_0", Name = "Main", Biome = 0, RadiationLevel = 0, EnemyDifficultyTier = 1, IsFastTravelTarget = true, ChunkStartX = 0, ChunkStartY = 0, ChunkEndX = 0, ChunkEndY = 0 }],
         };
     }
 
@@ -196,17 +197,17 @@ public class TownAssetScannerTests
             Hazards = [],
         };
 
-        var buildings = new List<PlacedBuilding>
+        var buildings = new List<BuildingDto>
         {
-            new() { Id = "b_0", Name = "The Beacon", MeshAsset = "", SizeCategory = "large", Footprint = [[0, 0]], Floors = 2, Condition = 0.5f, Placement = new TilePlacement(0, 0, 0, 0) },
-            new() { Id = "b_1", Name = "Market", MeshAsset = "", SizeCategory = "medium", Footprint = [[1, 1]], Floors = 1, Condition = 0.8f, Placement = new TilePlacement(0, 0, 1, 1) },
-            new() { Id = "b_2", Name = "Ruin 1", MeshAsset = "", SizeCategory = "small", Footprint = [[2, 2]], Floors = 1, Condition = 0.3f, Placement = new TilePlacement(0, 0, 2, 2) },
+            new() { Id = "b_0", Name = "The Beacon", MeshAsset = "", Size = "large", Footprint = [[0, 0]], Floors = 2, Condition = 0.5f, Placement = new PlacementDto(0, 0, 0, 0) },
+            new() { Id = "b_1", Name = "Market", MeshAsset = "", Size = "medium", Footprint = [[1, 1]], Floors = 1, Condition = 0.8f, Placement = new PlacementDto(0, 0, 1, 1) },
+            new() { Id = "b_2", Name = "Ruin 1", MeshAsset = "", Size = "small", Footprint = [[2, 2]], Floors = 1, Condition = 0.3f, Placement = new PlacementDto(0, 0, 2, 2) },
         };
         var mapResult = new TownMapResult
         {
-            Layout = new TownLayout { Width = 16, Height = 16, Surface = [[0]] },
+            Layout = new LayoutDto { Width = 16, Height = 16, Surface = [[0]] },
             Buildings = buildings, Props = [],
-            Zones = [new TownZone { Id = "z_0", Name = "Main", Biome = 0, RadiationLevel = 0, EnemyDifficultyTier = 1, IsFastTravelTarget = true, ChunkStartX = 0, ChunkStartY = 0, ChunkEndX = 0, ChunkEndY = 0 }],
+            Zones = [new ZoneDto { Id = "z_0", Name = "Main", Biome = 0, RadiationLevel = 0, EnemyDifficultyTier = 1, IsFastTravelTarget = true, ChunkStartX = 0, ChunkStartY = 0, ChunkEndX = 0, ChunkEndY = 0 }],
         };
 
         var root = CreateTempContentPack(("haven", design, mapResult));

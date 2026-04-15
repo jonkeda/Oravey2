@@ -1,3 +1,4 @@
+using Oravey2.Contracts.ContentPack;
 using Oravey2.MapGen.Generation;
 
 namespace Oravey2.Tests.Pipeline;
@@ -67,17 +68,17 @@ public class AssetFilesTests
             var townDir = Path.Combine(dir, "testtown");
             Directory.CreateDirectory(townDir);
 
-            var buildings = new List<PlacedBuilding>
+            var buildings = new List<BuildingDto>
             {
-                new() { Id = "b_0", Name = "The Beacon", MeshAsset = "meshes/the_beacon.glb", SizeCategory = "large",
-                    Footprint = [[0, 0]], Floors = 2, Condition = 0.5f, Placement = new TilePlacement(0, 0, 0, 0) },
-                new() { Id = "b_1", Name = "Market", MeshAsset = "meshes/market.glb", SizeCategory = "medium",
-                    Footprint = [[1, 1]], Floors = 1, Condition = 0.8f, Placement = new TilePlacement(0, 0, 1, 1) },
+                new BuildingDto { Id = "b_0", Name = "The Beacon", MeshAsset = "meshes/the_beacon.glb", Size = "large",
+                    Footprint = [[0, 0]], Floors = 2, Condition = 0.5f, Placement = new PlacementDto(0, 0, 0, 0) },
+                new BuildingDto { Id = "b_1", Name = "Market", MeshAsset = "meshes/market.glb", Size = "medium",
+                    Footprint = [[1, 1]], Floors = 1, Condition = 0.8f, Placement = new PlacementDto(0, 0, 1, 1) },
             };
 
             var result = new TownMapResult
             {
-                Layout = new TownLayout { Width = 16, Height = 16, Surface = [] },
+                Layout = new LayoutDto { Width = 16, Height = 16, Surface = [] },
                 Buildings = buildings, Props = [], Zones = [],
             };
             TownMapFiles.Save(result, townDir);
@@ -105,14 +106,14 @@ public class AssetFilesTests
             var townDir = Path.Combine(dir, "testtown");
             Directory.CreateDirectory(townDir);
 
-            var buildings = new List<PlacedBuilding>
+            var buildings = new List<BuildingDto>
             {
-                new() { Id = "b_0", Name = "Market", MeshAsset = "meshes/market.glb", SizeCategory = "medium",
-                    Footprint = [[0, 0]], Floors = 1, Condition = 0.8f, Placement = new TilePlacement(0, 0, 0, 0) },
+                new BuildingDto { Id = "b_0", Name = "Market", MeshAsset = "meshes/market.glb", Size = "medium",
+                    Footprint = [[0, 0]], Floors = 1, Condition = 0.8f, Placement = new PlacementDto(0, 0, 0, 0) },
             };
             var result = new TownMapResult
             {
-                Layout = new TownLayout { Width = 16, Height = 16, Surface = [] },
+                Layout = new LayoutDto { Width = 16, Height = 16, Surface = [] },
                 Buildings = buildings, Props = [], Zones = [],
             };
             TownMapFiles.Save(result, townDir);

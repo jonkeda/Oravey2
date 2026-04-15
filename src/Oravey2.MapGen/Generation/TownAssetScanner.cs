@@ -1,3 +1,4 @@
+using Oravey2.Contracts.ContentPack;
 using Oravey2.MapGen.Assets;
 
 namespace Oravey2.MapGen.Generation;
@@ -30,8 +31,8 @@ public sealed class TownAssetScanner
             var buildingsPath = Path.Combine(townDir, "buildings.json");
             var propsPath = Path.Combine(townDir, "props.json");
 
-            List<PlacedBuilding> placedBuildings = [];
-            List<PlacedProp> placedProps = [];
+            List<BuildingDto> placedBuildings = [];
+            List<PropDto> placedProps = [];
 
             if (File.Exists(buildingsPath) && File.Exists(Path.Combine(townDir, "layout.json")))
             {
@@ -54,12 +55,12 @@ public sealed class TownAssetScanner
     }
 
     internal static List<BuildingAssetEntry> MergeBuildings(
-        TownDesign design, List<PlacedBuilding> placed, string contentPackPath)
+        TownDesign design, List<BuildingDto> placed, string contentPackPath)
     {
         var entries = new List<BuildingAssetEntry>();
 
         // Build a lookup of placed buildings by name (case-insensitive)
-        var placedByName = new Dictionary<string, PlacedBuilding>(StringComparer.OrdinalIgnoreCase);
+        var placedByName = new Dictionary<string, BuildingDto>(StringComparer.OrdinalIgnoreCase);
         foreach (var b in placed)
         {
             placedByName.TryAdd(b.Name, b);
@@ -90,7 +91,7 @@ public sealed class TownAssetScanner
             var meshStatus = ClassifyMeshStatus(b.MeshAsset, contentPackPath);
             entries.Add(new BuildingAssetEntry
             {
-                BuildingId = b.Id, Name = b.Name, Role = "generic", SizeCategory = b.SizeCategory,
+                BuildingId = b.Id, Name = b.Name, Role = "generic", SizeCategory = b.Size,
                 CurrentMeshPath = b.MeshAsset, MeshStatus = meshStatus, Floors = b.Floors, Condition = b.Condition,
             });
         }
@@ -101,7 +102,7 @@ public sealed class TownAssetScanner
     private static void AddBuildingEntry(
         List<BuildingAssetEntry> entries,
         string name, string role, string sizeCategory, string visualDescription,
-        Dictionary<string, PlacedBuilding> placedByName, string contentPackPath)
+        Dictionary<string, BuildingDto> placedByName, string contentPackPath)
     {
         if (placedByName.TryGetValue(name, out var placed))
         {
@@ -125,7 +126,7 @@ public sealed class TownAssetScanner
     }
 
     internal static List<PropAssetEntry> MergeProps(
-        List<PlacedProp> placed, string contentPackPath)
+        List<PropDto> placed, string contentPackPath)
     {
         return placed.Select(p => new PropAssetEntry
         {

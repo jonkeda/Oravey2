@@ -15,21 +15,9 @@ public static class OverworldFiles
     {
         Directory.CreateDirectory(overworldDir);
 
-        var worldDto = new WorldDto
-        {
-            Name = result.World.Name, Description = result.World.Description, Source = result.World.Source,
-            ChunksWide = result.World.ChunksWide, ChunksHigh = result.World.ChunksHigh, TileSize = result.World.TileSize,
-            PlayerStart = PlacementFrom(result.World.PlayerStart),
-            Towns = result.World.Towns.Select(t => new TownRefDto
-            {
-                GameName = t.GameName, RealName = t.RealName, GameX = t.GameX, GameY = t.GameY,
-                Description = t.Description, Size = t.Size, Inhabitants = t.Inhabitants, Destruction = t.Destruction,
-            }).ToList(),
-        };
-
         File.WriteAllText(
             Path.Combine(overworldDir, "world.json"),
-            JsonSerializer.Serialize(worldDto, ContentPackSerializer.WriteOptions));
+            JsonSerializer.Serialize(result.World, ContentPackSerializer.WriteOptions));
 
         File.WriteAllText(
             Path.Combine(overworldDir, "roads.json"),
@@ -54,27 +42,13 @@ public static class OverworldFiles
     public static OverworldResult Load(string overworldDir)
     {
         var worldJson = File.ReadAllText(Path.Combine(overworldDir, "world.json"));
-        var wf = JsonSerializer.Deserialize<WorldDto>(worldJson, ContentPackSerializer.ReadOptions);
+        var world = JsonSerializer.Deserialize<WorldDto>(worldJson, ContentPackSerializer.ReadOptions) ?? new();
 
         var roadsJson = File.ReadAllText(Path.Combine(overworldDir, "roads.json"));
         var roadDtos = JsonSerializer.Deserialize<List<RoadDto>>(roadsJson, ContentPackSerializer.ReadOptions) ?? [];
 
         var waterJson = File.ReadAllText(Path.Combine(overworldDir, "water.json"));
         var waterDtos = JsonSerializer.Deserialize<List<WaterDto>>(waterJson, ContentPackSerializer.ReadOptions) ?? [];
-
-        var townRefs = (wf?.Towns ?? []).Select(t => new OverworldTownRef
-        {
-            GameName = t.GameName, RealName = t.RealName, GameX = t.GameX, GameY = t.GameY,
-            Description = t.Description, Size = t.Size, Inhabitants = t.Inhabitants, Destruction = t.Destruction,
-        }).ToList();
-
-        var world = new OverworldInfo
-        {
-            Name = wf?.Name ?? "", Description = wf?.Description ?? "", Source = wf?.Source ?? "",
-            ChunksWide = wf?.ChunksWide ?? 0, ChunksHigh = wf?.ChunksHigh ?? 0, TileSize = wf?.TileSize ?? 0,
-            PlayerStart = PlacementTo(wf?.PlayerStart),
-            Towns = townRefs,
-        };
 
         var roads = roadDtos.Select(r => new OverworldRoad
         {
@@ -91,10 +65,4 @@ public static class OverworldFiles
 
         return new OverworldResult { World = world, Roads = roads, Water = water };
     }
-
-    private static PlacementDto PlacementFrom(TilePlacement p) =>
-        new() { ChunkX = p.ChunkX, ChunkY = p.ChunkY, LocalTileX = p.LocalTileX, LocalTileY = p.LocalTileY };
-
-    private static TilePlacement PlacementTo(PlacementDto? p) =>
-        p is null ? new(0, 0, 0, 0) : new(p.ChunkX, p.ChunkY, p.LocalTileX, p.LocalTileY);
 }

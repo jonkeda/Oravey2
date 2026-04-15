@@ -1,4 +1,5 @@
 using System.Numerics;
+using Oravey2.Contracts.ContentPack;
 using Oravey2.MapGen.RegionTemplates;
 
 namespace Oravey2.MapGen.Generation;
@@ -22,7 +23,7 @@ public sealed class OverworldGenerator
         IReadOnlyList<CuratedTown> towns,
         string regionName)
     {
-        var townRefs = towns.Select(t => new OverworldTownRef
+        var townRefs = towns.Select(t => new TownRefDto
         {
             GameName = t.GameName, RealName = t.RealName,
             GameX = t.GamePosition.X, GameY = t.GamePosition.Y,
@@ -36,7 +37,7 @@ public sealed class OverworldGenerator
         var startTown = towns.MaxBy(t => t.Inhabitants) ?? towns[0];
         var playerStart = GamePosToPlacement(startTown.GamePosition, chunksWide, chunksHigh);
 
-        var world = new OverworldInfo
+        var world = new WorldDto
         {
             Name = regionName,
             Description = $"Overworld map for {regionName}",
@@ -67,14 +68,14 @@ public sealed class OverworldGenerator
         return (chunksWide, chunksHigh);
     }
 
-    internal static TilePlacement GamePosToPlacement(
+    internal static PlacementDto GamePosToPlacement(
         Vector2 gamePos, int chunksWide, int chunksHigh)
     {
         var cx = Math.Clamp((int)gamePos.X, 0, Math.Max(0, chunksWide - 1));
         var cy = Math.Clamp((int)gamePos.Y, 0, Math.Max(0, chunksHigh - 1));
         var lx = Math.Clamp((int)((gamePos.X - cx) * TilesPerChunk), 0, TilesPerChunk - 1);
         var ly = Math.Clamp((int)((gamePos.Y - cy) * TilesPerChunk), 0, TilesPerChunk - 1);
-        return new TilePlacement(cx, cy, lx, ly);
+        return new PlacementDto(cx, cy, lx, ly);
     }
 
     internal static List<OverworldRoad> FilterRoads(

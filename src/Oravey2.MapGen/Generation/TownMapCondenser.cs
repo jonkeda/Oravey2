@@ -1,4 +1,5 @@
 using System.Numerics;
+using Oravey2.Contracts.ContentPack;
 using Oravey2.Core.World;
 using Oravey2.MapGen.RegionTemplates;
 
@@ -55,7 +56,7 @@ public sealed class TownMapCondenser
         ApplyRoadTiles(surface, roadTiles);
 
         // Step 4: Place landmark at town centre
-        var buildings = new List<PlacedBuilding>();
+        var buildings = new List<BuildingDto>();
         var centreX = width / 2;
         var centreY = height / 2;
         var occupied = new HashSet<(int, int)>();
@@ -90,7 +91,7 @@ public sealed class TownMapCondenser
         // Step 9: Build liquid overlay from hazard zones
         var liquid = BuildLiquidLayer(width, height, design.Hazards, zones);
 
-        var layout = new TownLayout { Width = width, Height = height, Surface = surface, Liquid = liquid };
+        var layout = new LayoutDto { Width = width, Height = height, Surface = surface, Liquid = liquid };
         return new TownMapResult { Layout = layout, Buildings = buildings, Props = props, Zones = zones };
     }
 
@@ -209,7 +210,7 @@ public sealed class TownMapCondenser
         }
     }
 
-    internal static PlacedBuilding PlaceLandmark(
+    internal static BuildingDto PlaceLandmark(
         LandmarkBuilding landmark,
         int centreX, int centreY,
         int index,
@@ -222,16 +223,16 @@ public sealed class TownMapCondenser
         var footprint = BuildFootprintArray(tileX, tileY, w, h);
         MarkOccupied(occupied, tileX, tileY, w, h);
 
-        return new PlacedBuilding
+        return new BuildingDto
         {
             Id = $"building_{index}",
             Name = landmark.Name,
             MeshAsset = $"meshes/{landmark.Name.ToLowerInvariant().Replace(' ', '_')}.glb",
-            SizeCategory = landmark.SizeCategory,
+            Size = landmark.SizeCategory,
             Footprint = footprint,
             Floors = floors,
             Condition = 0.6f,
-            Placement = new TilePlacement(tileX / TilesPerChunk, tileY / TilesPerChunk,
+            Placement = new PlacementDto(tileX / TilesPerChunk, tileY / TilesPerChunk,
                                           tileX % TilesPerChunk, tileY % TilesPerChunk),
         };
     }
@@ -241,7 +242,7 @@ public sealed class TownMapCondenser
         List<(int X, int Y)> roadTiles,
         int width, int height,
         Random rng,
-        List<PlacedBuilding> buildings,
+        List<BuildingDto> buildings,
         HashSet<(int, int)> occupied)
     {
         // Place each key location near a road tile, offset by 1–2 tiles
@@ -269,16 +270,16 @@ public sealed class TownMapCondenser
                 var footprint = BuildFootprintArray(cx, cy, w, h);
                 MarkOccupied(occupied, cx, cy, w, h);
 
-                buildings.Add(new PlacedBuilding
+                buildings.Add(new BuildingDto
                 {
                     Id = $"building_{buildings.Count}",
                     Name = loc.Name,
                     MeshAsset = $"meshes/{loc.Name.ToLowerInvariant().Replace(' ', '_')}.glb",
-                    SizeCategory = loc.SizeCategory,
+                    Size = loc.SizeCategory,
                     Footprint = footprint,
                     Floors = floors,
                     Condition = rng.NextSingle() * 0.4f + 0.4f,
-                    Placement = new TilePlacement(cx / TilesPerChunk, cy / TilesPerChunk,
+                    Placement = new PlacementDto(cx / TilesPerChunk, cy / TilesPerChunk,
                                                   cx % TilesPerChunk, cy % TilesPerChunk),
                 });
 
@@ -299,16 +300,16 @@ public sealed class TownMapCondenser
                         var footprint = BuildFootprintArray(x, y, w, h);
                         MarkOccupied(occupied, x, y, w, h);
 
-                        buildings.Add(new PlacedBuilding
+                        buildings.Add(new BuildingDto
                         {
                             Id = $"building_{buildings.Count}",
                             Name = loc.Name,
                             MeshAsset = $"meshes/{loc.Name.ToLowerInvariant().Replace(' ', '_')}.glb",
-                            SizeCategory = loc.SizeCategory,
+                            Size = loc.SizeCategory,
                             Footprint = footprint,
                             Floors = floors,
                             Condition = rng.NextSingle() * 0.4f + 0.4f,
-                            Placement = new TilePlacement(x / TilesPerChunk, y / TilesPerChunk,
+                            Placement = new PlacementDto(x / TilesPerChunk, y / TilesPerChunk,
                                                           x % TilesPerChunk, y % TilesPerChunk),
                         });
                         placed = true;
@@ -322,7 +323,7 @@ public sealed class TownMapCondenser
 
     private static void FillGenericBuildings(
         int width, int height, Random rng,
-        List<PlacedBuilding> buildings,
+        List<BuildingDto> buildings,
         HashSet<(int, int)> occupied,
         int buildingFillPercent = 40)
     {
@@ -342,16 +343,16 @@ public sealed class TownMapCondenser
                 var footprint = BuildFootprintArray(x, y, w, h);
                 MarkOccupied(occupied, x, y, w, h);
 
-                buildings.Add(new PlacedBuilding
+                buildings.Add(new BuildingDto
                 {
                     Id = $"building_{buildings.Count}",
                     Name = $"Ruin {buildings.Count}",
                     MeshAsset = "meshes/generic_ruin.glb",
-                    SizeCategory = "small",
+                    Size = "small",
                     Footprint = footprint,
                     Floors = 1,
                     Condition = rng.NextSingle() * 0.3f + 0.2f,
-                    Placement = new TilePlacement(x / TilesPerChunk, y / TilesPerChunk,
+                    Placement = new PlacementDto(x / TilesPerChunk, y / TilesPerChunk,
                                                   x % TilesPerChunk, y % TilesPerChunk),
                 });
                 break;
@@ -359,11 +360,11 @@ public sealed class TownMapCondenser
         }
     }
 
-    internal static List<PlacedProp> PlaceProps(
+    internal static List<PropDto> PlaceProps(
         int width, int height, Random rng, HashSet<(int, int)> occupied,
         int propDensityPercent = 70, int maxProps = 30)
     {
-        var props = new List<PlacedProp>();
+        var props = new List<PropDto>();
         var effectiveMax = Math.Max(0, (int)(maxProps * propDensityPercent / 100.0));
         if (effectiveMax < 1) return props;
         var propCount = Math.Min(rng.Next(1, effectiveMax + 1), effectiveMax);
@@ -377,11 +378,11 @@ public sealed class TownMapCondenser
                 if (occupied.Contains((x, y))) continue;
 
                 occupied.Add((x, y));
-                props.Add(new PlacedProp
+                props.Add(new PropDto
                 {
                     Id = $"prop_{i}",
                     MeshAsset = PropAssets[rng.Next(PropAssets.Length)],
-                    Placement = new TilePlacement(x / TilesPerChunk, y / TilesPerChunk,
+                    Placement = new PlacementDto(x / TilesPerChunk, y / TilesPerChunk,
                                                   x % TilesPerChunk, y % TilesPerChunk),
                     Rotation = rng.NextSingle() * 360f,
                     Scale = 0.8f + rng.NextSingle() * 0.4f,
@@ -394,15 +395,15 @@ public sealed class TownMapCondenser
         return props;
     }
 
-    internal static List<TownZone> DefineZones(int width, int height, TownDesign design, int threatLevel)
+    internal static List<ZoneDto> DefineZones(int width, int height, TownDesign design, int threatLevel)
     {
-        var zones = new List<TownZone>();
+        var zones = new List<ZoneDto>();
 
         // Main town zone (always present)
         var chunksWide = width / TilesPerChunk;
         var chunksHigh = height / TilesPerChunk;
 
-        zones.Add(new TownZone
+        zones.Add(new ZoneDto
         {
             Id = "zone_main",
             Name = design.TownName,
@@ -419,7 +420,7 @@ public sealed class TownMapCondenser
             var hazard = design.Hazards[i];
             // Place hazard zones at edges based on location hint
             var (sx, sy, ex, ey) = HazardBounds(hazard.LocationHint, chunksWide, chunksHigh);
-            zones.Add(new TownZone
+            zones.Add(new ZoneDto
             {
                 Id = $"zone_hazard_{i}",
                 Name = $"{hazard.Type} zone",
@@ -458,7 +459,7 @@ public sealed class TownMapCondenser
     internal static int[][]? BuildLiquidLayer(
         int width, int height,
         List<EnvironmentalHazard> hazards,
-        List<TownZone> zones)
+        List<ZoneDto> zones)
     {
         // Map hazard types to LiquidType values
         int[][]? liquid = null;
@@ -602,8 +603,8 @@ public sealed class TownMapCondenser
             _townDesign?.Hazards ?? new List<EnvironmentalHazard>(), zones);
 
         // For now, store spatial spec in result (Phase 3 will add persistence)
-        var layout = new TownLayout { Width = gridWidth, Height = gridHeight, Surface = surface, Liquid = liquid };
-        return new TownMapResult { Layout = layout, Buildings = new List<PlacedBuilding>(), Props = new List<PlacedProp>(), Zones = zones };
+        var layout = new LayoutDto { Width = gridWidth, Height = gridHeight, Surface = surface, Liquid = liquid };
+        return new TownMapResult { Layout = layout, Buildings = new List<BuildingDto>(), Props = new List<PropDto>(), Zones = zones };
     }
 
     /// <summary>Tile a single chunk's data into the surface grid.</summary>
@@ -642,7 +643,7 @@ public sealed class TownMapCondenser
         var roadTiles = SnapRoads(width, height, "grid", rng);
         ApplyRoadTiles(surface, roadTiles);
 
-        var buildings = new List<PlacedBuilding>();
+        var buildings = new List<BuildingDto>();
         var occupied = new HashSet<(int, int)>();
         var props = PlaceProps(width, height, rng, occupied, 70, 30);
 
@@ -650,7 +651,7 @@ public sealed class TownMapCondenser
         var zones = DefineZones(width, height, design, 0);
         var liquid = BuildLiquidLayer(width, height, design.Hazards, zones);
 
-        var layout = new TownLayout { Width = width, Height = height, Surface = surface, Liquid = liquid };
+        var layout = new LayoutDto { Width = width, Height = height, Surface = surface, Liquid = liquid };
         return new TownMapResult { Layout = layout, Buildings = buildings, Props = props, Zones = zones };
     }
 

@@ -1,3 +1,4 @@
+using Oravey2.Contracts.ContentPack;
 using Oravey2.MapGen.Assets;
 using Oravey2.MapGen.Generation;
 using Oravey2.MapGen.Pipeline;
@@ -34,14 +35,14 @@ public class AssetsStepViewModelTests
 
     private static TownMapResult MakeMapResult() => new()
     {
-        Layout = new TownLayout { Width = 16, Height = 16, Surface = [[0]] },
+        Layout = new LayoutDto { Width = 16, Height = 16, Surface = [[0]] },
         Buildings =
         [
-            new PlacedBuilding { Id = "b_0", Name = "The Beacon", MeshAsset = "", SizeCategory = "large", Footprint = [[0, 0]], Floors = 2, Condition = 0.5f, Placement = new TilePlacement(0, 0, 0, 0) },
-            new PlacedBuilding { Id = "b_1", Name = "Market Hall", MeshAsset = "", SizeCategory = "medium", Footprint = [[1, 1]], Floors = 1, Condition = 0.8f, Placement = new TilePlacement(0, 0, 1, 1) },
+            new BuildingDto { Id = "b_0", Name = "The Beacon", MeshAsset = "", Size = "large", Footprint = [[0, 0]], Floors = 2, Condition = 0.5f, Placement = new PlacementDto(0, 0, 0, 0) },
+            new BuildingDto { Id = "b_1", Name = "Market Hall", MeshAsset = "", Size = "medium", Footprint = [[1, 1]], Floors = 1, Condition = 0.8f, Placement = new PlacementDto(0, 0, 1, 1) },
         ],
-        Props = [new PlacedProp { Id = "p_0", MeshAsset = "", Placement = new TilePlacement(0, 0, 3, 3), Rotation = 0, Scale = 1, BlocksWalkability = false }],
-        Zones = [new TownZone { Id = "z_0", Name = "Main", Biome = 0, RadiationLevel = 0, EnemyDifficultyTier = 1, IsFastTravelTarget = true, ChunkStartX = 0, ChunkStartY = 0, ChunkEndX = 0, ChunkEndY = 0 }],
+        Props = [new PropDto { Id = "p_0", MeshAsset = "", Placement = new PlacementDto(0, 0, 3, 3), Rotation = 0, Scale = 1, BlocksWalkability = false }],
+        Zones = [new ZoneDto { Id = "z_0", Name = "Main", Biome = 0, RadiationLevel = 0, EnemyDifficultyTier = 1, IsFastTravelTarget = true, ChunkStartX = 0, ChunkStartY = 0, ChunkEndX = 0, ChunkEndY = 0 }],
     };
 
     [Fact]
@@ -91,11 +92,11 @@ public class AssetsStepViewModelTests
             // Place a .glb but we need to update buildings.json to point to it
             var townDir = Path.Combine(root, "towns", "haven");
             var mapResult = TownMapFiles.Load(townDir);
-            var updatedBeacon = new PlacedBuilding
+            var updatedBeacon = new BuildingDto
             {
                 Id = mapResult.Buildings[0].Id, Name = mapResult.Buildings[0].Name,
                 MeshAsset = "meshes/island-haven-the-beacon.glb",
-                SizeCategory = mapResult.Buildings[0].SizeCategory, Footprint = mapResult.Buildings[0].Footprint,
+                Size = mapResult.Buildings[0].Size, Footprint = mapResult.Buildings[0].Footprint,
                 Floors = mapResult.Buildings[0].Floors, Condition = mapResult.Buildings[0].Condition,
                 Placement = mapResult.Buildings[0].Placement,
             };
