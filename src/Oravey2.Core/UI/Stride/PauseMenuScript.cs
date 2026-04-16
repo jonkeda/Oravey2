@@ -92,7 +92,7 @@ public class PauseMenuScript : SyncScript
         };
 
         var page = new UIPage { RootElement = _overlay };
-        _uiComponent = new UIComponent { Page = page };
+        _uiComponent = new UIComponent { Page = page, RenderGroup = global::Stride.Rendering.RenderGroup.Group31 };
         Entity.Add(_uiComponent);
     }
 
@@ -129,6 +129,15 @@ public class PauseMenuScript : SyncScript
         StateManager.TransitionTo(_stateBeforePause);
         if (_overlay != null)
             _overlay.Visibility = Visibility.Collapsed;
+    }
+
+    public void Toggle()
+    {
+        if (StateManager == null) return;
+        if (StateManager.CurrentState == GameState.Paused)
+            Resume();
+        else if (StateManager.CurrentState is GameState.Exploring or GameState.InCombat)
+            Pause();
     }
 
     private Button CreateMenuButton(string text)

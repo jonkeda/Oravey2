@@ -44,6 +44,8 @@ public sealed class RegionLoader
 
     public Scene? WorldScene { get; private set; }
     public SpriteFont? Font { get; set; }
+    public QuestLogComponent? QuestLog { get; set; }
+    public WorldStateService? WorldState { get; set; }
 
     // Exposed game refs (mirrors ScenarioLoader pattern)
     public Entity? PlayerEntity { get; private set; }
@@ -55,6 +57,8 @@ public sealed class RegionLoader
     public StatsComponent? PlayerStats { get; private set; }
     public NotificationService? NotificationService { get; private set; }
     public GameOverOverlayScript? GameOverOverlay { get; private set; }
+    public QuestJournalScript? QuestJournal { get; private set; }
+    public ActionBarScript? ActionBar { get; private set; }
 
     public bool IsLoaded => WorldScene != null;
     public string? CurrentRegionName { get; private set; }
@@ -191,24 +195,50 @@ public sealed class RegionLoader
 
         // ---- HUD ----
         var hudEntity = new Entity("HUD");
-        hudEntity.Add(new HudSyncScript
+        var hudScript = new HudSyncScript
         {
             Health = health, Combat = combat,
             Level = level, Inventory = inventory,
             StateManager = gameStateManager,
             Font = Font,
-        });
+        };
+        hudEntity.Add(hudScript);
         AddEntity(hudEntity, WorldScene);
 
         // ---- Inventory overlay ----
         var inventoryOverlayEntity = new Entity("InventoryOverlay");
-        inventoryOverlayEntity.Add(new InventoryOverlayScript
+        var inventoryScript = new InventoryOverlayScript
         {
             Inventory = inventory, StateManager = gameStateManager,
             InputProvider = inputProvider,
             Font = Font,
-        });
+        };
+        inventoryOverlayEntity.Add(inventoryScript);
         AddEntity(inventoryOverlayEntity, WorldScene);
+
+        // ---- Region map overlay ----
+        var pois = store.GetPois(region.Id);
+        // Normalise POI positions proportionally within their original geo-based
+        // bounding box, then scale to compacted grid dimensions.  This preserves
+        // geographic layout (north/south/east/west) that CompactChunkLayout's
+        // left-to-right packing would otherwise destroy.
+        var remappedPois = RemapPoisToCompactGrid(pois, chunksW, chunksH);
+        var regionMapEntity = new Entity("RegionMapOverlay");
+        var regionMapScript = new RegionMapOverlayScript
+        {
+            InputProvider = inputProvider,
+            StateManager = gameStateManager,
+            Font = Font,
+            RegionName = regionName,
+            WorldTilesWide = totalW,
+            WorldTilesHigh = totalH,
+            TileSize = tileSize,
+            Pois = remappedPois,
+            GetPlayerPosition = () => playerEntity.Transform.Position,
+            GetHudRootElement = () => hudScript.RootElement,
+        };
+        regionMapEntity.Add(regionMapScript);
+        AddEntity(regionMapEntity, WorldScene);
 
         // ---- Game over overlay ----
         var gameOverEntity = new Entity("GameOverOverlay");
@@ -216,6 +246,34 @@ public sealed class RegionLoader
         gameOverEntity.Add(gameOverOverlay);
         AddEntity(gameOverEntity, WorldScene);
         GameOverOverlay = gameOverOverlay;
+
+        // ---- Quest journal overlay ----
+        var journalEntity = new Entity("QuestJournal");
+        var journalScript = new QuestJournalScript
+        {
+            QuestLog = QuestLog,
+            WorldState = WorldState,
+            StateManager = gameStateManager,
+            InputProvider = inputProvider,
+            Font = Font,
+        };
+        journalEntity.Add(journalScript);
+        AddEntity(journalEntity, WorldScene);
+        QuestJournal = journalScript;
+
+        // ---- Action button bar ----
+        var actionBarEntity = new Entity("ActionBar");
+        var actionBarScript = new ActionBarScript
+        {
+            StateManager = gameStateManager,
+            Font = Font,
+            MapOverlay = regionMapScript,
+            InventoryOverlay = inventoryScript,
+            JournalOverlay = journalScript,
+        };
+        actionBarEntity.Add(actionBarScript);
+        AddEntity(actionBarEntity, WorldScene);
+        ActionBar = actionBarScript;
 
         logger.LogInformation("Region '{Region}' loaded with {Count} entities",
             regionName, WorldScene.Entities.Count);
@@ -238,10 +296,44 @@ public sealed class RegionLoader
         PlayerStats = null;
         NotificationService = null;
         GameOverOverlay = null;
+        QuestJournal = null;
+        ActionBar = null;
         CurrentRegionName = null;
     }
 
     // ---- Helpers (copied from ScenarioLoader patterns) ----
+
+    /// <summary>
+    /// Maps POI positions from the sparse geo-based chunk grid to the compacted
+    /// grid by normalising proportionally.  This preserves the geographic layout
+    /// (a town to the north stays above a town to the south) regardless of how
+    /// <see cref="CompactChunkLayout"/> packs the terrain clusters.
+    /// </summary>
+    internal static List<PoiRecord> RemapPoisToCompactGrid(
+        List<PoiRecord> pois, int compactChunksW, int compactChunksH)
+    {
+        if (pois.Count == 0) return [];
+
+        int origMinX = pois.Min(p => p.GridX);
+        int origMaxX = pois.Max(p => p.GridX);
+        int origMinY = pois.Min(p => p.GridY);
+        int origMaxY = pois.Max(p => p.GridY);
+
+        int origW = origMaxX - origMinX;
+        int origH = origMaxY - origMinY;
+
+        return pois.Select(p =>
+        {
+            int nx = origW > 0
+                ? (int)((float)(p.GridX - origMinX) / origW * Math.Max(0, compactChunksW - 1))
+                : compactChunksW / 2;
+            // Invert Y so higher latitude (higher GridY) maps to lower screen Y (top of map)
+            int ny = origH > 0
+                ? Math.Max(0, compactChunksH - 1) - (int)((float)(p.GridY - origMinY) / origH * Math.Max(0, compactChunksH - 1))
+                : compactChunksH / 2;
+            return p with { GridX = nx, GridY = ny };
+        }).ToList();
+    }
 
     /// <summary>
     /// Clusters chunks by spatial adjacency and packs them into a compact grid.

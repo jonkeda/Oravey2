@@ -141,7 +141,7 @@ public class StartMenuScript : SyncScript
         };
 
         var page = new UIPage { RootElement = _overlay };
-        _uiComponent = new UIComponent { Page = page };
+        _uiComponent = new UIComponent { Page = page, RenderGroup = global::Stride.Rendering.RenderGroup.Group31 };
         Entity.Add(_uiComponent);
 
         UpdateContinueButton();

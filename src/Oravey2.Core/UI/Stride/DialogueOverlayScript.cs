@@ -102,7 +102,7 @@ public class DialogueOverlayScript : SyncScript
         };
 
         var page = new UIPage { RootElement = _overlay };
-        Entity.Add(new UIComponent { Page = page });
+        Entity.Add(new UIComponent { Page = page, RenderGroup = global::Stride.Rendering.RenderGroup.Group31 });
     }
 
     public override void Update()

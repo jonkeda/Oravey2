@@ -83,7 +83,7 @@ public class QuestTrackerScript : SyncScript
         };
 
         var page = new UIPage { RootElement = _container };
-        Entity.Add(new UIComponent { Page = page });
+        Entity.Add(new UIComponent { Page = page, RenderGroup = global::Stride.Rendering.RenderGroup.Group31 });
     }
 
     public override void Update()

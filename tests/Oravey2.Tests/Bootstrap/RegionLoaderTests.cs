@@ -125,6 +125,73 @@ public class RegionLoaderTests : IDisposable
         Assert.Empty(map);
     }
 
+    // ---- RemapPoisToCompactGrid ----
+
+    [Fact]
+    public void RemapPois_PreservesRelativeLayout()
+    {
+        // South town at chunk (100, 100), north town at (100, 200)
+        var pois = new List<PoiRecord>
+        {
+            new(1, 1, "South", "city", 100, 100, null, null),
+            new(2, 1, "North", "city", 100, 200, null, null),
+        };
+
+        var result = RegionLoader.RemapPoisToCompactGrid(pois, 50, 50);
+
+        var south = result.First(p => p.Name == "South");
+        var north = result.First(p => p.Name == "North");
+
+        // North should have a lower Y than South (Y is inverted: higher latitude → lower screen Y)
+        Assert.True(north.GridY < south.GridY,
+            $"North.GridY ({north.GridY}) should be < South.GridY ({south.GridY})");
+        // Same X since both were at X=100
+        Assert.Equal(south.GridX, north.GridX);
+    }
+
+    [Fact]
+    public void RemapPois_FitsWithinCompactBounds()
+    {
+        var pois = new List<PoiRecord>
+        {
+            new(1, 1, "SW", "town", 0, 0, null, null),
+            new(2, 1, "NE", "town", 1000, 2000, null, null),
+            new(3, 1, "Mid", "town", 500, 1000, null, null),
+        };
+
+        var result = RegionLoader.RemapPoisToCompactGrid(pois, 60, 40);
+
+        foreach (var p in result)
+        {
+            Assert.True(p.GridX >= 0 && p.GridX < 60,
+                $"{p.Name} GridX={p.GridX} out of bounds [0,60)");
+            Assert.True(p.GridY >= 0 && p.GridY < 40,
+                $"{p.Name} GridY={p.GridY} out of bounds [0,40)");
+        }
+    }
+
+    [Fact]
+    public void RemapPois_SinglePoi_CenteredInGrid()
+    {
+        var pois = new List<PoiRecord>
+        {
+            new(1, 1, "Only", "town", 500, 800, null, null),
+        };
+
+        var result = RegionLoader.RemapPoisToCompactGrid(pois, 100, 50);
+
+        Assert.Single(result);
+        Assert.Equal(50, result[0].GridX);
+        Assert.Equal(25, result[0].GridY);
+    }
+
+    [Fact]
+    public void RemapPois_Empty_ReturnsEmpty()
+    {
+        var result = RegionLoader.RemapPoisToCompactGrid([], 50, 50);
+        Assert.Empty(result);
+    }
+
     private static ChunkRecord MakeChunk(int gx, int gy)
         => new(Id: 0, RegionId: 1, GridX: gx, GridY: gy,
                Mode: ChunkMode.Heightmap, Layer: MapLayer.Surface, TileData: []);

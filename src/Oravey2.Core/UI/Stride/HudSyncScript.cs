@@ -38,6 +38,9 @@ public class HudSyncScript : SyncScript
     private TextBlock? _capsText;
     private TextBlock? _stateText;
 
+    /// <summary>Exposes the HUD root element for external visibility control.</summary>
+    public UIElement? RootElement { get; private set; }
+
     public override void Start()
     {
         base.Start();
@@ -143,7 +146,8 @@ public class HudSyncScript : SyncScript
         };
 
         var page = new UIPage { RootElement = stack };
-        Entity.Add(new UIComponent { Page = page });
+        RootElement = stack;
+        Entity.Add(new UIComponent { Page = page, RenderGroup = global::Stride.Rendering.RenderGroup.Group31 });
     }
 
     public override void Update()

@@ -323,7 +323,7 @@ public class ScenarioSelectorScript : SyncScript
         _rootCanvas.Children.Add(_overlay);
 
         var page = new UIPage { RootElement = _rootCanvas };
-        _uiComponent = new UIComponent { Page = page };
+        _uiComponent = new UIComponent { Page = page, RenderGroup = global::Stride.Rendering.RenderGroup.Group31 };
         Entity.Add(_uiComponent);
 
         // Pre-select first scenario

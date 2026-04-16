@@ -18,5 +18,6 @@ public enum GameAction
     DialogueChoice3,
     DialogueChoice4,
     OpenJournal,
-    Info
+    Info,
+    OpenMap
 }

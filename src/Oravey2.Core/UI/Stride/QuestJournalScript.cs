@@ -43,10 +43,7 @@ public class QuestJournalScript : SyncScript
 
         // Toggle on J
         if (InputProvider?.IsActionPressed(GameAction.OpenJournal) == true)
-        {
-            _visible = !_visible;
-            ApplyVisibility();
-        }
+            Toggle();
 
         // Close on Escape
         if (_visible && InputProvider?.IsActionPressed(GameAction.Pause) == true)
@@ -54,6 +51,12 @@ public class QuestJournalScript : SyncScript
             _visible = false;
             ApplyVisibility();
         }
+    }
+
+    public void Toggle()
+    {
+        _visible = !_visible;
+        ApplyVisibility();
     }
 
     private void ApplyVisibility()
@@ -111,7 +114,7 @@ public class QuestJournalScript : SyncScript
         };
 
         var page = new UIPage { RootElement = container };
-        _uiComponent = new UIComponent { Page = page };
+        _uiComponent = new UIComponent { Page = page, RenderGroup = global::Stride.Rendering.RenderGroup.Group31 };
         Entity.Add(_uiComponent);
     }
 

@@ -44,19 +44,22 @@ public class InventoryOverlayScript : SyncScript
         if (StateManager?.CurrentState is GameState.GameOver or GameState.InDialogue) return;
 
         if (InputProvider?.IsActionPressed(GameAction.Inventory) == true)
+            Toggle();
+    }
+
+    public void Toggle()
+    {
+        _visible = !_visible;
+        if (_uiComponent != null)
         {
-            _visible = !_visible;
-            if (_uiComponent != null)
+            if (_visible)
             {
-                if (_visible)
-                {
-                    RefreshInventory();
-                    _uiComponent.Page!.RootElement.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    _uiComponent.Page!.RootElement.Visibility = Visibility.Collapsed;
-                }
+                RefreshInventory();
+                _uiComponent.Page!.RootElement.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                _uiComponent.Page!.RootElement.Visibility = Visibility.Collapsed;
             }
         }
     }
@@ -109,7 +112,7 @@ public class InventoryOverlayScript : SyncScript
         };
 
         var page = new UIPage { RootElement = container };
-        _uiComponent = new UIComponent { Page = page };
+        _uiComponent = new UIComponent { Page = page, RenderGroup = global::Stride.Rendering.RenderGroup.Group31 };
         Entity.Add(_uiComponent);
     }
 

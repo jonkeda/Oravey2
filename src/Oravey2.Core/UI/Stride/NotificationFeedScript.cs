@@ -32,7 +32,7 @@ public class NotificationFeedScript : SyncScript
         };
 
         var page = new UIPage { RootElement = _stack };
-        _uiComponent = new UIComponent { Page = page };
+        _uiComponent = new UIComponent { Page = page, RenderGroup = global::Stride.Rendering.RenderGroup.Group31 };
         Entity.Add(_uiComponent);
     }
 

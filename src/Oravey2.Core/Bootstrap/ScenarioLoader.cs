@@ -102,6 +102,7 @@ public sealed class ScenarioLoader
         PlayerStats = loader.PlayerStats;
         NotificationService = loader.NotificationService;
         GameOverOverlay = loader.GameOverOverlay;
+        QuestJournal = loader.QuestJournal;
         CurrentScenarioId = loader.CurrentRegionName;
     }
 

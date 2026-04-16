@@ -122,7 +122,12 @@ public sealed class GameBootstrapper
         var spawnerDispatcher = new EntitySpawnerDispatcher(spawnerFactories);
         var saveDbPath = Path.Combine(AppContext.BaseDirectory, "save.db");
         var saveStateStore = new SaveStateStore(saveDbPath);
-        var regionLoader = new RegionLoader(worldStores, saveStateStore, spawnerDispatcher) { Font = font };
+        var regionLoader = new RegionLoader(worldStores, saveStateStore, spawnerDispatcher)
+        {
+            Font = font,
+            QuestLog = scenarioLoader.QuestLog,
+            WorldState = scenarioLoader.WorldState,
+        };
 
         var zoneManager = new ZoneManager(scenarioLoader);
         zoneManager.RegionLoader = regionLoader;
@@ -163,12 +168,19 @@ public sealed class GameBootstrapper
             if (data != null) saveService.SaveGame(data);
         }
 
+        // Forward-declare so LoadAndWireScenario can capture it
+        PauseMenuScript? pauseMenuScript = null;
+
         // Helper: load a scenario and wire automation refs
         void LoadAndWireScenario(string scenarioId)
         {
             regionLoader.LoadRegion(scenarioId, rootScene, game,
                 cameraEntity, gameStateManager, eventBus, inputProvider, logger);
             scenarioLoader.SyncFromRegion(regionLoader);
+
+            // Wire action bar pause button to the menu-scene PauseMenuScript
+            if (regionLoader.ActionBar != null)
+                regionLoader.ActionBar.PauseOverlay = pauseMenuScript;
 
             // Track the current zone
             var zoneId = scenarioId switch { "m0_combat" => "wasteland", _ => scenarioId };
@@ -327,7 +339,7 @@ public sealed class GameBootstrapper
         menuScene.Entities.Add(startMenuEntity);
 
         var pauseMenuEntity = new Entity("PauseMenu");
-        var pauseMenuScript = new PauseMenuScript
+        pauseMenuScript = new PauseMenuScript
         {
             StateManager = gameStateManager,
             InputProvider = inputProvider,

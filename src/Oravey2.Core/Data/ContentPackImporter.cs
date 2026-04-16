@@ -73,7 +73,7 @@ public sealed class ContentPackImporter
         var curatedPath = Path.Combine(contentPackPath, "data", "curated-towns.json");
         if (File.Exists(curatedPath))
         {
-            ImportCuratedTowns(curatedPath, regionId, result);
+            ImportCuratedTowns(curatedPath, regionId, townOffsets, result);
         }
 
         // g. Store content_pack_root in world_meta
@@ -197,7 +197,8 @@ public sealed class ContentPackImporter
             var zones = ReadJsonListOrDefault<ZoneDto>(zonesPath);
             foreach (var z in zones)
             {
-                _store.InsertPoi(regionId, z.Name, "zone", z.ChunkStartX, z.ChunkStartY,
+                _store.InsertPoi(regionId, z.Name, "zone",
+                    chunkOffsetX + z.ChunkStartX, chunkOffsetY + z.ChunkStartY,
                     description: z.Id);
                 result.PoisInserted++;
             }
@@ -300,13 +301,15 @@ public sealed class ContentPackImporter
         return offsets;
     }
 
-    private void ImportCuratedTowns(string curatedPath, long regionId, ImportResult result)
+    private void ImportCuratedTowns(string curatedPath, long regionId,
+        Dictionary<string, (int ChunkX, int ChunkY)> townOffsets, ImportResult result)
     {
         var file = ReadJson<CuratedTownsFile>(curatedPath);
         foreach (var t in file?.Towns ?? [])
         {
-            _store.InsertPoi(regionId, t.GameName, "town",
-                (int)t.Longitude, (int)t.Latitude,
+            var offset = townOffsets.GetValueOrDefault(t.GameName, (0, 0));
+            _store.InsertPoi(regionId, t.GameName, t.Size?.ToLowerInvariant() ?? "town",
+                offset.Item1, offset.Item2,
                 description: t.RealName, icon: t.Size);
             result.PoisInserted++;
         }
